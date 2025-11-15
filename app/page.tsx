@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 
 export default function Home() {
@@ -8,6 +8,21 @@ export default function Home() {
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Load blueprint from history if available
+  useEffect(() => {
+    const loadedData = sessionStorage.getItem('loadedBlueprint');
+    if (loadedData) {
+      try {
+        const parsed = JSON.parse(loadedData);
+        setProjectIdea(parsed.vibe);
+        setBlueprint(parsed.blueprint);
+        sessionStorage.removeItem('loadedBlueprint');
+      } catch (err) {
+        console.error('Failed to load blueprint:', err);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +116,7 @@ export default function Home() {
         </div>
 
         {/* Output */}
-        {blueprint && <BlueprintOutput blueprint={blueprint} />}
+        {blueprint && <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />}
       </div>
     </main>
   );
