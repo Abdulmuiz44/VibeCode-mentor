@@ -1,0 +1,140 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  try {
+    const { projectIdea } = await request.json();
+
+    if (!projectIdea) {
+      return NextResponse.json(
+        { error: 'Project idea is required' },
+        { status: 400 }
+      );
+    }
+
+    const apiKey = process.env.XAI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'XAI_API_KEY is not configured' },
+        { status: 500 }
+      );
+    }
+
+    const prompt = `You are VibeCode Mentor, an expert software architect and developer. Generate a complete, production-ready project blueprint for the following idea:
+
+"${projectIdea}"
+
+Your response MUST follow this exact structure in Markdown format:
+
+# 🚀 Project Blueprint
+
+## 📦 Tech Stack
+- List all technologies, frameworks, and libraries
+- Include versions where relevant
+- Mention database, hosting, and deployment platforms
+
+## 📁 File Structure
+\`\`\`
+project-root/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── ...
+├── package.json
+└── ...
+\`\`\`
+
+## 🤖 AI Prompts
+
+### Prompt 1: [Feature Name]
+\`\`\`
+[Detailed prompt for AI coding assistant]
+\`\`\`
+
+### Prompt 2: [Feature Name]
+\`\`\`
+[Detailed prompt for AI coding assistant]
+\`\`\`
+
+### Prompt 3: [Feature Name]
+\`\`\`
+[Detailed prompt for AI coding assistant]
+\`\`\`
+
+## 💻 Terminal Commands
+\`\`\`bash
+# Setup
+npm install
+# or
+yarn install
+
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Deploy
+npm run deploy
+\`\`\`
+
+## 🌐 Vercel Deployment Steps
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and sign in
+3. Click "New Project" and import your GitHub repository
+4. Configure environment variables:
+   - Add all necessary API keys and secrets
+5. Click "Deploy"
+6. Your app will be live at: \`https://your-project.vercel.app\`
+
+---
+
+**You shipped TradiaAI—ship this.**
+
+Make the blueprint actionable, specific, and production-ready. Include best practices and modern development patterns.`;
+
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are VibeCode Mentor, an expert software architect who creates detailed, production-ready project blueprints.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        model: 'grok-beta',
+        stream: false,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('xAI API Error:', errorText);
+      return NextResponse.json(
+        { error: `xAI API error: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    const blueprint = data.choices[0]?.message?.content || '';
+
+    return NextResponse.json({ blueprint });
+  } catch (error) {
+    console.error('Error in mentor API:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

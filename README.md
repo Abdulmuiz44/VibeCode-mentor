@@ -1,0 +1,112 @@
+# VibeCode Mentor
+
+An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using xAI Grok.
+
+## Features
+
+- 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Grok
+- 🎨 **Dark Mode UI**: Clean, minimal interface with Tailwind CSS
+- 📋 **Copy to Clipboard**: One-click blueprint copying
+- 📱 **Responsive Design**: Mobile-first, works on all devices
+- ⚡ **Next.js 14**: Built with App Router and React Server Components
+- 🚀 **Vercel Ready**: Deploy in one click
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ installed
+- xAI API key (get one at [console.x.ai](https://console.x.ai/))
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/vibecode-mentor.git
+cd vibecode-mentor
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create `.env.local` file:
+```bash
+cp .env.local.example .env.local
+```
+
+4. Add your xAI API key to `.env.local`:
+```
+XAI_API_KEY=your_xai_api_key_here
+```
+
+5. Run the development server:
+```bash
+npm run dev
+```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Deployment
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/vibecode-mentor)
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and sign in
+3. Click "New Project" and import your repository
+4. Add environment variable:
+   - `XAI_API_KEY`: Your xAI API key
+5. Click "Deploy"
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **AI**: xAI Grok API
+- **Markdown**: react-markdown with remark-gfm
+- **Deployment**: Vercel
+
+## Project Structure
+
+```
+vibecode-mentor/
+├── app/
+│   ├── api/
+│   │   └── mentor/
+│   │       └── route.ts        # API route for Grok integration
+│   ├── globals.css             # Global styles
+│   ├── layout.tsx              # Root layout
+│   └── page.tsx                # Home page
+├── components/
+│   └── BlueprintOutput.tsx     # Markdown output component
+├── .env.local.example          # Environment variables template
+├── next.config.mjs             # Next.js configuration
+├── package.json                # Dependencies
+├── postcss.config.mjs          # PostCSS configuration
+├── tailwind.config.ts          # Tailwind configuration
+└── tsconfig.json               # TypeScript configuration
+```
+
+## Usage
+
+1. Enter your project idea in the textarea
+2. Click "Generate Blueprint"
+3. Wait for AI to generate your blueprint
+4. Click "Copy Blueprint" to copy to clipboard
+5. Use the blueprint to build your project
+
+## License
+
+MIT
+
+## Author
+
+Built with 💙 by the VibeCode team
+
+---
+
+**You shipped TradiaAI—ship this.**
