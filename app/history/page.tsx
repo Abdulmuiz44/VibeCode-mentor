@@ -4,17 +4,58 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
 import { SavedBlueprint } from '@/types/blueprint';
+import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
+import { exportToGitHubGist } from '@/utils/github';
 
 export default function HistoryPage() {
   const [saves, setSaves] = useState<SavedBlueprint[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isPro, setIsPro] = useState(false);
+  const [showGitHubModal, setShowGitHubModal] = useState(false);
+  const [githubToken, setGithubToken] = useState('');
+  const [selectedBlueprint, setSelectedBlueprint] = useState<SavedBlueprint | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const loadedSaves = getSavedBlueprints();
     setSaves(loadedSaves.sort((a, b) => b.timestamp - a.timestamp));
+    const { isPro: proStatus } = getProStatus();
+    setIsPro(proStatus);
   }, []);
+
+  const handleUpgradeToPro = async () => {
+    const email = prompt('Enter your email for Pro subscription:');
+    if (!email) return;
+
+    setCheckoutLoading(true);
+    try {
+      // Store email for after payment
+      localStorage.setItem('checkout-email', email);
+
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: email.split('@')[0] }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.checkoutUrl) {
+        // Redirect to Flutterwave checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        showToastMessage('Failed to start checkout. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      showToastMessage('Error starting checkout');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleLoad = (save: SavedBlueprint) => {
     // Store in sessionStorage to prefill on home page
@@ -23,8 +64,33 @@ export default function HistoryPage() {
   };
 
   const handleExport = (save: SavedBlueprint) => {
-    exportBlueprintJSON(save);
-    showToastMessage('Want GitHub export? Pro coming soon.');
+    if (isPro) {
+      setSelectedBlueprint(save);
+      setShowGitHubModal(true);
+    } else {
+      exportBlueprintJSON(save);
+      showToastMessage('Upgrade to Pro for GitHub export!');
+    }
+  };
+
+  const handleGitHubExport = async () => {
+    if (!githubToken || !selectedBlueprint) return;
+
+    setLoading(true);
+    try {
+      const gistUrl = await exportToGitHubGist(selectedBlueprint, githubToken);
+      showToastMessage('Exported to GitHub Gist!');
+      setShowGitHubModal(false);
+      setGithubToken('');
+      
+      // Open gist in new tab
+      window.open(gistUrl, '_blank');
+    } catch (error) {
+      console.error('GitHub export error:', error);
+      showToastMessage('Failed to export to GitHub. Check your token.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (id: number) => {
@@ -68,8 +134,34 @@ export default function HistoryPage() {
             Saved Blueprints
           </h1>
           <p className="text-gray-400 text-lg">
-            Your blueprint history • {saves.length} saved
+            Your blueprint history • {saves.length} saved {!isPro && `(${FREE_SAVE_LIMIT} max on free)`}
           </p>
+          
+          {/* Pro Upgrade Button */}
+          {!isPro && (
+            <div className="mt-6">
+              <button
+                onClick={handleUpgradeToPro}
+                disabled={checkoutLoading}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/50"
+              >
+                {checkoutLoading ? 'Loading...' : '✨ Upgrade to Pro - $5/month'}
+              </button>
+              <p className="text-sm text-gray-500 mt-2">
+                Unlock unlimited saves + GitHub export
+              </p>
+            </div>
+          )}
+
+          {/* Pro Active Badge */}
+          {isPro && (
+            <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/50 rounded-full">
+              <svg className="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span className="text-purple-300 font-semibold">Pro Active</span>
+            </div>
+          )}
         </div>
 
         {/* Empty State */}
@@ -127,11 +219,17 @@ export default function HistoryPage() {
                   <button
                     onClick={() => handleExport(save)}
                     className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
-                    title="Export JSON"
+                    title={isPro ? "Export to GitHub" : "Export JSON"}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    {isPro ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    )}
                   </button>
                   <button
                     onClick={() => handleDelete(save.id)}
@@ -145,6 +243,51 @@ export default function HistoryPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* GitHub Token Modal */}
+        {showGitHubModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-white mb-4">Export to GitHub Gist</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Enter your GitHub Personal Access Token with &apos;gist&apos; scope.
+                <a 
+                  href="https://github.com/settings/tokens/new?scopes=gist&description=VibeCode%20Mentor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 ml-1"
+                >
+                  Create one here →
+                </a>
+              </p>
+              <input
+                type="password"
+                value={githubToken}
+                onChange={(e) => setGithubToken(e.target.value)}
+                placeholder="ghp_xxxxxxxxxxxx"
+                className="w-full px-4 py-2 bg-black border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none mb-4"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleGitHubExport}
+                  disabled={!githubToken || loading}
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Exporting...' : 'Export to Gist'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowGitHubModal(false);
+                    setGithubToken('');
+                  }}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

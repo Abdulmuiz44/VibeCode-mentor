@@ -4,6 +4,8 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { saveBlueprint } from '@/utils/localStorage';
+import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
+import { getSavedBlueprints } from '@/utils/localStorage';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -28,6 +30,14 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
 
   const handleSave = () => {
     try {
+      const currentSaves = getSavedBlueprints();
+      
+      // Check if user can save
+      if (!canSaveBlueprint(currentSaves.length)) {
+        showToastMessage(`Free limit: ${FREE_SAVE_LIMIT} saves. Upgrade to Pro for unlimited!`);
+        return;
+      }
+
       saveBlueprint(projectIdea, blueprint);
       setSaved(true);
       showToastMessage('Saved! View in History');
