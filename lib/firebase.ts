@@ -31,6 +31,11 @@ if (isConfigured && typeof window !== 'undefined') {
   auth = getAuth(app);
   db = getFirestore(app);
   googleProvider = new GoogleAuthProvider();
+  
+  // Force account selection and ensure we're using the correct scopes
+  googleProvider.setCustomParameters({
+    prompt: 'select_account',
+  });
 }
 
 export { auth, db, googleProvider };
