@@ -168,3 +168,54 @@ export const syncLocalToCloud = async (userId: string, localBlueprints: SavedBlu
     return false;
   }
 };
+
+// Custom Prompts for Pro Users
+export interface CustomPrompt {
+  id: string;
+  title: string;
+  prompt: string;
+  timestamp: number;
+}
+
+export const saveCustomPrompt = async (userId: string, prompt: CustomPrompt): Promise<boolean> => {
+  if (!db) return false;
+  try {
+    const docRef = doc(db, 'users', userId, 'prompts', prompt.id);
+    await setDoc(docRef, prompt);
+    return true;
+  } catch (error) {
+    console.error('Error saving custom prompt:', error);
+    return false;
+  }
+};
+
+export const getCustomPrompts = async (userId: string): Promise<CustomPrompt[]> => {
+  if (!db) return [];
+  try {
+    const promptsRef = collection(db, 'users', userId, 'prompts');
+    const q = query(promptsRef, orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
+    
+    const prompts: CustomPrompt[] = [];
+    querySnapshot.forEach((doc) => {
+      prompts.push(doc.data() as CustomPrompt);
+    });
+    
+    return prompts;
+  } catch (error) {
+    console.error('Error getting custom prompts:', error);
+    return [];
+  }
+};
+
+export const deleteCustomPrompt = async (userId: string, promptId: string): Promise<boolean> => {
+  if (!db) return false;
+  try {
+    const docRef = doc(db, 'users', userId, 'prompts', promptId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting custom prompt:', error);
+    return false;
+  }
+};

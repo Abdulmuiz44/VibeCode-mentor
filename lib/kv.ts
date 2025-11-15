@@ -100,6 +100,35 @@ export async function logGeneration(
 }
 
 /**
+ * Get top vibes for prompt library
+ */
+export async function getTopVibes(limit: number = 10): Promise<Array<{ vibe: string; count: number }>> {
+  if (!isKVConfigured) {
+    return [];
+  }
+
+  try {
+    const vibesData = await kv.zrange('stats:vibes', 0, limit - 1, { rev: true, withScores: true });
+
+    // Parse vibes data (comes as [vibe1, score1, vibe2, score2, ...])
+    const topVibes: Array<{ vibe: string; count: number }> = [];
+    if (Array.isArray(vibesData)) {
+      for (let i = 0; i < vibesData.length; i += 2) {
+        topVibes.push({
+          vibe: vibesData[i] as string,
+          count: vibesData[i + 1] as number,
+        });
+      }
+    }
+
+    return topVibes;
+  } catch (error) {
+    console.error('Get top vibes error:', error);
+    return [];
+  }
+}
+
+/**
  * Get analytics data for admin dashboard
  */
 export async function getAnalytics(): Promise<{

@@ -24,6 +24,17 @@ export default function Home() {
         console.error('Failed to load blueprint:', err);
       }
     }
+
+    // Check for selected prompt from Prompts page
+    const selectedPrompt = sessionStorage.getItem('selectedPrompt');
+    if (selectedPrompt) {
+      setProjectIdea(selectedPrompt);
+      sessionStorage.removeItem('selectedPrompt');
+      // Auto-scroll to textarea
+      setTimeout(() => {
+        document.getElementById('projectIdea')?.focus();
+      }, 100);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
