@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     
     // Handle successful payment
     if (payload.event === 'charge.completed' && payload.data.status === 'successful') {
-      const { customer, tx_ref, amount, currency } = payload.data;
+      const { customer, tx_ref, amount, currency, meta } = payload.data;
       
       console.log('Payment successful:', {
         email: customer.email,
@@ -31,13 +31,15 @@ export async function POST(request: NextRequest) {
         currency,
       });
 
-      // In a real app, you would:
-      // 1. Store subscription in database
-      // 2. Send confirmation email
-      // 3. Activate user's Pro status
-      
-      // For now, we'll rely on client-side storage after redirect
-      // The success page will activate Pro status
+      // Update Pro status in Firestore (dynamically import to avoid build issues)
+      try {
+        const { setProStatusInCloud } = await import('@/lib/firebase');
+        const userId = meta?.userId || customer.email;
+        await setProStatusInCloud(userId, customer.email, true);
+        console.log('Pro status updated in cloud for:', userId);
+      } catch (error) {
+        console.error('Error updating Pro status in cloud:', error);
+      }
       
       return NextResponse.json({ 
         status: 'success',

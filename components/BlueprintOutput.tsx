@@ -6,6 +6,8 @@ import remarkGfm from 'remark-gfm';
 import { saveBlueprint } from '@/utils/localStorage';
 import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
+import { useAuth } from '@/context/AuthContext';
+import { saveBlueprintToCloud } from '@/lib/firebase';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -17,6 +19,7 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   const [saved, setSaved] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const { user, isPro } = useAuth();
 
   const handleCopy = async () => {
     try {
@@ -28,19 +31,32 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       const currentSaves = getSavedBlueprints();
       
-      // Check if user can save
-      if (!canSaveBlueprint(currentSaves.length)) {
+      // Check if user can save (Pro users or within free limit)
+      if (!isPro && !canSaveBlueprint(currentSaves.length)) {
         showToastMessage(`Free limit: ${FREE_SAVE_LIMIT} saves. Upgrade to Pro for unlimited!`);
         return;
       }
 
-      saveBlueprint(projectIdea, blueprint);
+      // Save to local storage
+      const savedBlueprint = saveBlueprint(projectIdea, blueprint);
+      
+      // Save to cloud if logged in
+      if (user) {
+        const cloudSaved = await saveBlueprintToCloud(user.uid, savedBlueprint);
+        if (cloudSaved) {
+          showToastMessage('Saved to cloud! View in History');
+        } else {
+          showToastMessage('Saved locally! (Cloud sync failed)');
+        }
+      } else {
+        showToastMessage('Saved! Sign in to sync to cloud');
+      }
+      
       setSaved(true);
-      showToastMessage('Saved! View in History');
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error('Failed to save:', err);

@@ -6,6 +6,8 @@ import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@
 import { SavedBlueprint } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
+import { useAuth } from '@/context/AuthContext';
+import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
 
 export default function HistoryPage() {
   const [saves, setSaves] = useState<SavedBlueprint[]>([]);
@@ -17,14 +19,42 @@ export default function HistoryPage() {
   const [selectedBlueprint, setSelectedBlueprint] = useState<SavedBlueprint | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'local' | 'syncing'>('local');
   const router = useRouter();
+  const { user, isPro: authIsPro } = useAuth();
 
   useEffect(() => {
-    const loadedSaves = getSavedBlueprints();
-    setSaves(loadedSaves.sort((a, b) => b.timestamp - a.timestamp));
-    const { isPro: proStatus } = getProStatus();
-    setIsPro(proStatus);
-  }, []);
+    loadBlueprints();
+    setIsPro(authIsPro);
+  }, [user, authIsPro]);
+
+  const loadBlueprints = async () => {
+    setSyncing(true);
+    setSyncStatus('syncing');
+    
+    try {
+      if (user) {
+        // Load from cloud
+        const cloudBlueprints = await getBlueprintsFromCloud(user.uid);
+        setSaves(cloudBlueprints.sort((a, b) => b.timestamp - a.timestamp));
+        setSyncStatus('synced');
+      } else {
+        // Load from local storage
+        const localSaves = getSavedBlueprints();
+        setSaves(localSaves.sort((a, b) => b.timestamp - a.timestamp));
+        setSyncStatus('local');
+      }
+    } catch (error) {
+      console.error('Error loading blueprints:', error);
+      // Fallback to local
+      const localSaves = getSavedBlueprints();
+      setSaves(localSaves.sort((a, b) => b.timestamp - a.timestamp));
+      setSyncStatus('local');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleUpgradeToPro = async () => {
     const email = prompt('Enter your email for Pro subscription:');
@@ -93,8 +123,13 @@ export default function HistoryPage() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('Delete this blueprint?')) {
+      // Delete from cloud if logged in
+      if (user) {
+        await deleteBlueprintFromCloud(user.uid, id);
+      }
+      // Delete from local
       deleteSavedBlueprint(id);
       setSaves(saves.filter(s => s.id !== id));
       showToastMessage('Blueprint deleted');
@@ -133,9 +168,24 @@ export default function HistoryPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Saved Blueprints
           </h1>
-          <p className="text-gray-400 text-lg">
-            Your blueprint history • {saves.length} saved {!isPro && `(${FREE_SAVE_LIMIT} max on free)`}
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <p className="text-gray-400 text-lg">
+              Your blueprint history • {saves.length} saved {!isPro && `(${FREE_SAVE_LIMIT} max on free)`}
+            </p>
+            {syncStatus === 'synced' && user && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-900/30 border border-green-600/50 rounded text-xs text-green-400">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Synced
+              </span>
+            )}
+            {syncStatus === 'local' && !user && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800/50 border border-gray-600/50 rounded text-xs text-gray-400">
+                Local only
+              </span>
+            )}
+          </div>
           
           {/* Pro Upgrade Button */}
           {!isPro && (
