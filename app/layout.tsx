@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ProBadge from "@/components/ProBadge";
 import AuthButton from "@/components/AuthButton";
+import UsageCounter from "@/components/UsageCounter";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
               </Link>
 
               <nav className="flex items-center gap-4">
+                <UsageCounter />
                 <ProBadge />
                 <Link
                   href="/history"

@@ -1,14 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, logGeneration } from '@/lib/kv';
+import { getProStatusFromCloud } from '@/lib/firebase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectIdea } = await request.json();
+    const { projectIdea, userId } = await request.json();
 
     if (!projectIdea) {
       return NextResponse.json(
         { error: 'Project idea is required' },
         { status: 400 }
       );
+    }
+
+    // Get user's IP address
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || 
+               'unknown';
+
+    // Check if user is Pro
+    const isPro = userId ? await getProStatusFromCloud(userId) : false;
+
+    // Rate limiting for free tier users only
+    if (!isPro) {
+      const rateLimit = await checkRateLimit(userId, ip);
+      
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded',
+            message: `You've reached the limit of ${rateLimit.limit} free generations per day. Upgrade to Pro for unlimited access!`,
+            current: rateLimit.current,
+            limit: rateLimit.limit,
+          },
+          { status: 429 }
+        );
+      }
     }
 
     const apiKey = process.env.XAI_API_KEY;
@@ -128,6 +155,9 @@ Make the blueprint actionable, specific, and production-ready. Include best prac
 
     const data = await response.json();
     const blueprint = data.choices[0]?.message?.content || '';
+
+    // Log analytics
+    await logGeneration(userId || null, projectIdea, isPro);
 
     return NextResponse.json({ blueprint });
   } catch (error) {

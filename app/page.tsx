@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import BlueprintOutput from '@/components/BlueprintOutput';
 
 export default function Home() {
+  const { user } = useAuth();
   const [projectIdea, setProjectIdea] = useState('');
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,12 +44,22 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ projectIdea }),
+        body: JSON.stringify({ 
+          projectIdea,
+          userId: user?.uid || null,
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate blueprint');
+        
+        // Handle rate limit error with special toast
+        if (response.status === 429) {
+          setError(errorData.message || 'Rate limit exceeded. Upgrade to Pro for unlimited generations!');
+        } else {
+          throw new Error(errorData.error || 'Failed to generate blueprint');
+        }
+        return;
       }
 
       const data = await response.json();
