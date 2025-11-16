@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { requireAuth } from '@/lib/auth/requireAuth';
+import { useSession } from 'next-auth/react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function Home() {
   const { user } = useAuth();
+  const { data: session } = useSession();
   const [projectIdea, setProjectIdea] = useState('');
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,9 +41,7 @@ export default function Home() {
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleGenerate = async () => {
     if (!projectIdea.trim()) {
       setError('Please enter a project idea');
       return;
@@ -58,7 +59,7 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           projectIdea,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 
@@ -81,6 +82,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    requireAuth(session, handleGenerate);
   };
 
   return (

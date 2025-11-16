@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { saveBlueprint } from '@/utils/localStorage';
@@ -9,6 +10,7 @@ import { getSavedBlueprints } from '@/utils/localStorage';
 import { useAuth } from '@/context/AuthContext';
 import { saveBlueprintToCloud } from '@/lib/firebase';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
+import { requireAuth } from '@/lib/auth/requireAuth';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -27,6 +29,7 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   const [isPrivateRepo, setIsPrivateRepo] = useState(false);
   const [exporting, setExporting] = useState(false);
   const { user, isPro } = useAuth();
+  const { data: session } = useSession();
 
   const handleCopy = async () => {
     try {
@@ -39,36 +42,38 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   };
 
   const handleSave = async () => {
-    try {
-      const currentSaves = getSavedBlueprints();
-      
-      // Check if user can save (Pro users or within free limit)
-      if (!isPro && !canSaveBlueprint(currentSaves.length)) {
-        showToastMessage(`Free limit: ${FREE_SAVE_LIMIT} saves. Upgrade to Pro for unlimited!`);
-        return;
-      }
-
-      // Save to local storage
-      const savedBlueprint = saveBlueprint(projectIdea, blueprint);
-      
-      // Save to cloud if logged in
-      if (user) {
-        const cloudSaved = await saveBlueprintToCloud(user.uid, savedBlueprint);
-        if (cloudSaved) {
-          showToastMessage('Saved to cloud! View in History');
-        } else {
-          showToastMessage('Saved locally! (Cloud sync failed)');
+    requireAuth(session, async () => {
+      try {
+        const currentSaves = getSavedBlueprints();
+        
+        // Check if user can save (Pro users or within free limit)
+        if (!isPro && !canSaveBlueprint(currentSaves.length)) {
+          showToastMessage(`Free limit: ${FREE_SAVE_LIMIT} saves. Upgrade to Pro for unlimited!`);
+          return;
         }
-      } else {
-        showToastMessage('Saved! Sign in to sync to cloud');
+
+        // Save to local storage
+        const savedBlueprint = saveBlueprint(projectIdea, blueprint);
+        
+        // Save to cloud if logged in
+        if (user) {
+          const cloudSaved = await saveBlueprintToCloud(user.id, savedBlueprint);
+          if (cloudSaved) {
+            showToastMessage('Saved to cloud! View in History');
+          } else {
+            showToastMessage('Saved locally! (Cloud sync failed)');
+          }
+        } else {
+          showToastMessage('Saved! Sign in to sync to cloud');
+        }
+        
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        console.error('Failed to save:', err);
+        showToastMessage('Failed to save blueprint');
       }
-      
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      console.error('Failed to save:', err);
-      showToastMessage('Failed to save blueprint');
-    }
+    });
   };
 
   const showToastMessage = (message: string) => {
@@ -78,24 +83,26 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   };
 
   const handleExportPDF = async () => {
-    if (!isPro) {
-      showToastMessage('PDF export is a Pro feature. Upgrade to unlock!');
-      return;
-    }
+    requireAuth(session, async () => {
+      if (!isPro) {
+        showToastMessage('PDF export is a Pro feature. Upgrade to unlock!');
+        return;
+      }
 
-    try {
-      const savedBlueprint = {
-        id: Date.now(),
-        vibe: projectIdea,
-        blueprint,
-        timestamp: Date.now(),
-      };
-      await exportToPDF(savedBlueprint);
-      showToastMessage('Blueprint exported as PDF!');
-    } catch (error) {
-      console.error('PDF export error:', error);
-      showToastMessage('Failed to export PDF');
-    }
+      try {
+        const savedBlueprint = {
+          id: Date.now(),
+          vibe: projectIdea,
+          blueprint,
+          timestamp: Date.now(),
+        };
+        await exportToPDF(savedBlueprint);
+        showToastMessage('Blueprint exported as PDF!');
+      } catch (error) {
+        console.error('PDF export error:', error);
+        showToastMessage('Failed to export PDF');
+      }
+    });
   };
 
   const handleDownloadMarkdown = () => {
@@ -110,39 +117,41 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   };
 
   const handleCreateGitHubRepo = async () => {
-    if (!isPro) {
-      showToastMessage('GitHub repo creation is a Pro feature. Upgrade to unlock!');
-      return;
-    }
+    requireAuth(session, async () => {
+      if (!isPro) {
+        showToastMessage('GitHub repo creation is a Pro feature. Upgrade to unlock!');
+        return;
+      }
 
-    if (!githubToken || !repoName) {
-      showToastMessage('Please provide GitHub token and repository name');
-      return;
-    }
+      if (!githubToken || !repoName) {
+        showToastMessage('Please provide GitHub token and repository name');
+        return;
+      }
 
-    setExporting(true);
-    try {
-      const savedBlueprint = {
-        id: Date.now(),
-        vibe: projectIdea,
-        blueprint,
-        timestamp: Date.now(),
-      };
+      setExporting(true);
+      try {
+        const savedBlueprint = {
+          id: Date.now(),
+          vibe: projectIdea,
+          blueprint,
+          timestamp: Date.now(),
+        };
 
-      const repoUrl = await createGitHubRepo(savedBlueprint, githubToken, repoName, isPrivateRepo);
-      showToastMessage('GitHub repository created successfully!');
-      setShowGitHubModal(false);
-      setGithubToken('');
-      setRepoName('');
-      
-      // Open repo in new tab
-      window.open(repoUrl, '_blank');
-    } catch (error: any) {
-      console.error('GitHub repo creation error:', error);
-      showToastMessage(error.message || 'Failed to create GitHub repository');
-    } finally {
-      setExporting(false);
-    }
+        const repoUrl = await createGitHubRepo(savedBlueprint, githubToken, repoName, isPrivateRepo);
+        showToastMessage('GitHub repository created successfully!');
+        setShowGitHubModal(false);
+        setGithubToken('');
+        setRepoName('');
+        
+        // Open repo in new tab
+        window.open(repoUrl, '_blank');
+      } catch (error: any) {
+        console.error('GitHub repo creation error:', error);
+        showToastMessage(error.message || 'Failed to create GitHub repository');
+      } finally {
+        setExporting(false);
+      }
+    });
   };
 
   return (

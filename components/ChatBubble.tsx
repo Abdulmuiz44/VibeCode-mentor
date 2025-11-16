@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useAuth } from '@/context/AuthContext';
+import { requireAuth } from '@/lib/auth/requireAuth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -17,6 +19,7 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
   const { user, isPro } = useAuth();
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -65,7 +68,7 @@ export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
           message: userMessage.content,
           conversationHistory,
           blueprintContext,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 
@@ -125,7 +128,7 @@ export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
     <>
       {/* Floating Chat Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => requireAuth(session, () => setIsOpen(!isOpen))}
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${
           isOpen ? 'rotate-90 scale-90' : 'hover:scale-110'
         }`}

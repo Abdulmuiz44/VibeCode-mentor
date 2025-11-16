@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { signIn, signOut } from 'next-auth/react';
 import { useAuth } from '@/context/AuthContext';
-import { signInWithGoogle, logOut } from '@/lib/firebase';
 
 export default function AuthButton() {
   const { user, loading } = useAuth();
@@ -12,7 +12,7 @@ export default function AuthButton() {
   const handleSignIn = async () => {
     setSigningIn(true);
     try {
-      await signInWithGoogle();
+      await signIn('google');
     } catch (error) {
       console.error('Sign in error:', error);
       alert('Failed to sign in. Please try again.');
@@ -23,7 +23,7 @@ export default function AuthButton() {
 
   const handleSignOut = async () => {
     try {
-      await logOut();
+      await signOut();
       setShowDropdown(false);
     } catch (error) {
       console.error('Sign out error:', error);
@@ -72,10 +72,10 @@ export default function AuthButton() {
         onClick={() => setShowDropdown(!showDropdown)}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
-        {user.photoURL ? (
+        {user.image ? (
           <img
-            src={user.photoURL}
-            alt={user.displayName || 'User'}
+            src={user.image}
+            alt={user.name || 'User'}
             className="w-8 h-8 rounded-full border-2 border-purple-500"
           />
         ) : (
@@ -94,7 +94,7 @@ export default function AuthButton() {
           <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-gray-800 rounded-lg shadow-lg z-20 overflow-hidden">
             <div className="p-4 border-b border-gray-800">
               <p className="text-sm font-semibold text-white truncate">
-                {user.displayName || 'User'}
+                {user.name || 'User'}
               </p>
               <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>

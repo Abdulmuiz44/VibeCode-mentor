@@ -9,6 +9,7 @@ import PWAInstall from "@/components/PWAInstall";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import StructuredData from "@/components/StructuredData";
 import { AuthProvider } from "@/context/AuthContext";
+import SessionProvider from "@/components/SessionProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -70,9 +71,10 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className="antialiased min-h-screen bg-black text-white">
-        <AuthProvider>
-          {/* Navigation Header */}
-          <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-40">
+        <SessionProvider>
+          <AuthProvider>
+            {/* Navigation Header */}
+            <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-40">
             <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-6xl">
               <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
@@ -129,6 +131,7 @@ export default function RootLayout({
           <Analytics />
           <SpeedInsights />
         </AuthProvider>
+        </SessionProvider>
       </body>
     </html>
   );
