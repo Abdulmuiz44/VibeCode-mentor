@@ -1,5 +1,4 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
 import { SavedBlueprint } from '@/types/blueprint';
 
@@ -17,9 +16,7 @@ const isConfigured = firebaseConfig.apiKey && firebaseConfig.projectId;
 
 // Initialize Firebase only if configured
 let app: FirebaseApp | null = null;
-let auth: any = null;
 let db: any = null;
-let googleProvider: GoogleAuthProvider | null = null;
 
 if (isConfigured && typeof window !== 'undefined') {
   if (!getApps().length) {
@@ -28,43 +25,10 @@ if (isConfigured && typeof window !== 'undefined') {
     app = getApps()[0];
   }
   
-  auth = getAuth(app);
   db = getFirestore(app);
-  googleProvider = new GoogleAuthProvider();
-  
-  // Force account selection and ensure we're using the correct scopes
-  googleProvider.setCustomParameters({
-    prompt: 'select_account',
-  });
 }
 
-export { auth, db, googleProvider };
-
-// Auth functions
-export const signInWithGoogle = async () => {
-  if (!auth || !googleProvider) {
-    throw new Error('Firebase not configured');
-  }
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error) {
-    console.error('Error signing in with Google:', error);
-    throw error;
-  }
-};
-
-export const logOut = async () => {
-  if (!auth) {
-    throw new Error('Firebase not configured');
-  }
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error('Error signing out:', error);
-    throw error;
-  }
-};
+export { db };
 
 // Firestore functions for blueprints
 export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBlueprint) => {

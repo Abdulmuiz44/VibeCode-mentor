@@ -1,10 +1,17 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, getBlueprintsFromCloud, syncLocalToCloud, getProStatusFromCloud, setProStatusInCloud } from '@/lib/firebase';
+import { useSession } from 'next-auth/react';
+import { getBlueprintsFromCloud, syncLocalToCloud, getProStatusFromCloud } from '@/lib/firebase';
 import { getSavedBlueprints } from '@/utils/localStorage';
 import { getProStatus, setProStatus as setLocalProStatus } from '@/utils/pro';
+
+interface User {
+  id: string;
+  email: string | null;
+  name?: string | null;
+  image?: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -23,19 +30,21 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
 
+  const loading = status === 'loading';
+
   const refreshProStatus = async () => {
     if (user) {
-      const cloudProStatus = await getProStatusFromCloud(user.uid);
+      const cloudProStatus = await getProStatusFromCloud(user.id);
       setIsPro(cloudProStatus);
       
       // Sync with local storage
       if (cloudProStatus) {
-        setLocalProStatus(user.email || '', user.uid);
+        setLocalProStatus(user.email || '', user.id);
       }
     } else {
       // Check local storage if not logged in
@@ -45,26 +54,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        // User logged in
-        console.log('User logged in:', user.email);
-        
-        // Sync local blueprints to cloud
+    if (status === 'authenticated' && session?.user) {
+      const nextAuthUser: User = {
+        id: session.user.id,
+        email: session.user.email || null,
+        name: session.user.name || null,
+        image: session.user.image || null,
+      };
+      setUser(nextAuthUser);
+
+      // Sync local blueprints to cloud
+      const syncData = async () => {
         const localBlueprints = getSavedBlueprints();
         if (localBlueprints.length > 0) {
-          await syncLocalToCloud(user.uid, localBlueprints);
+          await syncLocalToCloud(nextAuthUser.id, localBlueprints);
         }
         
         // Get Pro status from cloud
-        const cloudProStatus = await getProStatusFromCloud(user.uid);
+        const cloudProStatus = await getProStatusFromCloud(nextAuthUser.id);
         setIsPro(cloudProStatus);
         
         // Sync with local storage
         if (cloudProStatus) {
-          setLocalProStatus(user.email || '', user.uid);
+          setLocalProStatus(nextAuthUser.email || '', nextAuthUser.id);
         }
         
         // Check if this is first login (cloud Pro status exists but local doesn't)
@@ -82,17 +94,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 500);
           setHasShownWelcome(true);
         }
-      } else {
-        // User logged out - check local Pro status
-        const localStatus = getProStatus();
-        setIsPro(localStatus.isPro);
-      }
-      
-      setLoading(false);
-    });
+      };
 
-    return () => unsubscribe();
-  }, [hasShownWelcome]);
+      syncData();
+    } else if (status === 'unauthenticated') {
+      setUser(null);
+      // Check local Pro status
+      const localStatus = getProStatus();
+      setIsPro(localStatus.isPro);
+    }
+  }, [session, status, hasShownWelcome]);
 
   return (
     <AuthContext.Provider value={{ user, loading, isPro, refreshProStatus }}>
