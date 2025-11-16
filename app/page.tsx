@@ -91,9 +91,28 @@ export default function Home() {
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             VibeCode Mentor
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-400 text-lg mb-6">
             Transform your ideas into production-ready blueprints with AI
           </p>
+          
+          {/* Quick Tips for Developers */}
+          <div className="max-w-3xl mx-auto mt-8 p-4 bg-blue-900/20 border border-blue-700/50 rounded-lg">
+            <p className="text-sm text-blue-300 mb-2 font-medium">💡 Pro Tips for Best Results:</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-blue-200">
+              <div className="flex items-center gap-1.5">
+                <span>✓</span>
+                <span>Specify your tech stack</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span>✓</span>
+                <span>Mention key features</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span>✓</span>
+                <span>Include user roles if any</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Input Form */}
@@ -111,6 +130,41 @@ export default function Home() {
                 className="w-full h-40 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none text-white placeholder-gray-500 transition"
                 disabled={loading}
               />
+              
+              {/* Quick Example Buttons */}
+              {!projectIdea && !blueprint && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <p className="text-xs text-gray-500 w-full mb-1">Quick examples:</p>
+                  <button
+                    type="button"
+                    onClick={() => setProjectIdea('Build a REST API backend with authentication, database, and deployment guide')}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                  >
+                    🔧 REST API
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProjectIdea('Create a SaaS application with user authentication, subscription billing, and admin dashboard')}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                  >
+                    🚀 SaaS App
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProjectIdea('Build a Chrome extension with React, background workers, and content scripts')}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                  >
+                    🧩 Chrome Extension
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProjectIdea('Create a CLI tool with interactive prompts, file operations, and npm publishing')}
+                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                  >
+                    💻 CLI Tool
+                  </button>
+                </div>
+              )}
             </div>
 
             <button
