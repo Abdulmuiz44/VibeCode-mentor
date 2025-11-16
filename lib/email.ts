@@ -5,7 +5,14 @@ import PaymentConfirmationEmail from '@/emails/PaymentConfirmationEmail';
 import RateLimitWarningEmail from '@/emails/RateLimitWarningEmail';
 import WeeklySummaryEmail from '@/emails/WeeklySummaryEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+  if (!resendClient && process.env.RESEND_API_KEY) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
 
 export interface SendEmailParams {
   to: string;
@@ -15,6 +22,16 @@ export interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   try {
+    const resend = getResendClient();
+    
+    if (!resend) {
+      console.warn('Resend client not configured - email not sent');
+      return { 
+        success: false, 
+        error: 'Email service not configured. Please set RESEND_API_KEY environment variable.' 
+      };
+    }
+    
     const data = await resend.emails.send({
       from: 'VibeCode Mentor <vibecodeguide@gmail.com>',
       to,
