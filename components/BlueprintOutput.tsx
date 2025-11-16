@@ -8,6 +8,7 @@ import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
 import { useAuth } from '@/context/AuthContext';
 import { saveBlueprintToCloud } from '@/lib/firebase';
+import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -19,6 +20,12 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   const [saved, setSaved] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showGitHubModal, setShowGitHubModal] = useState(false);
+  const [githubToken, setGithubToken] = useState('');
+  const [repoName, setRepoName] = useState('');
+  const [isPrivateRepo, setIsPrivateRepo] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const { user, isPro } = useAuth();
 
   const handleCopy = async () => {
@@ -68,6 +75,74 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
     setToastMessage(message);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleExportPDF = async () => {
+    if (!isPro) {
+      showToastMessage('PDF export is a Pro feature. Upgrade to unlock!');
+      return;
+    }
+
+    try {
+      const savedBlueprint = {
+        id: Date.now(),
+        vibe: projectIdea,
+        blueprint,
+        timestamp: Date.now(),
+      };
+      await exportToPDF(savedBlueprint);
+      showToastMessage('Blueprint exported as PDF!');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      showToastMessage('Failed to export PDF');
+    }
+  };
+
+  const handleDownloadMarkdown = () => {
+    const savedBlueprint = {
+      id: Date.now(),
+      vibe: projectIdea,
+      blueprint,
+      timestamp: Date.now(),
+    };
+    downloadAsMarkdown(savedBlueprint);
+    showToastMessage('Blueprint downloaded as Markdown!');
+  };
+
+  const handleCreateGitHubRepo = async () => {
+    if (!isPro) {
+      showToastMessage('GitHub repo creation is a Pro feature. Upgrade to unlock!');
+      return;
+    }
+
+    if (!githubToken || !repoName) {
+      showToastMessage('Please provide GitHub token and repository name');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const savedBlueprint = {
+        id: Date.now(),
+        vibe: projectIdea,
+        blueprint,
+        timestamp: Date.now(),
+      };
+
+      const repoUrl = await createGitHubRepo(savedBlueprint, githubToken, repoName, isPrivateRepo);
+      showToastMessage('GitHub repository created successfully!');
+      setShowGitHubModal(false);
+      setGithubToken('');
+      setRepoName('');
+      
+      // Open repo in new tab
+      window.open(repoUrl, '_blank');
+    } catch (error: any) {
+      console.error('GitHub repo creation error:', error);
+      showToastMessage(error.message || 'Failed to create GitHub repository');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
