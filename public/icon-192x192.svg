@@ -1,0 +1,15 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="32" fill="url(#gradient)"/>
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+  <!-- Lightning bolt icon -->
+  <path d="M108 48L60 108H96L84 144L132 84H96L108 48Z" fill="white" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Code brackets -->
+  <path d="M48 72L36 96L48 120" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <path d="M144 72L156 96L144 120" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+</svg>
