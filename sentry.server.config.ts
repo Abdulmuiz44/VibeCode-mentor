@@ -1,39 +1,19 @@
+// This file configures the initialization of Sentry on the server.
+// The config you add here will be used whenever the server handles a request.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-  
-  // Note: if you want to override the automatic release value, do not set a
-  // `release` value here - use the environment variable `SENTRY_RELEASE`, so
-  // that it will also get attached to your source maps
-  
-  // Ignore common errors
-  ignoreErrors: [
-    'ResizeObserver loop limit exceeded',
-    'Non-Error promise rejection captured',
-  ],
-  
-  // Filter sensitive data
-  beforeSend(event, hint) {
-    // Don't send events in development
-    if (process.env.NODE_ENV === 'development') {
-      return null;
-    }
-    
-    // Filter out API keys and tokens
-    if (event.request?.headers) {
-      const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
-      sensitiveHeaders.forEach(header => {
-        if (event.request!.headers![header]) {
-          event.request!.headers![header] = '[Filtered]';
-        }
-      });
-    }
-    
-    return event;
-  },
+  dsn: "https://47d8553222c1fca12b2748e412854e93@o4510375746469888.ingest.us.sentry.io/4510375748632576",
+
+  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+  tracesSampleRate: 1,
+
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
+
+  // Enable sending user PII (Personally Identifiable Information)
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
+  sendDefaultPii: true,
 });
