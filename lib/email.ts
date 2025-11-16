@@ -5,7 +5,7 @@ import PaymentConfirmationEmail from '@/emails/PaymentConfirmationEmail';
 import RateLimitWarningEmail from '@/emails/RateLimitWarningEmail';
 import WeeklySummaryEmail from '@/emails/WeeklySummaryEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy_key_for_build');
 
 export interface SendEmailParams {
   to: string;
