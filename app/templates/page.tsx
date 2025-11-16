@@ -11,6 +11,7 @@ const categories = [
   { id: 'web', name: 'Web Apps', icon: '🌐' },
   { id: 'mobile', name: 'Mobile Apps', icon: '📱' },
   { id: 'saas', name: 'SaaS', icon: '🚀' },
+  { id: 'devtools', name: 'Dev Tools', icon: '🔧' },
   { id: 'ecommerce', name: 'E-Commerce', icon: '🛒' },
   { id: 'ai', name: 'AI/ML', icon: '🤖' },
   { id: 'other', name: 'Other', icon: '📦' },
