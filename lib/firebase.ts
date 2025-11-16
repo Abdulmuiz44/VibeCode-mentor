@@ -224,3 +224,58 @@ export const deleteCustomPrompt = async (userId: string, promptId: string): Prom
     return false;
   }
 };
+
+// Save structured blueprint (new format)
+export const saveBlueprintToFirestore = async (userId: string, blueprintData: any): Promise<string> => {
+  if (!db) throw new Error('Firestore not initialized');
+  try {
+    const blueprintId = `blueprint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const docRef = doc(db, 'users', userId, 'blueprints_v2', blueprintId);
+    await setDoc(docRef, {
+      ...blueprintData,
+      id: blueprintId,
+      createdAt: new Date().toISOString(),
+    });
+    return blueprintId;
+  } catch (error) {
+    console.error('Error saving blueprint to Firestore:', error);
+    throw error;
+  }
+};
+
+// Get structured blueprint by ID
+export const getBlueprintFromFirestore = async (userId: string, blueprintId: string): Promise<any> => {
+  if (!db) return null;
+  try {
+    const docRef = doc(db, 'users', userId, 'blueprints_v2', blueprintId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting blueprint from Firestore:', error);
+    return null;
+  }
+};
+
+// Get all structured blueprints
+export const getAllBlueprintsFromFirestore = async (userId: string): Promise<any[]> => {
+  if (!db) return [];
+  try {
+    const blueprintsRef = collection(db, 'users', userId, 'blueprints_v2');
+    const q = query(blueprintsRef, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    
+    const blueprints: any[] = [];
+    querySnapshot.forEach((doc) => {
+      blueprints.push(doc.data());
+    });
+    
+    return blueprints;
+  } catch (error) {
+    console.error('Error getting blueprints from Firestore:', error);
+    return [];
+  }
+};
