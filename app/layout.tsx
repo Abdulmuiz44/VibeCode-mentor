@@ -8,7 +8,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "VibeCode Mentor - AI Project Blueprint Generator",
-  description: "Generate complete project blueprints with AI guidance from Grok",
+  description: "Generate complete project blueprints with AI guidance from Mistral AI",
 };
 
 export default function RootLayout({

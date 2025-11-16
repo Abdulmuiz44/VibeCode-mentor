@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.XAI_API_KEY;
+    const apiKey = process.env.MISTRAL_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'XAI_API_KEY is not configured' },
+        { error: 'MISTRAL_API_KEY is not configured' },
         { status: 500 }
       );
     }
@@ -121,7 +121,7 @@ npm run deploy
 
 Make the blueprint actionable, specific, and production-ready. Include best practices and modern development patterns.`;
 
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,17 +138,18 @@ Make the blueprint actionable, specific, and production-ready. Include best prac
             content: prompt,
           },
         ],
-        model: 'grok-beta',
+        model: 'mistral-large-latest',
         stream: false,
         temperature: 0.7,
+        max_tokens: 4000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('xAI API Error:', errorText);
+      console.error('Mistral API Error:', errorText);
       return NextResponse.json(
-        { error: `xAI API error: ${response.status}` },
+        { error: `Mistral API error: ${response.status}` },
         { status: response.status }
       );
     }

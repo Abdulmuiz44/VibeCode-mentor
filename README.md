@@ -1,10 +1,10 @@
 # VibeCode Mentor
 
-An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using xAI Grok.
+An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using Mistral AI.
 
 ## Features
 
-- 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Grok
+- 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Mistral AI
 - 🎨 **Dark Mode UI**: Clean, minimal interface with Tailwind CSS
 - 📋 **Copy to Clipboard**: One-click blueprint copying
 - 📱 **Responsive Design**: Mobile-first, works on all devices
@@ -16,7 +16,7 @@ An AI-powered project blueprint generator that transforms your ideas into produc
 ### Prerequisites
 
 - Node.js 18+ installed
-- xAI API key (get one at [console.x.ai](https://console.x.ai/))
+- Mistral AI API key (get one at [console.mistral.ai](https://console.mistral.ai/))
 
 ### Installation
 
@@ -36,9 +36,9 @@ npm install
 cp .env.local.example .env.local
 ```
 
-4. Add your xAI API key to `.env.local`:
+4. Add your Mistral AI API key to `.env.local`:
 ```
-XAI_API_KEY=your_xai_api_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
 ```
 
 5. Run the development server:
@@ -58,7 +58,7 @@ npm run dev
 2. Go to [vercel.com](https://vercel.com) and sign in
 3. Click "New Project" and import your repository
 4. Add environment variable:
-   - `XAI_API_KEY`: Your xAI API key
+   - `MISTRAL_API_KEY`: Your Mistral AI API key
 5. Click "Deploy"
 
 ## Tech Stack
@@ -66,7 +66,7 @@ npm run dev
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **AI**: xAI Grok API
+- **AI**: Mistral AI API
 - **Markdown**: react-markdown with remark-gfm
 - **Deployment**: Vercel
 
@@ -77,7 +77,7 @@ vibecode-mentor/
 ├── app/
 │   ├── api/
 │   │   └── mentor/
-│   │       └── route.ts        # API route for Grok integration
+│   │       └── route.ts        # API route for Mistral AI integration
 │   ├── globals.css             # Global styles
 │   ├── layout.tsx              # Root layout
 │   └── page.tsx                # Home page
