@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/firebase';
+import ChatBubble from '@/components/ChatBubble';
 
 interface Vibe {
   vibe: string;
@@ -260,6 +261,9 @@ export default function PromptsPage() {
           </div>
         )}
       </div>
+
+      {/* AI Chat Assistant */}
+      <ChatBubble />
 
       {/* Add Custom Prompt Modal */}
       {showAddModal && (

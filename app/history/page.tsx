@@ -8,6 +8,7 @@ import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useAuth } from '@/context/AuthContext';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
+import ChatBubble from '@/components/ChatBubble';
 
 export default function HistoryPage() {
   const [saves, setSaves] = useState<SavedBlueprint[]>([]);
@@ -341,6 +342,9 @@ export default function HistoryPage() {
           </div>
         )}
       </div>
+
+      {/* AI Chat Assistant */}
+      <ChatBubble />
     </main>
   );
 }

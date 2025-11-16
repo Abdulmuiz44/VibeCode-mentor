@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import BlueprintOutput from '@/components/BlueprintOutput';
+import ChatBubble from '@/components/ChatBubble';
 
 export default function Home() {
   const { user } = useAuth();
@@ -140,6 +141,9 @@ export default function Home() {
 
         {/* Output */}
         {blueprint && <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />}
+
+        {/* AI Chat Assistant */}
+        <ChatBubble blueprintContext={blueprint} />
       </div>
     </main>
   );
