@@ -46,7 +46,7 @@ export default function PromptsPage() {
   const fetchCustomPrompts = async () => {
     if (!user) return;
     try {
-      const prompts = await getCustomPrompts(user.uid);
+      const prompts = await getCustomPrompts(user.id);
       setCustomPrompts(prompts);
     } catch (error) {
       console.error('Failed to fetch custom prompts:', error);
@@ -71,7 +71,7 @@ export default function PromptsPage() {
         timestamp: Date.now(),
       };
 
-      const success = await saveCustomPrompt(user.uid, prompt);
+      const success = await saveCustomPrompt(user.id, prompt);
       if (success) {
         setCustomPrompts([prompt, ...customPrompts]);
         setNewPromptTitle('');
@@ -90,7 +90,7 @@ export default function PromptsPage() {
     if (!user || !confirm('Delete this custom prompt?')) return;
 
     try {
-      const success = await deleteCustomPrompt(user.uid, promptId);
+      const success = await deleteCustomPrompt(user.id, promptId);
       if (success) {
         setCustomPrompts(customPrompts.filter(p => p.id !== promptId));
       }
