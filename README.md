@@ -1,11 +1,14 @@
 # VibeCode Mentor
 
-An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using Mistral AI.
+An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using Mistral AI. **Built for developers, creators, solo founders, and builders.**
 
-## Features
+## ✨ Features
 
 - 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Mistral AI
-- 📋 **Blueprint Templates**: 10+ pre-built templates for common project types
+- 📋 **19 Blueprint Templates**: Developer-focused templates for APIs, CLIs, extensions & more
+- 🔧 **Dev Tools Category**: 9 specialized templates for developers
+- ⌨️ **Keyboard Shortcuts**: Power user features for efficient workflow
+- 📋 **Code Copy Buttons**: One-click copy for all code blocks
 - 💬 **AI Chat Assistant**: Context-aware AI help with unlimited Pro access
 - 🔐 **Google Authentication**: Secure sign-in with Firebase
 - ☁️ **Cloud Sync**: Save and access blueprints from anywhere
@@ -17,6 +20,14 @@ An AI-powered project blueprint generator that transforms your ideas into produc
 - 🎨 **Dark Mode UI**: Clean, minimal interface with Tailwind CSS
 - 🚀 **Next.js 14**: Built with App Router and React Server Components
 - ⚡ **Rate Limiting**: 10 gens/day, 3 chats/day for free users
+
+## 🎯 Perfect For
+
+- **Developers**: Building APIs, CLIs, extensions, and dev tools
+- **Creators**: Launching side projects and products
+- **Solo Founders**: Starting SaaS businesses
+- **Builders**: Shipping projects quickly
+- **Web Developers**: Creating modern web applications
 
 ## Getting Started
 
