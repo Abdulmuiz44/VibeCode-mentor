@@ -8,6 +8,7 @@ import UsageCounter from "@/components/UsageCounter";
 import PWAInstall from "@/components/PWAInstall";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import StructuredData from "@/components/StructuredData";
+import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
@@ -124,6 +125,9 @@ export default function RootLayout({
           
           {/* PWA Install Prompt */}
           <PWAInstall />
+          
+          {/* Keyboard Shortcuts */}
+          <KeyboardShortcuts />
           
           {/* Analytics */}
           <Analytics />
