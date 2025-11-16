@@ -3,12 +3,21 @@ import Link from "next/link";
 import ProBadge from "@/components/ProBadge";
 import AuthButton from "@/components/AuthButton";
 import UsageCounter from "@/components/UsageCounter";
+import PWAInstall from "@/components/PWAInstall";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "VibeCode Mentor - AI Project Blueprint Generator",
   description: "Generate complete project blueprints with AI guidance from Mistral AI",
+  manifest: "/manifest.json",
+  themeColor: "#8b5cf6",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "VibeCode",
+  },
 };
 
 export default function RootLayout({
@@ -70,6 +79,9 @@ export default function RootLayout({
           </header>
 
           {children}
+          
+          {/* PWA Install Prompt */}
+          <PWAInstall />
         </AuthProvider>
       </body>
     </html>

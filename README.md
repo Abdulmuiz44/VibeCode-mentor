@@ -5,11 +5,18 @@ An AI-powered project blueprint generator that transforms your ideas into produc
 ## Features
 
 - 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Mistral AI
+- 📋 **Blueprint Templates**: 10+ pre-built templates for common project types
+- 💬 **AI Chat Assistant**: Context-aware AI help with unlimited Pro access
+- 🔐 **Google Authentication**: Secure sign-in with Firebase
+- ☁️ **Cloud Sync**: Save and access blueprints from anywhere
+- 💎 **Pro Subscription**: $5/month for unlimited features via Flutterwave
+- 📊 **Usage Analytics**: Track your generations and popular vibes
+- 📝 **Prompt Library**: Top 10 community vibes + custom prompts (Pro)
+- 📤 **Export Options**: PDF, Markdown, GitHub repo creation (Pro features)
+- 📱 **PWA Support**: Install as mobile app with offline capabilities
 - 🎨 **Dark Mode UI**: Clean, minimal interface with Tailwind CSS
-- 📋 **Copy to Clipboard**: One-click blueprint copying
-- 📱 **Responsive Design**: Mobile-first, works on all devices
-- ⚡ **Next.js 14**: Built with App Router and React Server Components
-- 🚀 **Vercel Ready**: Deploy in one click
+- 🚀 **Next.js 14**: Built with App Router and React Server Components
+- ⚡ **Rate Limiting**: 10 gens/day, 3 chats/day for free users
 
 ## Getting Started
 
