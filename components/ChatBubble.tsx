@@ -65,7 +65,7 @@ export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
           message: userMessage.content,
           conversationHistory,
           blueprintContext,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 

@@ -7,7 +7,7 @@ import { SavedBlueprint } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useAuth } from '@/context/AuthContext';
-import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
+import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabase';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function HistoryPage() {
@@ -32,7 +32,7 @@ export default function HistoryPage() {
     try {
       if (user) {
         // Load from cloud
-        const cloudBlueprints = await getBlueprintsFromCloud(user.uid);
+        const cloudBlueprints = await getBlueprintsFromCloud(user.id);
         setSaves(cloudBlueprints.sort((a, b) => b.timestamp - a.timestamp));
         setSyncStatus('synced');
       } else {
@@ -128,7 +128,7 @@ export default function HistoryPage() {
     if (confirm('Delete this blueprint?')) {
       // Delete from cloud if logged in
       if (user) {
-        await deleteBlueprintFromCloud(user.uid, id);
+        await deleteBlueprintFromCloud(user.id, id);
       }
       // Delete from local
       deleteSavedBlueprint(id);

@@ -7,7 +7,7 @@ import { saveBlueprint } from '@/utils/localStorage';
 import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
 import { useAuth } from '@/context/AuthContext';
-import { saveBlueprintToCloud } from '@/lib/firebase';
+import { saveBlueprintToCloud } from '@/lib/supabase';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
 
 interface BlueprintOutputProps {
@@ -53,7 +53,7 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
       
       // Save to cloud if logged in
       if (user) {
-        const cloudSaved = await saveBlueprintToCloud(user.uid, savedBlueprint);
+        const cloudSaved = await saveBlueprintToCloud(user.id, savedBlueprint);
         if (cloudSaved) {
           showToastMessage('Saved to cloud! View in History');
         } else {
