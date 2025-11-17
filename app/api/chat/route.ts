@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProStatusFromCloud } from '@/lib/firebase';
+import { getProStatusFromCloud } from '@/lib/supabaseDB';
 
 export const dynamic = 'force-dynamic';
 

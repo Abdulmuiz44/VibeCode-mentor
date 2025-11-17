@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
       // Update Pro status in Firestore (dynamically import to avoid build issues)
       try {
-        const { setProStatusInCloud } = await import('@/lib/firebase');
+        const { setProStatusInCloud } = await import('@/lib/supabase.server');
         const userId = meta?.userId || customer.email;
         await setProStatusInCloud(userId, customer.email, true);
         console.log('Pro status updated in cloud for:', userId);

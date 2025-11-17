@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/firebase';
+import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/supabaseDB';
 import ChatBubble from '@/components/ChatBubble';
 import { getProStatus } from '@/utils/pro';
 

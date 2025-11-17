@@ -7,7 +7,7 @@ import { SavedBlueprint } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useSession } from 'next-auth/react';
-import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
+import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabaseDB';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function HistoryPage() {

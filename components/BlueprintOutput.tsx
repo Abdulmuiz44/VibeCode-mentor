@@ -7,7 +7,7 @@ import { saveBlueprint } from '@/utils/localStorage';
 import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
 import { useSession } from 'next-auth/react';
-import { saveBlueprintToCloud } from '@/lib/firebase';
+import { saveBlueprintToCloud } from '@/lib/supabaseDB';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
 
 interface BlueprintOutputProps {
