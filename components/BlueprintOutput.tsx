@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { saveBlueprint } from '@/utils/localStorage';
 import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
 import { saveBlueprintToCloud } from '@/lib/firebase';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
 
@@ -70,7 +70,10 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   const [repoName, setRepoName] = useState('');
   const [isPrivateRepo, setIsPrivateRepo] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const { user, isPro } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  // Get isPro from local storage for now (will be replaced with Supabase later)
+  const [isPro] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -97,7 +100,7 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
       
       // Save to cloud if logged in
       if (user) {
-        const cloudSaved = await saveBlueprintToCloud(user.uid, savedBlueprint);
+        const cloudSaved = await saveBlueprintToCloud(user.id, savedBlueprint);
         if (cloudSaved) {
           showToastMessage('Saved to cloud! View in History');
         } else {

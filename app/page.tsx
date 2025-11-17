@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const [projectIdea, setProjectIdea] = useState('');
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,7 +59,7 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           projectIdea,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 

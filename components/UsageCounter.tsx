@@ -1,15 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
+import { getProStatus } from '@/utils/pro';
 
 export default function UsageCounter() {
-  const { user, isPro } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [isPro, setIsPro] = useState(false);
   const [usage, setUsage] = useState<{ current: number; limit: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isPro) {
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+    
+    if (proStatus.isPro) {
       setLoading(false);
       return;
     }
@@ -29,7 +35,7 @@ export default function UsageCounter() {
     }
 
     fetchUsage();
-  }, [user, isPro]);
+  }, [user]);
 
   if (loading) {
     return (
