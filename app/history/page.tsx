@@ -6,7 +6,7 @@ import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@
 import { SavedBlueprint } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
 import ChatBubble from '@/components/ChatBubble';
 
@@ -23,12 +23,15 @@ export default function HistoryPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'local' | 'syncing'>('local');
   const router = useRouter();
-  const { user, isPro: authIsPro } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   useEffect(() => {
     loadBlueprints();
-    setIsPro(authIsPro);
-  }, [user, authIsPro]);
+    // Get Pro status from local storage for now
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+  }, [user]);
 
   const loadBlueprints = async () => {
     setSyncing(true);
@@ -37,7 +40,7 @@ export default function HistoryPage() {
     try {
       if (user) {
         // Load from cloud
-        const cloudBlueprints = await getBlueprintsFromCloud(user.uid);
+        const cloudBlueprints = await getBlueprintsFromCloud(user.id);
         setSaves(cloudBlueprints.sort((a, b) => b.timestamp - a.timestamp));
         setSyncStatus('synced');
       } else {
@@ -128,7 +131,7 @@ export default function HistoryPage() {
     if (confirm('Delete this blueprint?')) {
       // Delete from cloud if logged in
       if (user) {
-        await deleteBlueprintFromCloud(user.uid, id);
+        await deleteBlueprintFromCloud(user.id, id);
       }
       // Delete from local
       deleteSavedBlueprint(id);

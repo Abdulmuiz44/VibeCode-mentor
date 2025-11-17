@@ -1,33 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { signInWithGoogle, logOut } from '@/lib/firebase';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function AuthButton() {
-  const { user, loading } = useAuth();
+  const { data: session, status } = useSession();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
+  const loading = status === 'loading';
 
   const handleSignIn = async () => {
-    setSigningIn(true);
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Sign in error:', error);
-      alert('Failed to sign in. Please try again.');
-    } finally {
-      setSigningIn(false);
-    }
+    await signIn('google');
   };
 
   const handleSignOut = async () => {
-    try {
-      await logOut();
-      setShowDropdown(false);
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
+    await signOut();
+    setShowDropdown(false);
   };
 
   if (loading) {
@@ -36,12 +23,11 @@ export default function AuthButton() {
     );
   }
 
-  if (!user) {
+  if (!session) {
     return (
       <button
         onClick={handleSignIn}
-        disabled={signingIn}
-        className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-100 text-gray-900 font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-100 text-gray-900 font-medium rounded-lg transition-colors duration-200"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
@@ -61,10 +47,12 @@ export default function AuthButton() {
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        {signingIn ? 'Signing in...' : 'Sign in with Google'}
+        Sign in with Google
       </button>
     );
   }
+
+  const user = session.user;
 
   return (
     <div className="relative">
@@ -72,10 +60,10 @@ export default function AuthButton() {
         onClick={() => setShowDropdown(!showDropdown)}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
-        {user.photoURL ? (
+        {user.image ? (
           <img
-            src={user.photoURL}
-            alt={user.displayName || 'User'}
+            src={user.image}
+            alt={user.name || 'User'}
             className="w-8 h-8 rounded-full border-2 border-purple-500"
           />
         ) : (
@@ -94,7 +82,7 @@ export default function AuthButton() {
           <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-gray-800 rounded-lg shadow-lg z-20 overflow-hidden">
             <div className="p-4 border-b border-gray-800">
               <p className="text-sm font-semibold text-white truncate">
-                {user.displayName || 'User'}
+                {user.name || 'User'}
               </p>
               <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>

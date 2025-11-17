@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
+import { getProStatus } from '@/utils/pro';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -16,7 +17,9 @@ interface ChatBubbleProps {
 }
 
 export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
-  const { user, isPro } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [isPro, setIsPro] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -25,6 +28,11 @@ export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
   const [limit, setLimit] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -65,7 +73,7 @@ export default function ChatBubble({ blueprintContext }: ChatBubbleProps) {
           message: userMessage.content,
           conversationHistory,
           blueprintContext,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 

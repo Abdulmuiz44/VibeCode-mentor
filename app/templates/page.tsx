@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
+import { getProStatus } from '@/utils/pro';
 import { templates, Template } from '@/lib/templates';
 import ChatBubble from '@/components/ChatBubble';
 
@@ -25,9 +26,16 @@ const complexityColors = {
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const { user, isPro } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [isPro, setIsPro] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+  }, []);
 
   const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
