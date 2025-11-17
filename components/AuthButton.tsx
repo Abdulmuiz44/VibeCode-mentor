@@ -73,6 +73,7 @@ export default function AuthButton() {
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
         {user.photoURL ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.photoURL}
             alt={user.displayName || 'User'}

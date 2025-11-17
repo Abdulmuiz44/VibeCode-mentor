@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
 import { SavedBlueprint } from '@/types/blueprint';
@@ -25,12 +25,7 @@ export default function HistoryPage() {
   const router = useRouter();
   const { user, isPro: authIsPro } = useAuth();
 
-  useEffect(() => {
-    loadBlueprints();
-    setIsPro(authIsPro);
-  }, [user, authIsPro]);
-
-  const loadBlueprints = async () => {
+  const loadBlueprints = useCallback(async () => {
     setSyncing(true);
     setSyncStatus('syncing');
     
@@ -55,7 +50,12 @@ export default function HistoryPage() {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadBlueprints();
+    setIsPro(authIsPro);
+  }, [user, authIsPro, loadBlueprints]);
 
   const handleUpgradeToPro = async () => {
     const email = prompt('Enter your email for Pro subscription:');

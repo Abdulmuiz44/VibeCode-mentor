@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/firebase';
@@ -22,14 +22,7 @@ export default function PromptsPage() {
   const [newPromptText, setNewPromptText] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchTopVibes();
-    if (user && isPro) {
-      fetchCustomPrompts();
-    }
-  }, [user, isPro]);
-
-  const fetchTopVibes = async () => {
+  const fetchTopVibes = useCallback(async () => {
     try {
       const response = await fetch('/api/prompts');
       if (response.ok) {
@@ -41,9 +34,9 @@ export default function PromptsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchCustomPrompts = async () => {
+  const fetchCustomPrompts = useCallback(async () => {
     if (!user) return;
     try {
       const prompts = await getCustomPrompts(user.uid);
@@ -51,7 +44,14 @@ export default function PromptsPage() {
     } catch (error) {
       console.error('Failed to fetch custom prompts:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchTopVibes();
+    if (user && isPro) {
+      fetchCustomPrompts();
+    }
+  }, [user, isPro, fetchTopVibes, fetchCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
     // Store selected prompt in sessionStorage and redirect to home
