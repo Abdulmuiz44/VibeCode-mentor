@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/firebase';
+import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/supabase';
 import ChatBubble from '@/components/ChatBubble';
 
 interface Vibe {
@@ -22,14 +22,7 @@ export default function PromptsPage() {
   const [newPromptText, setNewPromptText] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchTopVibes();
-    if (user && isPro) {
-      fetchCustomPrompts();
-    }
-  }, [user, isPro]);
-
-  const fetchTopVibes = async () => {
+  const fetchTopVibes = useCallback(async () => {
     try {
       const response = await fetch('/api/prompts');
       if (response.ok) {
@@ -41,17 +34,24 @@ export default function PromptsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchCustomPrompts = async () => {
+  const fetchCustomPrompts = useCallback(async () => {
     if (!user) return;
     try {
-      const prompts = await getCustomPrompts(user.uid);
+      const prompts = await getCustomPrompts(user.id);
       setCustomPrompts(prompts);
     } catch (error) {
       console.error('Failed to fetch custom prompts:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchTopVibes();
+    if (user && isPro) {
+      fetchCustomPrompts();
+    }
+  }, [user, isPro, fetchTopVibes, fetchCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
     // Store selected prompt in sessionStorage and redirect to home
@@ -71,7 +71,7 @@ export default function PromptsPage() {
         timestamp: Date.now(),
       };
 
-      const success = await saveCustomPrompt(user.uid, prompt);
+      const success = await saveCustomPrompt(user.id, prompt);
       if (success) {
         setCustomPrompts([prompt, ...customPrompts]);
         setNewPromptTitle('');
@@ -90,7 +90,7 @@ export default function PromptsPage() {
     if (!user || !confirm('Delete this custom prompt?')) return;
 
     try {
-      const success = await deleteCustomPrompt(user.uid, promptId);
+      const success = await deleteCustomPrompt(user.id, promptId);
       if (success) {
         setCustomPrompts(customPrompts.filter(p => p.id !== promptId));
       }

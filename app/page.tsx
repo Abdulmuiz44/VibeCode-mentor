@@ -58,7 +58,7 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           projectIdea,
-          userId: user?.uid || null,
+          userId: user?.id || null,
         }),
       });
 

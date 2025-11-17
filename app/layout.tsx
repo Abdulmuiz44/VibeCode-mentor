@@ -12,6 +12,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://vibecode-mentor.vercel.app'),
   title: "VibeCode Mentor - AI Project Blueprint Generator",
   description: "Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
   keywords: ["AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],

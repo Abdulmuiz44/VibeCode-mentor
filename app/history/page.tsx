@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
 import { SavedBlueprint } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useAuth } from '@/context/AuthContext';
-import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/firebase';
+import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabase';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function HistoryPage() {
@@ -25,19 +25,14 @@ export default function HistoryPage() {
   const router = useRouter();
   const { user, isPro: authIsPro } = useAuth();
 
-  useEffect(() => {
-    loadBlueprints();
-    setIsPro(authIsPro);
-  }, [user, authIsPro]);
-
-  const loadBlueprints = async () => {
+  const loadBlueprints = useCallback(async () => {
     setSyncing(true);
     setSyncStatus('syncing');
     
     try {
       if (user) {
         // Load from cloud
-        const cloudBlueprints = await getBlueprintsFromCloud(user.uid);
+        const cloudBlueprints = await getBlueprintsFromCloud(user.id);
         setSaves(cloudBlueprints.sort((a, b) => b.timestamp - a.timestamp));
         setSyncStatus('synced');
       } else {
@@ -55,7 +50,12 @@ export default function HistoryPage() {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadBlueprints();
+    setIsPro(authIsPro);
+  }, [user, authIsPro, loadBlueprints]);
 
   const handleUpgradeToPro = async () => {
     const email = prompt('Enter your email for Pro subscription:');
@@ -128,7 +128,7 @@ export default function HistoryPage() {
     if (confirm('Delete this blueprint?')) {
       // Delete from cloud if logged in
       if (user) {
-        await deleteBlueprintFromCloud(user.uid, id);
+        await deleteBlueprintFromCloud(user.id, id);
       }
       // Delete from local
       deleteSavedBlueprint(id);
