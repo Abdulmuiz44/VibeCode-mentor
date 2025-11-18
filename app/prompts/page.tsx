@@ -71,6 +71,7 @@ export default function PromptsPage() {
     try {
       const prompt: CustomPrompt = {
         id: Date.now().toString(),
+        user_id: user.id,
         title: newPromptTitle.trim(),
         prompt: newPromptText.trim(),
         timestamp: Date.now(),

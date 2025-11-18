@@ -111,7 +111,7 @@ export const saveCustomPrompt = async (userId: string, prompt: { id: string; tit
   }
 };
 
-export const getCustomPrompts = async (userId: string): Promise<Array<{ id: string; title: string; prompt: string; timestamp: number }>> => {
+export const getCustomPrompts = async (userId: string): Promise<CustomPrompt[]> => {
   if (!supabase) return [];
   try {
     const { data, error } = await supabase.from('prompts').select('*').eq('user_id', userId).order('timestamp', { ascending: false });
@@ -119,7 +119,7 @@ export const getCustomPrompts = async (userId: string): Promise<Array<{ id: stri
       console.error('Supabase getCustomPrompts error:', error);
       return [];
     }
-    return (data as any[]).map((row) => ({ id: row.id, title: row.title, prompt: row.prompt, timestamp: row.timestamp }));
+    return (data as any[]).map((row) => ({ id: row.id, user_id: row.user_id, title: row.title, prompt: row.prompt, timestamp: row.timestamp }));
   } catch (error) {
     console.error('Error fetching custom prompts from supabase:', error);
     return [];
