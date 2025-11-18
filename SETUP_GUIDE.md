@@ -167,21 +167,33 @@ After adding all environment variables and redeploying:
 
 ### Send Welcome Email (After First Sign In)
 ```typescript
-// In your Firebase Auth callback
+// In your NextAuth callback
 import { sendWelcomeEmail } from '@/lib/email';
 
-onAuthStateChanged(auth, async (user) => {
-  if (user && isFirstTimeUser) {
-    await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'welcome',
-        to: user.email,
-        userName: user.displayName || 'there',
-      }),
-    });
-  }
+export default NextAuth({
+  callbacks: {
+    signIn: async ({ user, account, profile, email, credentials }) => {
+      // Check if first time user (query Supabase)
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', user.email)
+        .single();
+      
+      if (!existingUser) {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'welcome',
+            to: user.email,
+            userName: user.name || 'there',
+          }),
+        });
+      }
+      return true;
+    },
+  },
 });
 ```
 
@@ -237,7 +249,7 @@ Once set up, bookmark these:
 2. **Create email sending cron job** (30 minutes)
    - Use Vercel Cron Jobs
    - Weekly summary every Monday 9am
-   - Query Firestore for user stats
+   - Query Supabase for user stats
    
 3. **Set up Sentry alerts** (15 minutes)
    - Configure Slack/Discord webhook

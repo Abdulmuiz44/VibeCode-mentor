@@ -108,7 +108,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">AI Chat Assistant</h3>
               <p className="text-gray-400">
-                Ask questions, refine ideas, and get expert guidance. It's like having a senior dev mentor 24/7.
+                Ask questions, refine ideas, and get expert guidance. It&apos;s like having a senior dev mentor 24/7.
               </p>
             </div>
 
@@ -147,7 +147,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Cloud Sync</h3>
               <p className="text-gray-400">
-                Access your blueprints from any device. Everything syncs automatically with Firebase.
+                Access your blueprints from any device. Everything syncs automatically with Supabase.
               </p>
             </div>
 
@@ -181,7 +181,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Describe Your Idea</h3>
               <p className="text-gray-400">
-                Type what you want to build. "SaaS for managing freelance projects" or "Mobile app for fitness tracking" - anything works.
+                Type what you want to build. &quot;SaaS for managing freelance projects&quot; or &quot;Mobile app for fitness tracking&quot; - anything works.
               </p>
             </div>
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
             </div>
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <BlueprintOutput
-                blueprint={`# Mobile Fitness Tracker\n\n## Tech Stack\n- React Native\n- Expo\n- Firebase\n\n## Features\n- User sign up/login\n- Activity tracking\n- Progress charts\n- Push notifications\n\n## Implementation Steps\n1. Initialize Expo project\n2. Set up Firebase auth\n3. Build activity tracking screens\n4. Add chart visualizations\n5. Implement push notifications`}
+                blueprint={`# Mobile Fitness Tracker\n\n## Tech Stack\n- React Native\n- Expo\n- Supabase\n\n## Features\n- User sign up/login\n- Activity tracking\n- Progress charts\n- Push notifications\n\n## Implementation Steps\n1. Initialize Expo project\n2. Configure Supabase auth\n3. Build activity tracking screens\n4. Add chart visualizations\n5. Implement push notifications`}
                 projectIdea="Mobile app for fitness tracking"
               />
             </div>
@@ -366,7 +366,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "This tool saved me weeks of planning. The blueprints are so detailed, I just follow them and ship. Game changer for solo founders!"
+                &quot;This tool saved me weeks of planning. The blueprints are so detailed, I just follow them and ship. Game changer for solo founders!&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -388,7 +388,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "The AI chat is incredible. It's like pair programming with a senior dev who knows everything about modern web development."
+                &quot;The AI chat is incredible. It&apos;s like pair programming with a senior dev who knows everything about modern web development.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -410,7 +410,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "Templates are gold. Started my SaaS project with the template and had MVP in 2 weeks. Worth every penny of the Pro plan."
+                &quot;Templates are gold. Started my SaaS project with the template and had MVP in 2 weeks. Worth every penny of the Pro plan.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center text-white font-bold">

@@ -182,7 +182,7 @@ stats:users:{date}             → Set of unique users (expires 30d)
 - Cannot be bypassed by clearing localStorage
 - Server-side enforcement with Redis
 - IP-based fallback for anonymous users
-- Pro status verified server-side with Firebase
+- Pro status verified server-side with Supabase
 
 ### Admin Dashboard
 - Password protected

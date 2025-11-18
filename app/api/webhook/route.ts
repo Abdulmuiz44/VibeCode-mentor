@@ -18,7 +18,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    const payload = await request.json();
+    const rawBody = await request.text();
+
+    // Verify webhook signature using raw body
+    if (!verifyWebhookSignature(rawBody, signature, secretHash)) {
+      console.error('Invalid webhook signature');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const payload = JSON.parse(rawBody);
     
     // Handle successful payment
     if (payload.event === 'charge.completed' && payload.data.status === 'successful') {
@@ -31,7 +39,7 @@ export async function POST(request: NextRequest) {
         currency,
       });
 
-      // Update Pro status in Firestore (dynamically import to avoid build issues)
+      // Update Pro status in Supabase (server-side call via admin client)
       try {
         const { setProStatusInCloud } = await import('@/lib/supabase.server');
         const userId = meta?.userId || customer.email;
@@ -63,11 +71,8 @@ export async function POST(request: NextRequest) {
 }
 
 // Verify Flutterwave webhook signature
-function verifyWebhookSignature(payload: any, signature: string, secret: string): boolean {
-  const hash = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(payload))
-    .digest('hex');
-  
-  return hash === signature;
+function verifyWebhookSignature(rawBody: string, signature: string | null, secret: string): boolean {
+  if (!signature) return false;
+  const hmac = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  return hmac === signature;
 }

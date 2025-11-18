@@ -1,47 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProStatusFromCloud } from '@/lib/supabaseDB';
+import { checkChatRateLimit } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
-
-// Chat rate limiting - stored in memory (consider using Redis for production)
-const chatRateLimits = new Map<string, { count: number; resetAt: number }>();
-
-function checkChatRateLimit(userId: string | null, ip: string, isPro: boolean): {
-  allowed: boolean;
-  remaining: number;
-  limit: number;
-} {
-  // Pro users have unlimited chats
-  if (isPro) {
-    return { allowed: true, remaining: 999, limit: 999 };
-  }
-
-  const identifier = userId || ip;
-  const now = Date.now();
-  const dailyLimit = 3;
-
-  // Get or create rate limit entry
-  let entry = chatRateLimits.get(identifier);
-
-  // Reset if it's a new day
-  if (!entry || now > entry.resetAt) {
-    const tomorrow = new Date();
-    tomorrow.setHours(24, 0, 0, 0);
-    entry = { count: 0, resetAt: tomorrow.getTime() };
-    chatRateLimits.set(identifier, entry);
-  }
-
-  // Check limit
-  if (entry.count >= dailyLimit) {
-    return { allowed: false, remaining: 0, limit: dailyLimit };
-  }
-
-  // Increment count
-  entry.count += 1;
-  chatRateLimits.set(identifier, entry);
-
-  return { allowed: true, remaining: dailyLimit - entry.count, limit: dailyLimit };
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,8 +23,13 @@ export async function POST(request: NextRequest) {
     // Check if user is Pro
     const isPro = userId ? await getProStatusFromCloud(userId) : false;
 
-    // Rate limiting for free tier
-    const rateLimit = checkChatRateLimit(userId, ip, isPro);
+    // Rate limiting for free tier (KV-backed)
+    const rateLimitRes = await checkChatRateLimit(userId, ip);
+    const rateLimit = {
+      allowed: rateLimitRes.allowed,
+      remaining: rateLimitRes.limit - rateLimitRes.current,
+      limit: rateLimitRes.limit,
+    };
     
     if (!rateLimit.allowed) {
       return NextResponse.json(

@@ -44,6 +44,36 @@ export async function checkRateLimit(userId: string | null, ip: string): Promise
 }
 
 /**
+ * Chat rate limiting (free tier) - 3 per day.
+ */
+export async function checkChatRateLimit(userId: string | null, ip: string): Promise<{ allowed: boolean; current: number; limit: number }> {
+  if (!isKVConfigured) {
+    // In development without KV, allow all requests
+    return { allowed: true, current: 0, limit: 3 };
+  }
+
+  const identifier = userId || ip;
+  const date = new Date().toISOString().split('T')[0];
+  const key = `chat:${identifier}:${date}`;
+  const limit = 3;
+
+  try {
+    const current = await kv.get<number>(key) || 0;
+    if (current >= limit) {
+      return { allowed: false, current, limit };
+    }
+
+    const newCount = await kv.incr(key);
+    await kv.expireat(key, Math.floor(new Date().setHours(23, 59, 59, 999) / 1000));
+
+    return { allowed: true, current: newCount, limit };
+  } catch (error) {
+    console.error('Chat rate limit check error:', error);
+    return { allowed: true, current: 0, limit };
+  }
+}
+
+/**
  * Get current usage count for a user/IP
  */
 export async function getCurrentUsage(userId: string | null, ip: string): Promise<number> {

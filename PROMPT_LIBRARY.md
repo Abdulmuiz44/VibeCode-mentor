@@ -13,14 +13,14 @@ The Prompt Library displays the top 10 most popular project vibes from the commu
 - Auto-focus on textarea after selection
 
 ### 2. **Custom Prompts** (Pro Users Only)
-- Save unlimited custom prompts to Firestore
+- Save unlimited custom prompts to Supabase
 - Each prompt has:
   - Title (short description)
   - Full prompt text
   - Timestamp (for sorting)
 - Delete custom prompts
 - Use custom prompts (pre-fills home page)
-- Synced across devices via Firebase
+- Synced across devices via Supabase
 
 ### 3. **Free User Experience**
 - View top 10 popular vibes
@@ -68,19 +68,20 @@ Returns top vibes from analytics:
 }
 ```
 
-### Firebase Functions
+### Supabase Database Operations
 
 #### `saveCustomPrompt(userId, prompt)`
 ```typescript
 interface CustomPrompt {
-  id: string;           // timestamp-based
+  id: string;           // UUID
+  user_id: string;      // foreign key to users table
   title: string;        // short name
   prompt: string;       // full text
-  timestamp: number;    // for sorting
+  timestamp: string;    // ISO timestamp
 }
 ```
 
-Stores in: `users/{uid}/prompts/{promptId}`
+Stores in: `prompts` table
 
 #### `getCustomPrompts(userId)`
 Returns all custom prompts for user, sorted by timestamp (newest first).
@@ -171,18 +172,33 @@ Order: [UsageCounter] [ProBadge] [Prompts] [History] [AuthButton]
 
 ### Custom Prompts
 1. Pro user creates custom prompt
-2. Saved to Firestore `users/{uid}/prompts/`
+2. Saved to Supabase `prompts` table
 3. Listed in prompts page
 4. Synced across all user's devices
 5. Persists indefinitely (no expiry)
 
-## Firestore Security Rules
+## Supabase RLS Policies
 
-Add to `firestore.rules`:
+Add to `prompts` table RLS policies:
 ```
-match /users/{userId}/prompts/{promptId} {
-  allow read, write: if request.auth != null && request.auth.uid == userId;
-}
+-- Enable RLS
+ALTER TABLE prompts ENABLE ROW LEVEL SECURITY;
+
+-- Policy for reading prompts
+CREATE POLICY "Users can view their own prompts" ON prompts
+FOR SELECT USING (auth.uid() = user_id);
+
+-- Policy for inserting prompts
+CREATE POLICY "Users can insert their own prompts" ON prompts
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Policy for updating prompts
+CREATE POLICY "Users can update their own prompts" ON prompts
+FOR UPDATE USING (auth.uid() = user_id);
+
+-- Policy for deleting prompts
+CREATE POLICY "Users can delete their own prompts" ON prompts
+FOR DELETE USING (auth.uid() = user_id);
 ```
 
 ## Benefits
@@ -273,7 +289,7 @@ match /users/{userId}/prompts/{promptId} {
 
 - ✅ Code committed and pushed
 - ✅ Build passing
-- ⏳ Update Firestore rules in Firebase Console
+- ⏳ Update Supabase RLS policies in Supabase Dashboard
 - ⏳ Deploy to Vercel
 - ⏳ Test Pro user flow live
 - ⏳ Monitor analytics for adoption
@@ -283,7 +299,7 @@ match /users/{userId}/prompts/{promptId} {
 - **Rate Limiting**: Popular vibes show demand patterns
 - **Admin Dashboard**: View top vibes analytics
 - **Pro Subscription**: Custom prompts are Pro feature
-- **Firebase Sync**: Custom prompts sync across devices
+- **Supabase Sync**: Custom prompts sync across devices
 
 ---
 
