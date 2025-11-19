@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo') ?? '/';
+  const callbackUrl = useMemo(() => returnTo || '/', [returnTo]);
   const user = session?.user;
   const [projectIdea, setProjectIdea] = useState('');
   const [blueprint, setBlueprint] = useState('');
@@ -15,6 +20,11 @@ export default function Home() {
 
   // Load blueprint from history if available
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace(`/auth?returnTo=${encodeURIComponent(callbackUrl)}`);
+      return;
+    }
+
     const loadedData = sessionStorage.getItem('loadedBlueprint');
     if (loadedData) {
       try {
@@ -37,7 +47,7 @@ export default function Home() {
         document.getElementById('projectIdea')?.focus();
       }, 100);
     }
-  }, []);
+  }, [callbackUrl, router, status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
