@@ -1,12 +1,13 @@
 'use client';
 
-
 import Link from 'next/link';
 import { useState } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
+import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
+  const { openUpgradeModal } = useProUpgradeModal();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
@@ -338,12 +339,13 @@ export default function LandingPage() {
                   <span className="text-white font-medium">Custom prompts library</span>
                 </li>
               </ul>
-              <Link
-                href="/"
-                className="block w-full py-3 px-6 text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-purple-500/50"
+              <button
+                type="button"
+                onClick={() => openUpgradeModal({ source: 'Landing Page' })}
+                className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
               >
                 Upgrade to Pro →
-              </Link>
+              </button>
             </div>
           </div>
         </div>
