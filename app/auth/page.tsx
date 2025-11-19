@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 
-export default function AuthPage() {
+function AuthPageClient() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -135,5 +135,13 @@ export default function AuthPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <AuthPageClient />
+    </Suspense>
   );
 }
