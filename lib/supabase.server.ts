@@ -29,7 +29,9 @@ export const setProStatusInCloud = async (userId: string, email: string, isPro: 
   }
 };
 
-export default {
+const supabaseAdminHelpers = {
   supabaseAdmin,
   setProStatusInCloud,
 };
+
+export default supabaseAdminHelpers;

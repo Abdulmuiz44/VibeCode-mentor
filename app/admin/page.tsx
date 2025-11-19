@@ -19,11 +19,14 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if already authenticated via session
     const authStatus = sessionStorage.getItem('admin_authenticated');
-    if (authStatus === 'true') {
+    const token = sessionStorage.getItem('admin_token');
+    if (authStatus === 'true' && token) {
       setIsAuthenticated(true);
-      fetchAnalytics();
+      fetchAnalytics(token);
+    } else {
+      sessionStorage.removeItem('admin_authenticated');
+      sessionStorage.removeItem('admin_token');
     }
   }, []);
 
@@ -39,13 +42,16 @@ export default function AdminDashboard() {
         body: JSON.stringify({ password }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.token) {
         sessionStorage.setItem('admin_authenticated', 'true');
+        sessionStorage.setItem('admin_token', data.token);
         setIsAuthenticated(true);
         setPassword('');
-        fetchAnalytics();
+        fetchAnalytics(data.token);
       } else {
-        setError('Invalid password');
+        setError(data.error || 'Invalid password');
       }
     } catch (err) {
       setError('Authentication failed');
@@ -54,10 +60,14 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (token: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/analytics');
+      const response = await fetch('/api/admin/analytics', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setAnalytics(data);
@@ -73,6 +83,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('admin_authenticated');
+    sessionStorage.removeItem('admin_token');
     setIsAuthenticated(false);
     setAnalytics(null);
   };

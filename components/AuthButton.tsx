@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function AuthButton() {
@@ -61,10 +62,12 @@ export default function AuthButton() {
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt={user.name || 'User'}
-            className="w-8 h-8 rounded-full border-2 border-purple-500"
+            width={32}
+            height={32}
+            className="rounded-full border-2 border-purple-500"
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">

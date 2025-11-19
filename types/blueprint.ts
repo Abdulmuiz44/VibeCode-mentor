@@ -4,3 +4,11 @@ export interface SavedBlueprint {
   blueprint: string;
   timestamp: number;
 }
+
+export interface CollaborationComment {
+  id: number;
+  blueprintId: number;
+  author: string;
+  content: string;
+  timestamp: number;
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/supabaseDB';
@@ -25,15 +25,6 @@ export default function PromptsPage() {
   const [newPromptText, setNewPromptText] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchTopVibes();
-    const proStatus = getProStatus();
-    setIsPro(proStatus.isPro);
-    if (user && proStatus.isPro) {
-      fetchCustomPrompts();
-    }
-  }, [user]);
-
   const fetchTopVibes = async () => {
     try {
       const response = await fetch('/api/prompts');
@@ -48,7 +39,7 @@ export default function PromptsPage() {
     }
   };
 
-  const fetchCustomPrompts = async () => {
+  const fetchCustomPrompts = useCallback(async () => {
     if (!user) return;
     try {
       const prompts = await getCustomPrompts(user.id);
@@ -56,7 +47,16 @@ export default function PromptsPage() {
     } catch (error) {
       console.error('Failed to fetch custom prompts:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchTopVibes();
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+    if (user && proStatus.isPro) {
+      fetchCustomPrompts();
+    }
+  }, [user, fetchCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
     // Store selected prompt in sessionStorage and redirect to home

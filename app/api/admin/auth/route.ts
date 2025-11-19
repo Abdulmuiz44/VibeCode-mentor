@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateAdminToken } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
     
     if (password === adminPassword) {
-      return NextResponse.json({ success: true });
+      const token = generateAdminToken(adminPassword);
+      return NextResponse.json({ success: true, token });
     }
     
     return NextResponse.json(

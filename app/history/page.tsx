@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
-import { SavedBlueprint } from '@/types/blueprint';
+import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
 import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useSession } from 'next-auth/react';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabaseDB';
+import { fetchCollaborationComments, postCollaborationComment } from '@/utils/collaboration';
 import ChatBubble from '@/components/ChatBubble';
 
 export default function HistoryPage() {
@@ -25,15 +26,15 @@ export default function HistoryPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
+  const [activeBlueprintComments, setActiveBlueprintComments] = useState<SavedBlueprint | null>(null);
+  const [comments, setComments] = useState<CollaborationComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentInput, setCommentInput] = useState('');
+  const [commentError, setCommentError] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
 
-  useEffect(() => {
-    loadBlueprints();
-    // Get Pro status from local storage for now
-    const proStatus = getProStatus();
-    setIsPro(proStatus.isPro);
-  }, [user]);
-
-  const loadBlueprints = async () => {
+  const loadBlueprints = useCallback(async () => {
     setSyncing(true);
     setSyncStatus('syncing');
     
@@ -58,7 +59,45 @@ export default function HistoryPage() {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadBlueprints();
+    // Get Pro status from local storage for now
+    const proStatus = getProStatus();
+    setIsPro(proStatus.isPro);
+  }, [user, loadBlueprints]);
+
+  useEffect(() => {
+    if (!activeBlueprintComments || !user) {
+      setComments([]);
+      setCommentsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setCommentsLoading(true);
+    setCommentError('');
+
+    fetchCollaborationComments(activeBlueprintComments.id)
+      .then((data) => {
+        if (!isMounted) return;
+        setComments(data);
+      })
+      .catch((error) => {
+        console.error('Failed to load comments:', error);
+        if (isMounted) {
+          setCommentError('Failed to load comments');
+        }
+      })
+      .finally(() => {
+        if (isMounted) setCommentsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeBlueprintComments, user]);
 
   const handleUpgradeToPro = async () => {
     const email = prompt('Enter your email for Pro subscription:');
@@ -137,6 +176,43 @@ export default function HistoryPage() {
       deleteSavedBlueprint(id);
       setSaves(saves.filter(s => s.id !== id));
       showToastMessage('Blueprint deleted');
+    }
+  };
+
+  const openComments = (save: SavedBlueprint) => {
+    setActiveBlueprintComments(save);
+    setShowCommentsPanel(true);
+  };
+
+  const closeCommentsPanel = () => {
+    setShowCommentsPanel(false);
+    setCommentInput('');
+    setCommentError('');
+    setActiveBlueprintComments(null);
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!user || !activeBlueprintComments) return;
+    const trimmed = commentInput.trim();
+    if (!trimmed) return;
+
+    setCommentSubmitting(true);
+    setCommentError('');
+
+    try {
+      const comment = await postCollaborationComment(activeBlueprintComments.id, trimmed);
+      if (comment) {
+        setComments((prev) => [...prev, comment]);
+        setCommentInput('');
+        showToastMessage('Comment added to collaboration thread');
+      } else {
+        setCommentError('Unable to save comment');
+      }
+    } catch (error) {
+      console.error('Comment submit error:', error);
+      setCommentError('Failed to post comment');
+    } finally {
+      setCommentSubmitting(false);
     }
   };
 
@@ -294,9 +370,85 @@ export default function HistoryPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
+                  <button
+                    onClick={() => openComments(save)}
+                    className="px-4 py-2 bg-purple-900/60 hover:bg-purple-900 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                    title="View comments"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 20h9" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4h9m-9 8h7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {showCommentsPanel && activeBlueprintComments && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl flex flex-col max-h-[80vh]">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+                <div>
+                  <p className="text-sm text-gray-400">Collaboration thread</p>
+                  <h3 className="text-lg font-semibold text-white line-clamp-1">{activeBlueprintComments.vibe}</h3>
+                </div>
+                <button
+                  onClick={closeCommentsPanel}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4" style={{ minHeight: 200 }}>
+                {commentsLoading ? (
+                  <p className="text-sm text-gray-400">Loading comments...</p>
+                ) : commentError ? (
+                  <p className="text-sm text-red-400">{commentError}</p>
+                ) : comments.length === 0 ? (
+                  <p className="text-sm text-gray-400">No comments yet. Start the discussion.</p>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="bg-black/40 border border-gray-800 rounded-2xl p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-400">{comment.author || 'Guest'}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(comment.timestamp).toLocaleString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-white whitespace-pre-line">{comment.content}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="border-t border-gray-800 px-6 py-4 space-y-2">
+                <textarea
+                  value={commentInput}
+                  onChange={(e) => setCommentInput(e.target.value)}
+                  rows={3}
+                  placeholder="Share feedback or ask a collaborator..."
+                  className="w-full bg-black/60 border border-gray-700 rounded-2xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  disabled={!user || commentSubmitting}
+                />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">{user?.email || 'Sign in to comment'}</p>
+                  <button
+                    onClick={handleCommentSubmit}
+                    disabled={!commentInput.trim() || commentSubmitting}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {commentSubmitting ? 'Posting…' : 'Post Comment'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

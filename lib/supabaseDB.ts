@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { SavedBlueprint } from '@/types/blueprint';
+import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
 
 // Client-side operations using anon key
 export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBlueprint) => {
@@ -87,6 +87,69 @@ export const syncLocalToCloud = async (userId: string, localBlueprints: SavedBlu
   }
 };
 
+export const getCollaborationComments = async (blueprintId: number): Promise<CollaborationComment[]> => {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('blueprint_id', blueprintId)
+      .order('timestamp', { ascending: true });
+
+    if (error) {
+      console.error('Supabase getCollaborationComments error:', error);
+      return [];
+    }
+
+    return (data as any[]).map((row) => ({
+      id: row.id,
+      blueprintId: row.blueprint_id,
+      author: row.author,
+      content: row.content,
+      timestamp: row.timestamp,
+    }));
+  } catch (error) {
+    console.error('Error fetching collaboration comments:', error);
+    return [];
+  }
+};
+
+export const addCollaborationComment = async (
+  blueprintId: number,
+  author: string,
+  content: string
+): Promise<CollaborationComment | null> => {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({
+        blueprint_id: blueprintId,
+        author,
+        content,
+        timestamp: Date.now(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase addCollaborationComment error:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      blueprintId: data.blueprint_id,
+      author: data.author,
+      content: data.content,
+      timestamp: data.timestamp,
+    };
+  } catch (error) {
+    console.error('Error adding collaboration comment:', error);
+    return null;
+  }
+};
+
 // Prompts
 export type CustomPrompt = {
   id: string;
@@ -157,7 +220,7 @@ export const getProStatusFromCloud = async (userId: string): Promise<boolean> =>
   }
 };
 
-export default {
+const supabaseClientHelpers = {
   saveBlueprintToCloud,
   getBlueprintsFromCloud,
   deleteBlueprintFromCloud,
@@ -166,4 +229,8 @@ export default {
   getCustomPrompts,
   deleteCustomPrompt,
   getProStatusFromCloud,
+  getCollaborationComments,
+  addCollaborationComment,
 };
+
+export default supabaseClientHelpers;
