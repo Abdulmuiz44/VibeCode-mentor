@@ -9,13 +9,13 @@ import AuthButton from '@/components/AuthButton';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 export default function MainHeader() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const { openUpgradeModal } = useProUpgradeModal();
 
   const isAuthRoute = pathname?.startsWith('/auth');
   const isLandingRoute = pathname === '/landing';
-  const shouldHideHeader = !session?.user || isLandingRoute || isAuthRoute;
+  const shouldHideHeader = status !== 'authenticated' || !session?.user || isLandingRoute || isAuthRoute;
 
   if (shouldHideHeader) return null;
 
