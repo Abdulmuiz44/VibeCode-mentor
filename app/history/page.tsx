@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabaseDB';
 import { fetchCollaborationComments, postCollaborationComment } from '@/utils/collaboration';
 import ChatBubble from '@/components/ChatBubble';
+import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 export default function HistoryPage() {
   const [saves, setSaves] = useState<SavedBlueprint[]>([]);
@@ -20,12 +21,12 @@ export default function HistoryPage() {
   const [githubToken, setGithubToken] = useState('');
   const [selectedBlueprint, setSelectedBlueprint] = useState<SavedBlueprint | null>(null);
   const [loading, setLoading] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'local' | 'syncing'>('local');
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
+  const { openUpgradeModal } = useProUpgradeModal();
   const [activeBlueprintComments, setActiveBlueprintComments] = useState<SavedBlueprint | null>(null);
   const [comments, setComments] = useState<CollaborationComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -98,37 +99,6 @@ export default function HistoryPage() {
       isMounted = false;
     };
   }, [activeBlueprintComments, user]);
-
-  const handleUpgradeToPro = async () => {
-    const email = prompt('Enter your email for Pro subscription:');
-    if (!email) return;
-
-    setCheckoutLoading(true);
-    try {
-      // Store email for after payment
-      localStorage.setItem('checkout-email', email);
-
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: email.split('@')[0] }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success && data.checkoutUrl) {
-        // Redirect to Flutterwave checkout
-        window.location.href = data.checkoutUrl;
-      } else {
-        showToastMessage('Failed to start checkout. Please try again.');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      showToastMessage('Error starting checkout');
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   const handleLoad = (save: SavedBlueprint) => {
     // Store in sessionStorage to prefill on home page
@@ -271,11 +241,10 @@ export default function HistoryPage() {
           {!isPro && (
             <div className="mt-6">
               <button
-                onClick={handleUpgradeToPro}
-                disabled={checkoutLoading}
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/50"
+                onClick={() => openUpgradeModal({ source: 'History Page' })}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg shadow-purple-500/50"
               >
-                {checkoutLoading ? 'Loading...' : '✨ Upgrade to Pro - $5/month'}
+                ✨ Upgrade to Pro - $5/month
               </button>
               <p className="text-sm text-gray-500 mt-2">
                 Unlock unlimited saves + GitHub export

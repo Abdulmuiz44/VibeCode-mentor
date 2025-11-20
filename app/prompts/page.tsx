@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/supabaseDB';
 import ChatBubble from '@/components/ChatBubble';
 import { getProStatus } from '@/utils/pro';
+import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 interface Vibe {
   vibe: string;
@@ -16,6 +17,7 @@ export default function PromptsPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
+  const { openUpgradeModal } = useProUpgradeModal();
   const [isPro, setIsPro] = useState(false);
   const [topVibes, setTopVibes] = useState<Vibe[]>([]);
   const [customPrompts, setCustomPrompts] = useState<CustomPrompt[]>([]);
@@ -245,7 +247,7 @@ export default function PromptsPage() {
               Upgrade to Pro to save unlimited custom prompts and access them anytime
             </p>
             <button
-              onClick={() => router.push('/?pro=true')}
+              onClick={() => openUpgradeModal({ source: 'Prompts Page' })}
               className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105"
             >
               Upgrade to Pro - $5/month

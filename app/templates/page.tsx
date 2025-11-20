@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { getProStatus } from '@/utils/pro';
 import { templates, Template } from '@/lib/templates';
 import ChatBubble from '@/components/ChatBubble';
+import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 const categories = [
   { id: 'all', name: 'All Templates', icon: '🎯' },
@@ -28,6 +29,7 @@ export default function TemplatesPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
+  const { openUpgradeModal } = useProUpgradeModal();
   const [isPro, setIsPro] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,7 +207,7 @@ export default function TemplatesPage() {
               Get access to {templates.filter(t => t.isPro).length} advanced templates plus unlimited generations and chat
             </p>
             <button
-              onClick={() => router.push('/?pro=true')}
+              onClick={() => openUpgradeModal({ source: 'Templates Page' })}
               className="px-6 md:px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 text-sm md:text-base"
             >
               Upgrade to Pro - $5/month
