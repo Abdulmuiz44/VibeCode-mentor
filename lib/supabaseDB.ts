@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
+import { SavedBlueprint, CollaborationComment, CustomPrompt } from '@/types/blueprint';
 
 // Client-side operations using anon key
 export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBlueprint) => {
@@ -151,15 +151,7 @@ export const addCollaborationComment = async (
 };
 
 // Prompts
-export type CustomPrompt = {
-  id: string;
-  user_id: string;
-  title: string;
-  prompt: string;
-  timestamp: number;
-};
-
-export const saveCustomPrompt = async (userId: string, prompt: { id: string; title: string; prompt: string; timestamp: number }): Promise<boolean> => {
+export const saveCustomPrompt = async (userId: string, prompt: CustomPrompt): Promise<boolean> => {
   if (!supabase) return false;
   try {
     const { error } = await supabase.from('prompts').insert([{ id: prompt.id, user_id: userId, title: prompt.title, prompt: prompt.prompt, timestamp: prompt.timestamp }]);

@@ -12,3 +12,11 @@ export interface CollaborationComment {
   content: string;
   timestamp: number;
 }
+
+export interface CustomPrompt {
+  id: string;
+  user_id: string;
+  title: string;
+  prompt: string;
+  timestamp: number;
+}

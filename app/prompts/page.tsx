@@ -3,10 +3,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt, CustomPrompt } from '@/lib/supabaseDB';
+import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt } from '@/lib/supabaseDB';
 import ChatBubble from '@/components/ChatBubble';
 import { getProStatus } from '@/utils/pro';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
+import {
+  getSavedPrompts,
+  savePromptLocally,
+  deletePromptLocally,
+  mergePrompts,
+  persistPromptsLocally,
+} from '@/utils/localPrompts';
+import { CustomPrompt } from '@/types/blueprint';
 
 interface Vibe {
   vibe: string;
@@ -41,24 +49,29 @@ export default function PromptsPage() {
     }
   };
 
-  const fetchCustomPrompts = useCallback(async () => {
-    if (!user) return;
-    try {
-      const prompts = await getCustomPrompts(user.id);
-      setCustomPrompts(prompts);
-    } catch (error) {
-      console.error('Failed to fetch custom prompts:', error);
+  const loadCustomPrompts = useCallback(async () => {
+    const localPrompts = getSavedPrompts();
+    let mergedPrompts = localPrompts;
+
+    if (user && isPro) {
+      try {
+        const remotePrompts = await getCustomPrompts(user.id);
+        persistPromptsLocally(remotePrompts);
+        mergedPrompts = mergePrompts(localPrompts, remotePrompts);
+      } catch (error) {
+        console.error('Failed to fetch custom prompts:', error);
+      }
     }
-  }, [user]);
+
+    setCustomPrompts(mergedPrompts);
+  }, [user, isPro]);
 
   useEffect(() => {
     fetchTopVibes();
     const proStatus = getProStatus();
     setIsPro(proStatus.isPro);
-    if (user && proStatus.isPro) {
-      fetchCustomPrompts();
-    }
-  }, [user, fetchCustomPrompts]);
+    loadCustomPrompts();
+  }, [user, loadCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
     // Store selected prompt in sessionStorage and redirect to home
@@ -70,22 +83,27 @@ export default function PromptsPage() {
     if (!user || !isPro || !newPromptTitle.trim() || !newPromptText.trim()) return;
 
     setSaving(true);
-    try {
-      const prompt: CustomPrompt = {
-        id: Date.now().toString(),
-        user_id: user.id,
-        title: newPromptTitle.trim(),
-        prompt: newPromptText.trim(),
-        timestamp: Date.now(),
-      };
+    const prompt: CustomPrompt = {
+      id: Date.now().toString(),
+      user_id: user.id,
+      title: newPromptTitle.trim(),
+      prompt: newPromptText.trim(),
+      timestamp: Date.now(),
+    };
 
+    const localUpdated = savePromptLocally(prompt);
+    setCustomPrompts((prev) => mergePrompts(localUpdated, prev));
+
+    try {
       const success = await saveCustomPrompt(user.id, prompt);
-      if (success) {
-        setCustomPrompts([prompt, ...customPrompts]);
-        setNewPromptTitle('');
-        setNewPromptText('');
-        setShowAddModal(false);
+      if (!success) {
+        throw new Error('Cloud save failed');
       }
+
+      await loadCustomPrompts();
+      setNewPromptTitle('');
+      setNewPromptText('');
+      setShowAddModal(false);
     } catch (error) {
       console.error('Failed to save custom prompt:', error);
       alert('Failed to save custom prompt');
@@ -97,10 +115,13 @@ export default function PromptsPage() {
   const handleDeletePrompt = async (promptId: string) => {
     if (!user || !confirm('Delete this custom prompt?')) return;
 
+    const localUpdated = deletePromptLocally(promptId);
+    setCustomPrompts((prev) => mergePrompts(localUpdated, prev));
+
     try {
       const success = await deleteCustomPrompt(user.id, promptId);
       if (success) {
-        setCustomPrompts(customPrompts.filter(p => p.id !== promptId));
+        await loadCustomPrompts();
       }
     } catch (error) {
       console.error('Failed to delete prompt:', error);
