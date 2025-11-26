@@ -3,24 +3,29 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    // Allow the request to proceed
+    // Check if user is visiting the root path and is NOT authenticated
+    // req.nextauth.token is populated if the user is authenticated
+    const isRootPath = req.nextUrl.pathname === '/';
+    const isAuthenticated = !!req.nextauth.token;
+
+    if (isRootPath && !isAuthenticated) {
+      return NextResponse.redirect(new URL('/landing', req.url));
+    }
+
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
-        // For now, allow all routes (we'll implement protection in components)
-        // This middleware is ready for future route-level protection
+      authorized: ({ token }) => {
+        // Return true to allow the middleware function to execute
+        // We handle the specific redirect logic inside the middleware function
         return true;
       },
     },
   }
 );
 
-// Note: Route protection is currently handled at the component level
-// If you want to protect specific routes, update the config matcher below
 export const config = {
-  matcher: [],
-  // Example: To protect routes, uncomment and customize:
-  // matcher: ['/history', '/prompts', '/api/mentor', '/api/chat'],
+  // Run middleware on the root path to handle the redirect
+  matcher: ['/'],
 };
