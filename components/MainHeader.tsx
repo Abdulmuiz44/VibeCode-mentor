@@ -45,16 +45,11 @@ export default function MainHeader() {
               </svg>
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 to-purple-500">
-                <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
+              <img
+                src="/logo.png"
+                alt="VibeCode Mentor Logo"
+                className="h-10 w-10 object-contain"
+              />
               <span className="text-lg font-semibold tracking-wide text-white hidden sm:block">VibeCode Mentor</span>
             </Link>
           </div>
