@@ -104,9 +104,7 @@ export default function LandingPage() {
             {/* Feature 1 */}
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-purple-500 transition-all group">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-all">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <img src="/logo.png" alt="VibeCode Logo" className="w-6 h-6 object-contain" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">AI Blueprint Generation</h3>
               <p className="text-gray-400">
@@ -477,11 +475,11 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="VibeCode Mentor Logo"
+                  className="w-8 h-8 object-contain"
+                />
                 <span className="text-lg font-bold text-white">VibeCode</span>
               </div>
               <p className="text-gray-400 text-sm">
