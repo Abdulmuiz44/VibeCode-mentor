@@ -1,4 +1,4 @@
-import { supabase } from './supabaseDB';
+import { supabase } from './supabase';
 
 export interface LandingStats {
     blueprintsCount: number;
@@ -8,6 +8,14 @@ export interface LandingStats {
 
 export async function getLandingStats(): Promise<LandingStats> {
     try {
+        if (!supabase) {
+            return {
+                blueprintsCount: 10000, // Fallback
+                usersCount: 5000,     // Fallback
+                rating: 4.8,
+            };
+        }
+
         // Get blueprints count
         const { count: blueprintsCount, error: blueprintsError } = await supabase
             .from('blueprints')
