@@ -59,6 +59,20 @@ export default function MainHeader() {
             </Link>
           </div>
 
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`text-sm font-medium transition-colors ${pathname === link.href ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
           {/* Right Side: Usage, Upgrade, Auth */}
           <div className="flex items-center gap-3">
             <UsageCounter />

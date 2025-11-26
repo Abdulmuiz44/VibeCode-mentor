@@ -65,12 +65,12 @@ export default function AuthButton() {
           <Image
             src={user.image}
             alt={user.name || 'User'}
-            width={32}
-            height={32}
+            width={40}
+            height={40}
             className="rounded-full border-2 border-purple-500"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
             {user.email?.[0].toUpperCase()}
           </div>
         )}
