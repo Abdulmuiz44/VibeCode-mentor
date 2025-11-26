@@ -35,7 +35,7 @@ export default function StructuredData() {
     '@type': 'Organization',
     name: 'VibeCode Mentor',
     url: 'https://vibecode-mentor.vercel.app',
-    logo: 'https://vibecode-mentor.vercel.app/icon-512x512.svg',
+    logo: 'https://vibecode-mentor.vercel.app/logo.png',
     sameAs: [
       'https://github.com/vibecode-mentor',
     ],
