@@ -212,6 +212,26 @@ export const getProStatusFromCloud = async (userId: string): Promise<boolean> =>
   }
 };
 
+export const getUserProfile = async (userId: string) => {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Supabase getUserProfile error:', error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+};
+
 const supabaseClientHelpers = {
   saveBlueprintToCloud,
   getBlueprintsFromCloud,
@@ -221,6 +241,7 @@ const supabaseClientHelpers = {
   getCustomPrompts,
   deleteCustomPrompt,
   getProStatusFromCloud,
+  getUserProfile,
   getCollaborationComments,
   addCollaborationComment,
 };

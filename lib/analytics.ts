@@ -105,6 +105,38 @@ export const trackRateLimitHit = (limitType: 'blueprints' | 'chats') => {
   });
 };
 
+// New User Journey Events
+export const trackViewPricing = () => {
+  event({
+    action: 'view_pricing',
+    category: 'Journey',
+  });
+};
+
+export const trackStartCheckout = (plan: 'monthly' | 'yearly' = 'monthly') => {
+  event({
+    action: 'begin_checkout',
+    category: 'Conversion',
+    label: plan,
+  });
+};
+
+export const trackViewTemplateCategory = (category: string) => {
+  event({
+    action: 'view_template_category',
+    category: 'Navigation',
+    label: category,
+  });
+};
+
+export const trackCopyCode = (language: string) => {
+  event({
+    action: 'copy_code',
+    category: 'Engagement',
+    label: language,
+  });
+};
+
 // Extend Window interface for TypeScript
 declare global {
   interface Window {

@@ -101,8 +101,8 @@
 - **Status**: ✅ Complete (from previous sessions)
 - **Features**:
   - AI Blueprint Generation (Mistral AI)
-  - Google Authentication (Firebase)
-  - Cloud Sync (Firestore)
+  - Google Authentication (NextAuth + Supabase)
+  - Cloud Sync (Supabase)
   - Pro Subscription ($5/mo via Flutterwave)
   - Rate Limiting (10 gens/day, Vercel KV)
   - Usage Analytics Dashboard
