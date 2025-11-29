@@ -3,7 +3,8 @@ import { setProStatusInCloud } from '@/lib/supabase.server';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
-const BASE_URL = process.env.NODE_ENV === 'production'
+const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox';
+const BASE_URL = PAYPAL_ENV === 'production' || PAYPAL_ENV === 'live'
     ? 'https://api-m.paypal.com'
     : 'https://api-m.sandbox.paypal.com';
 
