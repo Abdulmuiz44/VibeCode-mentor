@@ -1,8 +1,8 @@
 import { kv } from '@vercel/kv';
 
 // Check if KV is configured (for build-time safety)
-const isKVConfigured = typeof process !== 'undefined' && 
-  process.env.KV_REST_API_URL && 
+const isKVConfigured = typeof process !== 'undefined' &&
+  process.env.KV_REST_API_URL &&
   process.env.KV_REST_API_TOKEN;
 
 /**
@@ -20,21 +20,27 @@ export async function checkRateLimit(userId: string | null, ip: string): Promise
   }
 
   const identifier = userId || ip;
-  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const key = `rate:${identifier}:${date}`;
-  
+  const date = new Date();
+  const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+  const key = `rate:${identifier}:${yearMonth}`;
+
   try {
     const current = await kv.get<number>(key) || 0;
-    const limit = 10;
-    
+    const limit = 10; // Monthly limit
+
     if (current >= limit) {
       return { allowed: false, current, limit };
     }
-    
-    // Increment and set expiry to end of day
+
+    // Increment and set expiry to end of month
     const newCount = await kv.incr(key);
-    await kv.expireat(key, Math.floor(new Date().setHours(23, 59, 59, 999) / 1000));
-    
+
+    // Calculate seconds until end of month
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+    const secondsUntilEndOfMonth = Math.floor((endOfMonth.getTime() - date.getTime()) / 1000);
+
+    await kv.expire(key, secondsUntilEndOfMonth);
+
     return { allowed: true, current: newCount, limit };
   } catch (error) {
     console.error('Rate limit check error:', error);
@@ -82,7 +88,7 @@ export async function getCurrentUsage(userId: string | null, ip: string): Promis
   const identifier = userId || ip;
   const date = new Date().toISOString().split('T')[0];
   const key = `rate:${identifier}:${date}`;
-  
+
   try {
     const count = await kv.get<number>(key);
     return count || 0;
@@ -105,23 +111,23 @@ export async function logGeneration(
   try {
     // Total generations
     await kv.incr('stats:total');
-    
+
     // Pro vs Free split
     if (isPro) {
       await kv.incr('stats:pro_count');
     } else {
       await kv.incr('stats:free_count');
     }
-    
+
     // Top vibes (sorted set)
     const vibeKey = vibe.substring(0, 50).toLowerCase();
     await kv.zincrby('stats:vibes', 1, vibeKey);
-    
+
     // Unique users (daily)
     const date = new Date().toISOString().split('T')[0];
     const identifier = userId || 'anon';
     await kv.sadd(`stats:users:${date}`, identifier);
-    
+
     // Set expiry for daily users set (30 days)
     await kv.expire(`stats:users:${date}`, 30 * 24 * 60 * 60);
   } catch (error) {

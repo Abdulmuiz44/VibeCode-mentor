@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's IP address
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
+    const ip = request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
     // Check if user is Pro
     const isPro = userId ? await getProStatusFromCloud(userId) : false;
@@ -24,12 +24,12 @@ export async function POST(request: NextRequest) {
     // Rate limiting for free tier users only
     if (!isPro) {
       const rateLimit = await checkRateLimit(userId, ip);
-      
+
       if (!rateLimit.allowed) {
         return NextResponse.json(
-          { 
+          {
             error: 'Rate limit exceeded',
-            message: `You've reached the limit of ${rateLimit.limit} free generations per day. Upgrade to Pro for unlimited access!`,
+            message: `You've reached the limit of ${rateLimit.limit} free generations per month. Upgrade to Pro for unlimited access!`,
             current: rateLimit.current,
             limit: rateLimit.limit,
           },

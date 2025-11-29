@@ -5,10 +5,12 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
+import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 export default function HomeClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { openUpgradeModal } = useProUpgradeModal();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get('returnTo') ?? '/';
   const callbackUrl = useMemo(() => returnTo || '/', [returnTo]);
@@ -74,6 +76,7 @@ export default function HomeClient() {
         const errorData = await response.json();
         if (response.status === 429) {
           setError(errorData.message || 'Rate limit exceeded. Upgrade to Pro for unlimited generations!');
+          openUpgradeModal({ source: 'limit_reached' });
         } else {
           throw new Error(errorData.error || 'Failed to generate blueprint');
         }
