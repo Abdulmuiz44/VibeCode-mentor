@@ -22,13 +22,35 @@ async function generateAccessToken() {
         },
     });
 
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('PayPal Access Token Failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText,
+            env: process.env.NODE_ENV,
+            baseUrl: BASE_URL
+        });
+        throw new Error(`Failed to generate access token: ${response.status}`);
+    }
+
     const data = await response.json();
     return data.access_token;
 }
 
 export async function POST(request: NextRequest) {
     try {
+        console.log('PayPal Create Order: Starting...');
+        if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
+            console.error('PayPal Create Order: Missing credentials', {
+                hasClientId: !!PAYPAL_CLIENT_ID,
+                hasSecret: !!PAYPAL_SECRET
+            });
+        }
+
         const accessToken = await generateAccessToken();
+        console.log('PayPal Create Order: Access token generated');
+
         const url = `${BASE_URL}/v2/checkout/orders`;
 
         const payload = {
@@ -54,10 +76,13 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
+        console.log('PayPal Create Order: Response status', response.status);
 
         if (response.status === 201) {
             return NextResponse.json({ id: data.id });
         }
+
+        console.error('PayPal Create Order: Failed', data);
 
         return NextResponse.json(
             { error: 'Failed to create order', details: data },

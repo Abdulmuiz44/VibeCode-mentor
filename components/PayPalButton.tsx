@@ -22,6 +22,8 @@ export default function PayPalButton({ amount = '5.00', onSuccess, onError }: Pa
         intent: 'capture' as const,
     };
 
+    console.log('PayPal Client ID:', initialOptions.clientId);
+
     if (!initialOptions.clientId) {
         return <div className="text-red-400 text-sm">PayPal Client ID missing</div>;
     }

@@ -23,6 +23,15 @@ async function generateAccessToken() {
         },
     });
 
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('PayPal Access Token Failed (Capture):', {
+            status: response.status,
+            body: errorText
+        });
+        throw new Error(`Failed to generate access token: ${response.status}`);
+    }
+
     const data = await response.json();
     return data.access_token;
 }
