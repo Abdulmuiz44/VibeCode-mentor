@@ -15,7 +15,7 @@ const ProUpgradeModalContext = createContext<ProUpgradeModalContextValue | null>
 export function ProUpgradeModalProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [source, setSource] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('flutterwave');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

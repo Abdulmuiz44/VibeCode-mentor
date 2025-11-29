@@ -3,10 +3,10 @@ import { setProStatusInCloud } from '@/lib/supabase.server';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
-const PAYPAL_ENV = process.env.PAYPAL_ENV || 'sandbox';
-const BASE_URL = PAYPAL_ENV === 'production' || PAYPAL_ENV === 'live'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
+const PAYPAL_ENV = process.env.PAYPAL_ENV || 'live';
+const BASE_URL = PAYPAL_ENV === 'sandbox'
+    ? 'https://api-m.sandbox.paypal.com'
+    : 'https://api-m.paypal.com';
 
 async function generateAccessToken() {
     if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
