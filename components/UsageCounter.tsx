@@ -22,7 +22,8 @@ export default function UsageCounter() {
 
     async function fetchUsage() {
       try {
-        const response = await fetch('/api/usage');
+        const url = user?.id ? `/api/usage?userId=${user.id}` : '/api/usage';
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setUsage(data);
@@ -84,8 +85,8 @@ export default function UsageCounter() {
               strokeDasharray={`${2 * Math.PI * 14}`}
               strokeDashoffset={`${2 * Math.PI * 14 * (1 - percentage / 100)}`}
               className={`${percentage >= 90 ? 'text-red-500' :
-                  percentage >= 70 ? 'text-yellow-500' :
-                    'text-green-500'
+                percentage >= 70 ? 'text-yellow-500' :
+                  'text-green-500'
                 } transition-all duration-300`}
               strokeLinecap="round"
             />

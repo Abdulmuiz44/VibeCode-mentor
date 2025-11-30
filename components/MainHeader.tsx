@@ -71,6 +71,14 @@ export default function MainHeader() {
           {/* Right Side: Usage, Upgrade, Auth */}
           <div className="flex items-center gap-3">
             <UsageCounter />
+            {session?.user && (
+              <Link
+                href="/profile"
+                className="hidden sm:block text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              >
+                Profile
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => openUpgradeModal({ source: 'Navigation' })}
