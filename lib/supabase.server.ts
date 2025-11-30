@@ -29,9 +29,61 @@ export const setProStatusInCloud = async (userId: string, email: string, isPro: 
   }
 };
 
+// Save generated blueprint to history
+export const saveBlueprintToHistory = async (
+  userId: string,
+  projectIdea: string,
+  blueprint: string,
+  vibe: string = 'default'
+): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+  try {
+    const { error } = await supabaseAdmin
+      .from('blueprints')
+      .insert({
+        user_id: userId,
+        project_idea: projectIdea,
+        content: blueprint,
+        vibe,
+        created_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error saving blueprint to history:', error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error in saveBlueprintToHistory:', error);
+    return false;
+  }
+};
+
+export const getProStatusFromCloud = async (userId: string): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('is_pro')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Supabase admin getProStatus error:', error);
+      return false;
+    }
+    return !!data?.is_pro;
+  } catch (error) {
+    console.error('Error getting Pro status in supabase admin:', error);
+    return false;
+  }
+};
+
 const supabaseAdminHelpers = {
   supabaseAdmin,
   setProStatusInCloud,
+  saveBlueprintToHistory,
+  getProStatusFromCloud,
 };
 
 export default supabaseAdminHelpers;

@@ -89,6 +89,16 @@ export default function AuthButton() {
               </p>
               <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
+            <div className="p-2">
+              <a
+                href="/profile"
+                className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                onClick={() => setShowDropdown(false)}
+              >
+                Profile & Usage
+              </a>
+            </div>
+            <div className="border-t border-gray-800"></div>
             <button
               onClick={handleSignOut}
               className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-gray-800 transition-colors flex items-center gap-2"

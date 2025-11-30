@@ -14,7 +14,7 @@ export default function UsageCounter() {
   useEffect(() => {
     const proStatus = getProStatus();
     setIsPro(proStatus.isPro);
-    
+
     if (proStatus.isPro) {
       setLoading(false);
       return;
@@ -83,11 +83,10 @@ export default function UsageCounter() {
               fill="none"
               strokeDasharray={`${2 * Math.PI * 14}`}
               strokeDashoffset={`${2 * Math.PI * 14 * (1 - percentage / 100)}`}
-              className={`${
-                percentage >= 90 ? 'text-red-500' : 
-                percentage >= 70 ? 'text-yellow-500' : 
-                'text-green-500'
-              } transition-all duration-300`}
+              className={`${percentage >= 90 ? 'text-red-500' :
+                  percentage >= 70 ? 'text-yellow-500' :
+                    'text-green-500'
+                } transition-all duration-300`}
               strokeLinecap="round"
             />
           </svg>
@@ -102,7 +101,7 @@ export default function UsageCounter() {
             {remaining}/{usage.limit}
           </span>
           <span className="text-xs text-gray-400">
-            free left
+            monthly free left
           </span>
         </div>
       </div>

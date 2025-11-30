@@ -122,24 +122,7 @@ export function ProUpgradeModalProvider({ children }: { children: React.ReactNod
               <div>
                 <p className="text-sm font-semibold text-gray-300">Choose payment method</p>
                 <div className="mt-3 space-y-3">
-                  <label
-                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${paymentMethod === 'flutterwave' ? 'border-purple-500/70 bg-purple-500/10' : 'border-white/10 bg-white/5'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment-method"
-                      value="flutterwave"
-                      checked={paymentMethod === 'flutterwave'}
-                      onChange={() => setPaymentMethod('flutterwave')}
-                      className="mt-1"
-                    />
-                    <div>
-                      <p className="font-semibold text-white">Flutterwave</p>
-                      <p className="text-xs text-gray-400">Card + bank transfer support today.</p>
-                    </div>
-                  </label>
-
+                  {/* PayPal Option */}
                   <label
                     className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${paymentMethod === 'paypal' ? 'border-purple-500/70 bg-purple-500/10' : 'border-white/10 bg-white/5'
                       }`}
@@ -158,6 +141,26 @@ export function ProUpgradeModalProvider({ children }: { children: React.ReactNod
                     </div>
                   </label>
 
+                  {/* Flutterwave Option */}
+                  <label
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${paymentMethod === 'flutterwave' ? 'border-purple-500/70 bg-purple-500/10' : 'border-white/10 bg-white/5'
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      value="flutterwave"
+                      checked={paymentMethod === 'flutterwave'}
+                      onChange={() => setPaymentMethod('flutterwave')}
+                      className="mt-1"
+                    />
+                    <div>
+                      <p className="font-semibold text-white">Flutterwave</p>
+                      <p className="text-xs text-gray-400">Card + bank transfer support today.</p>
+                    </div>
+                  </label>
+
+                  {/* Other Option */}
                   <label
                     className="flex cursor-not-allowed items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
                   >

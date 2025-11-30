@@ -86,8 +86,9 @@ export async function getCurrentUsage(userId: string | null, ip: string): Promis
   if (!isKVConfigured) return 0;
 
   const identifier = userId || ip;
-  const date = new Date().toISOString().split('T')[0];
-  const key = `rate:${identifier}:${date}`;
+  const date = new Date();
+  const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const key = `rate:${identifier}:${yearMonth}`;
 
   try {
     const count = await kv.get<number>(key);

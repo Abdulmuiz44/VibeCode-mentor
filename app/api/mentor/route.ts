@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, logGeneration } from '@/lib/kv';
-import { getProStatusFromCloud } from '@/lib/supabaseDB';
+import { getProStatusFromCloud, saveBlueprintToHistory } from '@/lib/supabase.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -159,6 +159,11 @@ Make the blueprint actionable, specific, and production-ready. Include best prac
 
     // Log analytics
     await logGeneration(userId || null, projectIdea, isPro);
+
+    // Save to history if user is logged in
+    if (userId) {
+      await saveBlueprintToHistory(userId, projectIdea, blueprint);
+    }
 
     return NextResponse.json({ blueprint });
   } catch (error) {

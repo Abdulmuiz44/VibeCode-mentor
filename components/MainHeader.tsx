@@ -113,6 +113,13 @@ export default function MainHeader() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/profile"
+                className="block rounded-xl px-3 py-2 transition hover:bg-white/10 text-purple-400"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profile & Usage
+              </Link>
             </div>
             <ProBadge />
             <button
