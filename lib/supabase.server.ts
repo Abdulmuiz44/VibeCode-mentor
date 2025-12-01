@@ -79,11 +79,62 @@ export const getProStatusFromCloud = async (userId: string): Promise<boolean> =>
   }
 };
 
+export const savePublicPrompt = async (
+  promptId: string,
+  userId: string,
+  prompt: string,
+  blueprintId?: string
+): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+  try {
+    const { error } = await supabaseAdmin
+      .from('public_prompts')
+      .insert({
+        id: promptId,
+        user_id: userId,
+        prompt,
+        blueprint_id: blueprintId,
+        created_at: Date.now(),
+      });
+
+    if (error) {
+      console.error('Error saving public prompt:', error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error in savePublicPrompt:', error);
+    return false;
+  }
+};
+
+export const getPublicPromptById = async (promptId: string) => {
+  if (!supabaseAdmin) return null;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('public_prompts')
+      .select('*')
+      .eq('id', promptId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching public prompt:', error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error in getPublicPromptById:', error);
+    return null;
+  }
+};
+
 const supabaseAdminHelpers = {
   supabaseAdmin,
   setProStatusInCloud,
   saveBlueprintToHistory,
   getProStatusFromCloud,
+  savePublicPrompt,
+  getPublicPromptById,
 };
 
 export default supabaseAdminHelpers;
