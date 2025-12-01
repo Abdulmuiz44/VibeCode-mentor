@@ -207,10 +207,8 @@ export function ProUpgradeModalProvider({ children }: { children: React.ReactNod
                 <div className="mt-4">
                   <PayPalButton
                     amount="5.00"
-                    onSuccess={() => {
-                      // Optional: additional logic before redirect if needed, 
-                      // but PayPalButton handles redirect by default.
-                    }}
+                    amount="5.00"
+                  />
                   />
                   <p className="text-xs text-center text-gray-400 mt-2">
                     Secure payment via PayPal. You will be redirected after payment.
