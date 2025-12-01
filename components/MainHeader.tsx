@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import UsageCounter from '@/components/UsageCounter';
@@ -45,10 +46,12 @@ export default function MainHeader() {
               </svg>
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <img
+              <Image
                 src="/logo.png"
                 alt="VibeCode Mentor Logo"
-                className="h-10 w-10 object-contain"
+                width={40}
+                height={40}
+                className="object-contain"
               />
               <span className="text-lg font-semibold tracking-wide text-white hidden sm:block">VibeCode Mentor</span>
             </Link>

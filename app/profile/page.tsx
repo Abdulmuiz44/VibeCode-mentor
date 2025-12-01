@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/authOptions';
@@ -42,10 +43,12 @@ export default async function ProfilePage() {
             <div className="max-w-2xl mx-auto">
                 <div className="flex items-center gap-4 mb-8">
                     {session.user.image ? (
-                        <img
+                        <Image
                             src={session.user.image}
                             alt={session.user.name || 'User'}
-                            className="w-20 h-20 rounded-full border-2 border-purple-500"
+                            width={80}
+                            height={80}
+                            className="rounded-full border-2 border-purple-500"
                         />
                     ) : (
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-2xl font-bold">
