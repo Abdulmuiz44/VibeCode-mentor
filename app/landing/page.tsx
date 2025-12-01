@@ -298,7 +298,7 @@ export default function LandingPage() {
                 </li>
               </ul>
               <Link
-                href="/"
+                href="/auth?returnTo=/"
                 className="block w-full py-3 px-6 text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
               >
                 Get Started Free
@@ -452,7 +452,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/"
+              href="/auth?returnTo=/"
               className="px-8 py-4 bg-white hover:bg-gray-100 text-purple-900 font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg"
             >
               Start Building Free →
@@ -493,7 +493,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><Link href="/" className="hover:text-white transition-colors">Generator</Link></li>
+                <li><Link href="/auth?returnTo=/" className="hover:text-white transition-colors">Generator</Link></li>
                 <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
                 <li><Link href="/prompts" className="hover:text-white transition-colors">Prompts</Link></li>
                 <li><Link href="/history" className="hover:text-white transition-colors">History</Link></li>
