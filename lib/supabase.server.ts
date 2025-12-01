@@ -128,6 +128,92 @@ export const getPublicPromptById = async (promptId: string) => {
   }
 };
 
+// Payment recording and verification
+export const recordPayment = async (paymentData: {
+  userId: string;
+  email: string;
+  amount: number;
+  currency: string;
+  paymentMethod: 'paypal' | 'flutterwave';
+  transactionId: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  metadata?: any;
+}): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+  try {
+    const { error } = await supabaseAdmin
+      .from('payments')
+      .insert({
+        user_id: paymentData.userId,
+        email: paymentData.email,
+        amount: paymentData.amount,
+        currency: paymentData.currency,
+        payment_method: paymentData.paymentMethod,
+        transaction_id: paymentData.transactionId,
+        status: paymentData.status,
+        metadata: paymentData.metadata || {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error('Error recording payment:', error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error in recordPayment:', error);
+    return false;
+  }
+};
+
+export const getPaymentByTransactionId = async (transactionId: string) => {
+  if (!supabaseAdmin) return null;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('payments')
+      .select('*')
+      .eq('transaction_id', transactionId)
+      .single();
+
+    if (error) {
+      // Not found is acceptable for new transactions
+      if (error.code === 'PGRST116') return null;
+      console.error('Error fetching payment:', error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error in getPaymentByTransactionId:', error);
+    return null;
+  }
+};
+
+export const updatePaymentStatus = async (
+  transactionId: string,
+  status: 'pending' | 'completed' | 'failed' | 'refunded'
+): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+  try {
+    const { error } = await supabaseAdmin
+      .from('payments')
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('transaction_id', transactionId);
+
+    if (error) {
+      console.error('Error updating payment status:', error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error in updatePaymentStatus:', error);
+    return false;
+  }
+};
+
 const supabaseAdminHelpers = {
   supabaseAdmin,
   setProStatusInCloud,
@@ -135,6 +221,9 @@ const supabaseAdminHelpers = {
   getProStatusFromCloud,
   savePublicPrompt,
   getPublicPromptById,
+  recordPayment,
+  getPaymentByTransactionId,
+  updatePaymentStatus,
 };
 
 export default supabaseAdminHelpers;

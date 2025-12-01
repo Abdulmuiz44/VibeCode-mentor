@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { setProStatusInCloud } from '@/lib/supabase.server';
+import {
+    setProStatusInCloud,
+    recordPayment,
+    getPaymentByTransactionId
+} from '@/lib/supabase.server';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
@@ -62,6 +66,35 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
 
         if (response.status === 201 || response.status === 200) {
+            // Extract capture ID from response
+            const captureId = data.purchase_units?.[0]?.payments?.captures?.[0]?.id || orderID;
+
+            // Check if payment already processed (prevent duplicates)
+            const existingPayment = await getPaymentByTransactionId(captureId);
+            if (existingPayment) {
+                console.log('PayPal: Payment already processed:', captureId);
+                return NextResponse.json({ success: true, data, alreadyProcessed: true });
+            }
+
+            // Record payment in database
+            const recorded = await recordPayment({
+                userId,
+                email,
+                amount: 5.00, // Pro plan price
+                currency: 'USD',
+                paymentMethod: 'paypal',
+                transactionId: captureId,
+                status: 'completed',
+                metadata: {
+                    orderId: orderID,
+                    captureData: data,
+                },
+            });
+
+            if (!recorded) {
+                console.error('PayPal: Failed to record payment');
+            }
+
             // Payment successful, upgrade user
             const upgraded = await setProStatusInCloud(userId, email, true);
 
@@ -69,7 +102,6 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ success: true, data });
             } else {
                 console.error('Failed to upgrade user in Supabase after successful payment');
-                // Still return success for payment, but maybe with a warning or handle manually
                 return NextResponse.json({ success: true, warning: 'Upgrade failed', data });
             }
         }
