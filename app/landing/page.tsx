@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
@@ -104,7 +105,7 @@ export default function LandingPage() {
             {/* Feature 1 */}
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-purple-500 transition-all group">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-all">
-                <img src="/logo.png" alt="VibeCode Logo" className="w-6 h-6 object-contain" />
+                <Image src="/logo.png" alt="VibeCode Logo" width={24} height={24} className="w-6 h-6 object-contain" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">AI Blueprint Generation</h3>
               <p className="text-gray-400">
@@ -475,9 +476,11 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img
+                <Image
                   src="/logo.png"
                   alt="VibeCode Mentor Logo"
+                  width={32}
+                  height={32}
                   className="w-8 h-8 object-contain"
                 />
                 <span className="text-lg font-bold text-white">VibeCode</span>
