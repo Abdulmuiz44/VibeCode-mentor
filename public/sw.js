@@ -46,6 +46,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Cache hit - return response
@@ -86,7 +91,7 @@ async function syncBlueprints() {
   // Sync local blueprints to cloud when back online
   const cache = await caches.open('blueprints-cache');
   const requests = await cache.keys();
-  
+
   for (const request of requests) {
     const response = await cache.match(request);
     if (response) {
