@@ -15,8 +15,12 @@ export async function POST(req: NextRequest) {
         }
 
         if (!supabaseAdmin) {
+            console.error('Signup Error: supabaseAdmin is null. Check server logs for init errors.');
             return NextResponse.json(
-                { error: 'Server configuration error' },
+                {
+                    error: 'Server configuration error',
+                    details: 'Database connection failed'
+                },
                 { status: 500 }
             );
         }

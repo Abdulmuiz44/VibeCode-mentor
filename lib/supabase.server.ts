@@ -3,8 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  console.error('Supabase Admin Init Error: Missing environment variables', {
+    hasUrl: !!supabaseUrl,
+    hasServiceKey: !!supabaseServiceRoleKey
+  });
+}
+
 export const supabaseAdmin = supabaseUrl && supabaseServiceRoleKey
-  ? createClient(supabaseUrl, supabaseServiceRoleKey)
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
   : null;
 
 // Server-side admin helpers (needs SUPABASE_SERVICE_ROLE_KEY)
