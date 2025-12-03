@@ -39,25 +39,40 @@ export async function POST(req: NextRequest) {
         const userId = nanoid();
         const now = new Date().toISOString();
 
-        const { error: insertError } = await supabaseAdmin
+        const newUser = {
+            user_id: userId,
+            email,
+            name: name || email.split('@')[0],
+            password: hashedPassword,
+            created_at: now,
+            updated_at: now,
+            is_pro: false, // Default to free plan
+        };
+
+        console.log('Attempting to create user with ID:', userId);
+
+        const { error: insertError, data: insertedUser } = await supabaseAdmin
             .from('users')
-            .insert({
-                user_id: userId,
-                email,
-                name: name || email.split('@')[0],
-                password: hashedPassword,
-                created_at: now,
-                updated_at: now,
-                is_pro: false, // Default to free plan
-            });
+            .insert(newUser)
+            .select();
 
         if (insertError) {
-            console.error('Error creating user:', insertError);
+            console.error('Supabase insert error details:', {
+                message: insertError.message,
+                details: insertError.details,
+                hint: insertError.hint,
+                code: insertError.code
+            });
             return NextResponse.json(
-                { error: 'Error creating user' },
+                {
+                    error: 'Error creating user',
+                    details: process.env.NODE_ENV === 'development' ? insertError.message : undefined
+                },
                 { status: 500 }
             );
         }
+
+        console.log('User created successfully:', userId);
 
         return NextResponse.json(
             { message: 'User created successfully', userId },
