@@ -69,13 +69,16 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google' && user) {
-        await upsertUserProfile({
-          user_id: user.id,
-          email: user.email || '',
-          name: user.name || null,
-          profile_image: user.image || null,
-        });
+      if (user) {
+        // Sync profile for both Google and credentials providers
+        if (account?.provider === 'google' || account?.provider === 'credentials') {
+          await upsertUserProfile({
+            user_id: user.id,
+            email: user.email || '',
+            name: user.name || null,
+            profile_image: user.image || null,
+          });
+        }
       }
       return true;
     },
