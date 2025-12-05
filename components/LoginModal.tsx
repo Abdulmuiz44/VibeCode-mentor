@@ -40,31 +40,49 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     router.refresh();
                 }
             } else {
-                // Sign up
-                const res = await fetch('/api/auth/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, name }),
-                });
+                // Sign up with Supabase Auth
+                // Dynamically import to ensure we get client-side instance if needed
+                const { supabase } = await import('@/lib/supabase');
 
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.error || 'Something went wrong');
+                if (!supabase) {
+                    throw new Error('Supabase client not initialized');
                 }
 
-                // Auto login after signup
-                const result = await signIn('credentials', {
-                    redirect: false,
+                const { data, error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: {
+                            name: name || email.split('@')[0],
+                        }
+                    }
                 });
 
-                if (result?.error) {
-                    setError('Account created but failed to log in automatically');
-                } else {
-                    onClose();
-                    router.refresh();
+                if (signUpError) {
+                    throw new Error(signUpError.message);
+                }
+
+                if (data?.user) {
+                    // Auto login after signup
+                    const result = await signIn('credentials', {
+                        redirect: false,
+                        email,
+                        password,
+                    });
+
+                    if (result?.error) {
+                        // Check if error is due to email confirmation
+                        if (data?.session === null && !result.error) {
+                            setError('Account created! Please check your email to verify your account.');
+                            setLoading(false);
+                            return;
+                        }
+                        setError('Account created but failed to log in automatically. Please try signing in.');
+                        setIsLogin(true);
+                    } else {
+                        onClose();
+                        router.refresh();
+                    }
                 }
             }
         } catch (err: any) {
@@ -106,8 +124,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         <button
                             onClick={() => setIsLogin(true)}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLogin
-                                    ? 'bg-gray-700 text-white shadow-sm'
-                                    : 'text-gray-400 hover:text-gray-300'
+                                ? 'bg-gray-700 text-white shadow-sm'
+                                : 'text-gray-400 hover:text-gray-300'
                                 }`}
                         >
                             Sign In
@@ -115,8 +133,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         <button
                             onClick={() => setIsLogin(false)}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLogin
-                                    ? 'bg-gray-700 text-white shadow-sm'
-                                    : 'text-gray-400 hover:text-gray-300'
+                                ? 'bg-gray-700 text-white shadow-sm'
+                                : 'text-gray-400 hover:text-gray-300'
                                 }`}
                         >
                             Sign Up

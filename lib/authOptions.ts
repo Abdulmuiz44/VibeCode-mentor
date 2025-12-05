@@ -4,7 +4,6 @@ import EmailProvider from 'next-auth/providers/email';
 import { upsertUserProfile } from '@/lib/supabase';
 
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@/lib/supabase.server';
 
 export const authOptions: NextAuthOptions = {
@@ -29,32 +28,38 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        if (!supabaseAdmin) {
-          console.error('Supabase admin not configured');
+        // Use Supabase Auth to verify credentials
+        // Use the anon key client since we are acting as the user
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.error('Supabase credentials missing');
           return null;
         }
 
-        const { data: user } = await supabaseAdmin
-          .from('users')
-          .select('*')
-          .eq('email', credentials.email)
-          .single();
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-        if (!user || !user.password) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (error || !data.user) {
+          console.error('Supabase Auth verification failed:', error?.message);
           return null;
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const user = data.user;
 
-        if (!isValid) {
-          return null;
-        }
-
+        // Return user object compatible with NextAuth
+        // NOTE: The 'signIn' callback will handle syncing this user to public.users table as implemented previously
         return {
-          id: user.user_id,
+          id: user.id,
           email: user.email,
-          name: user.name,
-          image: user.profile_image,
+          name: user.user_metadata?.name || user.email?.split('@')[0],
+          image: user.user_metadata?.avatar_url || null,
         };
       }
     }),
