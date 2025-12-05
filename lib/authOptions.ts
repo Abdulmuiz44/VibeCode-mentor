@@ -70,14 +70,27 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (user) {
-        // Sync profile for both Google and credentials providers
-        if (account?.provider === 'google' || account?.provider === 'credentials') {
+        // Handle both Google OAuth and credentials-based authentication
+        if (account?.provider === 'google') {
           await upsertUserProfile({
             user_id: user.id,
             email: user.email || '',
             name: user.name || null,
             profile_image: user.image || null,
           });
+        } else if (account?.provider === 'credentials') {
+          // Sync credentials-based users to Supabase
+          try {
+            await upsertUserProfile({
+              user_id: user.id,
+              email: user.email || '',
+              name: user.name || null,
+              profile_image: user.image || null,
+            });
+          } catch (error) {
+            console.error('Error syncing credentials user to Supabase:', error);
+            // Still allow sign-in to proceed even if Supabase sync fails
+          }
         }
       }
       return true;
