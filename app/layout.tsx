@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   keywords: ["AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
   authors: [{ name: "VibeCode Mentor Team" }],
   creator: "VibeCode Mentor",
-  publisher: "VibeCode Mentor",
+  publisher: "Abdulmuiz Adeyemo",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -57,7 +57,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
   themeColor: '#8b5cf6',
 };
 
