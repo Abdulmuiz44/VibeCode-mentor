@@ -17,7 +17,6 @@ function AuthPageClient() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -29,7 +28,6 @@ function AuthPageClient() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setLoading(true);
     setError('');
     setSuccessMessage('');
