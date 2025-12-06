@@ -4,19 +4,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
 import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
-import { getProStatus, FREE_SAVE_LIMIT } from '@/utils/pro';
+import { FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useSession } from 'next-auth/react';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabaseDB';
 import { fetchCollaborationComments, postCollaborationComment } from '@/utils/collaboration';
 import ChatBubble from '@/components/ChatBubble';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
+import { useProStatus } from '@/hooks/useProStatus';
 
 export default function HistoryPage() {
   const [saves, setSaves] = useState<SavedBlueprint[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [isPro, setIsPro] = useState(false);
   const [showGitHubModal, setShowGitHubModal] = useState(false);
   const [githubToken, setGithubToken] = useState('');
   const [selectedBlueprint, setSelectedBlueprint] = useState<SavedBlueprint | null>(null);
@@ -27,6 +27,7 @@ export default function HistoryPage() {
   const { data: session } = useSession();
   const user = session?.user;
   const { openUpgradeModal } = useProUpgradeModal();
+  const { isPro } = useProStatus(); // Use centralized hook
   const [activeBlueprintComments, setActiveBlueprintComments] = useState<SavedBlueprint | null>(null);
   const [comments, setComments] = useState<CollaborationComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -38,7 +39,7 @@ export default function HistoryPage() {
   const loadBlueprints = useCallback(async () => {
     setSyncing(true);
     setSyncStatus('syncing');
-    
+
     try {
       if (user) {
         // Load from cloud
@@ -64,10 +65,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     loadBlueprints();
-    // Get Pro status from local storage for now
-    const proStatus = getProStatus();
-    setIsPro(proStatus.isPro);
-  }, [user, loadBlueprints]);
+  }, [loadBlueprints]);
 
   useEffect(() => {
     if (!activeBlueprintComments || !user) {
@@ -125,7 +123,7 @@ export default function HistoryPage() {
       showToastMessage('Exported to GitHub Gist!');
       setShowGitHubModal(false);
       setGithubToken('');
-      
+
       // Open gist in new tab
       window.open(gistUrl, '_blank');
     } catch (error) {
@@ -236,7 +234,7 @@ export default function HistoryPage() {
               </span>
             )}
           </div>
-          
+
           {/* Pro Upgrade Button */}
           {!isPro && (
             <div className="mt-6">
@@ -428,7 +426,7 @@ export default function HistoryPage() {
               <h3 className="text-xl font-bold text-white mb-4">Export to GitHub Gist</h3>
               <p className="text-gray-400 text-sm mb-4">
                 Enter your GitHub Personal Access Token with &apos;gist&apos; scope.
-                <a 
+                <a
                   href="https://github.com/settings/tokens/new?scopes=gist&description=VibeCode%20Mentor"
                   target="_blank"
                   rel="noopener noreferrer"

@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { saveCustomPrompt, getCustomPrompts, deleteCustomPrompt } from '@/lib/supabaseDB';
 import ChatBubble from '@/components/ChatBubble';
-import { getProStatus } from '@/utils/pro';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
+import { useProStatus } from '@/hooks/useProStatus';
 import {
   getSavedPrompts,
   savePromptLocally,
@@ -26,7 +26,7 @@ export default function PromptsPage() {
   const { data: session } = useSession();
   const user = session?.user;
   const { openUpgradeModal } = useProUpgradeModal();
-  const [isPro, setIsPro] = useState(false);
+  const { isPro } = useProStatus(); // Use centralized hook
   const [topVibes, setTopVibes] = useState<Vibe[]>([]);
   const [customPrompts, setCustomPrompts] = useState<CustomPrompt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,10 +68,8 @@ export default function PromptsPage() {
 
   useEffect(() => {
     fetchTopVibes();
-    const proStatus = getProStatus();
-    setIsPro(proStatus.isPro);
     loadCustomPrompts();
-  }, [user, loadCustomPrompts]);
+  }, [loadCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
     // Store selected prompt in sessionStorage and redirect to home
