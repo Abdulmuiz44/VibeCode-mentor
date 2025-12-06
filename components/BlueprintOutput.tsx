@@ -7,10 +7,11 @@ import { saveBlueprint } from '@/utils/localStorage';
 import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
 import { getSavedBlueprints } from '@/utils/localStorage';
 import { useSession } from 'next-auth/react';
-import { saveBlueprintToCloud, getUserProfile } from '@/lib/supabaseDB';
+import { saveBlueprintToCloud } from '@/lib/supabaseDB';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
 import CommentsSection from './CommentsSection';
 import ShareModal from './ShareModal';
+import { useProStatus } from '@/hooks/useProStatus';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -74,20 +75,10 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
   const [exporting, setExporting] = useState(false);
   const { data: session } = useSession();
   const user = session?.user;
-  const [isPro, setIsPro] = useState(false);
+  const { isPro } = useProStatus(); // Use centralized hook
   const [showShareModal, setShowShareModal] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [blueprintId, setBlueprintId] = useState<number>(0);
-
-  useEffect(() => {
-    const checkProStatus = async () => {
-      if (user?.id) {
-        const profile = await getUserProfile(user.id);
-        setIsPro(profile?.is_pro || false);
-      }
-    };
-    checkProStatus();
-  }, [user?.id]);
 
   const handleCopy = async () => {
     try {
@@ -275,8 +266,8 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
         <button
           onClick={() => setShowComments(!showComments)}
           className={`px-4 md:px-6 py-2 font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 border ${showComments
-              ? 'bg-blue-600 text-white border-blue-500'
-              : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
+            ? 'bg-blue-600 text-white border-blue-500'
+            : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
             }`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
