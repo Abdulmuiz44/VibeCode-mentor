@@ -35,22 +35,41 @@ export default function TemplatesPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const proStatus = getProStatus();
-    setIsPro(proStatus.isPro);
-  }, []);
+    const fetchProStatus = async () => {
+      if (user?.id) {
+        // Check Pro status from Supabase for logged-in users
+        try {
+          const { getProStatusFromCloud } = await import('@/lib/supabaseDB');
+          const cloudProStatus = await getProStatusFromCloud(user.id);
+          setIsPro(cloudProStatus);
+        } catch (error) {
+          console.error('Error fetching Pro status:', error);
+          // Fallback to local storage
+          const proStatus = getProStatus();
+          setIsPro(proStatus.isPro);
+        }
+      } else {
+        // Use local storage for non-logged-in users
+        const proStatus = getProStatus();
+        setIsPro(proStatus.isPro);
+      }
+    };
+
+    fetchProStatus();
+  }, [user]);
 
   const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
   const handleUseTemplate = (template: Template) => {
     if (template.isPro && !isPro) {
-      // Redirect to upgrade page
-      router.push('/?pro=true');
+      // Show upgrade modal for Pro templates
+      openUpgradeModal({ source: `Template: ${template.name}` });
       return;
     }
 
@@ -95,11 +114,10 @@ export default function TemplatesPage() {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${
-                  selectedCategory === category.id
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${selectedCategory === category.id
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
+                  }`}
               >
                 <span className="mr-2">{category.icon}</span>
                 <span className="hidden sm:inline">{category.name}</span>
