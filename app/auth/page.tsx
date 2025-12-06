@@ -43,7 +43,9 @@ function AuthPageClient() {
         if (result?.error) {
           setError('Invalid email or password');
         } else {
-          router.replace(callbackUrl);
+          // Success! Force page reload to ensure session is established
+          // Using window.location ensures NextAuth session is fully initialized
+          window.location.href = callbackUrl;
         }
       } else {
         // Sign up with Supabase Auth
