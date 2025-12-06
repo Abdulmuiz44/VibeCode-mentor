@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "VibeCode Mentor - AI Project Blueprint Generator",
     description: "Generate complete project blueprints with AI guidance from Mistral AI",
-    creator: "@vibecode",
+    creator: "@AbdMuizAdeyemo",
   },
   robots: {
     index: true,

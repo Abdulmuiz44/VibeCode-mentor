@@ -1,10 +1,9 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
-import { upsertUserProfile } from '@/lib/supabase';
 
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { supabaseAdmin } from '@/lib/supabase.server';
+import { supabaseAdmin, upsertUserProfile } from '@/lib/supabase.server';
 
 export const authOptions: NextAuthOptions = {
   providers: [

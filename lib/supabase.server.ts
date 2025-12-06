@@ -20,6 +20,63 @@ export const supabaseAdmin = supabaseUrl && supabaseServiceRoleKey
   : null;
 
 // Server-side admin helpers (needs SUPABASE_SERVICE_ROLE_KEY)
+
+// Securely upsert user profile using Admin client (bypasses RLS)
+export const upsertUserProfile = async (userData: {
+  user_id: string;
+  email: string;
+  name: string | null;
+  profile_image: string | null;
+}): Promise<boolean> => {
+  if (!supabaseAdmin) return false;
+
+  try {
+    const now = new Date().toISOString();
+
+    // Check if user exists
+    const { data: existingUser, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('user_id')
+      .eq('user_id', userData.user_id)
+      .single();
+
+    if (existingUser) {
+      // User exists, update timestamp only
+      const { error: updateError } = await supabaseAdmin
+        .from('users')
+        .update({ updated_at: now })
+        .eq('user_id', userData.user_id);
+
+      if (updateError) {
+        console.error('Error updating user timestamp:', updateError);
+        return false;
+      }
+    } else {
+      // New user, insert full profile
+      const { error: insertError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          user_id: userData.user_id,
+          email: userData.email,
+          name: userData.name,
+          profile_image: userData.profile_image,
+          created_at: now,
+          updated_at: now,
+        });
+
+      if (insertError) {
+        console.error('Error inserting user profile:', insertError);
+        return false;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error upserting user profile (admin):', error);
+    return false;
+  }
+};
+
 export const setProStatusInCloud = async (userId: string, email: string, isPro: boolean): Promise<boolean> => {
   if (!supabaseAdmin) return false;
   try {
