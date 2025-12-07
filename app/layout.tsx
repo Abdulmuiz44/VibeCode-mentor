@@ -12,13 +12,14 @@ import MainHeader from "@/components/MainHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VibeCode Mentor - AI Project Blueprint Generator",
-  description: "Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
-  keywords: ["AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
+  title: "VibeCode Mentor - AI Project Blueprint Generator & Vibecoding Tool",
+  description: "The ultimate Vibecoding platform. Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
+  keywords: ["Vibecoding", "Vibe Coding", "AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
   authors: [{ name: "VibeCode Mentor Team" }],
   creator: "VibeCode Mentor",
   publisher: "Abdulmuiz Adeyemo",
   manifest: "/manifest.json",
+  metadataBase: new URL("https://vibecodementor.app"),
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://vibe-code-mentor.vercel.app/landing",
+    url: "https://vibecodementor.app",
     title: "VibeCode Mentor - AI Project Blueprint Generator",
     description: "Generate complete project blueprints with AI guidance from Mistral AI",
     siteName: "VibeCode Mentor",

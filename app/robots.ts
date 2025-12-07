@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ['/api/', '/admin/'],
       },
     ],
-    sitemap: 'https://vibe-code-mentor.vercel.app/sitemap.xml',
+    sitemap: 'https://vibecodementor.app/sitemap.xml',
   };
 }

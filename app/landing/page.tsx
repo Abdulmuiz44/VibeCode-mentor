@@ -51,7 +51,7 @@ export default function LandingPage() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-            AI-powered blueprint generator for developers, creators, and builders.
+            AI-powered vibecoding tool and blueprint generator.
             Get detailed technical specs, tech stacks, and step-by-step implementation plans in seconds.
           </p>
 
@@ -91,6 +91,21 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* What is Vibecoding Section */}
+      <section className="px-4 py-20 border-y border-gray-800 bg-gray-900/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+            What is <span className="text-purple-400">Vibecoding</span>?
+          </h2>
+          <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
+            Vibecoding is a new paradigm in software development where you focus on the creative direction—the &quot;vibe&quot;—while AI handles the heavy lifting.
+            Instead of getting bogged down in syntax, you guide the AI to build your vision.
+            <br className="my-4 block" />
+            <strong className="text-white">VibeCode Mentor</strong> is the first platform designed specifically to power this workflow, giving you professional architectural blueprints to ensure your AI-generated code is robust, scalable, and production-ready.
+          </p>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section className="px-4 py-20 bg-black/50">
         <div className="max-w-6xl mx-auto">
@@ -107,9 +122,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-all">
                 <Image src="/logo.png" alt="VibeCode Logo" width={24} height={24} className="w-6 h-6 object-contain" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">AI Blueprint Generation</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Vibecoding Blueprint</h3>
               <p className="text-gray-400">
-                Mistral AI generates comprehensive project blueprints with architecture, tech stack, and implementation steps.
+                Mistral AI generates comprehensive vibecoding workflows with architecture, tech stack, and implementation steps.
               </p>
             </div>
 

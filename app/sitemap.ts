@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://vibe-code-mentor.vercel.app';
-  
+  const baseUrl = 'https://vibecodementor.app';
+
   return [
     {
       url: baseUrl,
