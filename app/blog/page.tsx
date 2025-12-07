@@ -18,7 +18,7 @@ export default function BlogPage() {
                                 What is Vibecoding? The Future of AI Software Development
                             </h2>
                             <p className="text-gray-400 mb-4 line-clamp-2">
-                                Discover Vibecoding, the new coding paradigm coined by Andrej Karpathy. Learn how to focus on the "vibe" while AI handles the code.
+                                Discover Vibecoding, the new coding paradigm coined by Andrej Karpathy. Learn how to focus on the &quot;vibe&quot; while AI handles the code.
                             </p>
                             <div className="flex items-center text-sm font-medium text-purple-400">
                                 Read Article
