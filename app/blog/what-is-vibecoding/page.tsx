@@ -45,14 +45,14 @@ export default function BlogPost() {
 
                     <h2 className="text-3xl font-bold text-white mt-12 mb-6">The Definition of Vibecoding</h2>
                     <p className="text-gray-300 mb-6">
-                        <strong>Vibecoding</strong> is a development paradigm where the human developer focuses entirely on the high-level creative direction—the "vibe," the flow, the user experience—while delegating the actual implementation details (the code) to Artificial Intelligence.
+                        <strong>Vibecoding</strong> is a development paradigm where the human developer focuses entirely on the high-level creative direction—the &quot;vibe,&quot; the flow, the user experience—while delegating the actual implementation details (the code) to Artificial Intelligence.
                     </p>
                     <p className="text-gray-300 mb-6">
                         Coined in early 2025 during the explosion of advanced coding LLMs, it represents the final abstraction layer. Just as we moved from assembly to C, and from C to Python, we are now moving from Python to Natural Language Prompts.
                     </p>
 
                     <blockquote className="border-l-4 border-purple-500 pl-6 my-8 italic text-xl text-gray-400 bg-gray-900/50 p-6 rounded-r-lg">
-                        "I just want to see the thing exist. I don't care how the loops are written. That's Vibecoding."
+                        &quot;I just want to see the thing exist. I don&apos;t care how the loops are written. That&apos;s Vibecoding.&quot;
                     </blockquote>
 
                     <h2 className="text-3xl font-bold text-white mt-12 mb-6">How It Works</h2>
@@ -71,7 +71,7 @@ export default function BlogPost() {
                             <ul className="list-disc list-inside text-gray-300 space-y-2">
                                 <li>Describe the desired outcome</li>
                                 <li>Review generated implementation</li>
-                                <li>Iterate on the "vibe" (design/UX)</li>
+                                <li>Iterate on the &quot;vibe&quot; (design/UX)</li>
                                 <li>Ship 10x faster</li>
                             </ul>
                         </div>
@@ -82,7 +82,7 @@ export default function BlogPost() {
                         While AI is powerful, it can hallucinate or create unscalable spaghetti code if left unchecked. This is where <strong>VibeCode Mentor</strong> comes in.
                     </p>
                     <p className="text-gray-300 mb-6">
-                        Successful Vibecoding requires a robust plan. You can't just tell an AI "make a Facebook clone" and expect production quality. You need a <strong>Blueprint</strong>:
+                        Successful Vibecoding requires a robust plan. You can&apos;t just tell an AI &quot;make a Facebook clone&quot; and expect production quality. You need a <strong>Blueprint</strong>:
                     </p>
                     <ul className="list-decimal list-inside text-gray-300 space-y-4 mb-8 bg-gray-900/30 p-8 rounded-xl border border-gray-800">
                         <li className="pl-2"><span className="text-white font-semibold">Architecture:</span> Defining the database schema and component relationship.</li>
@@ -92,7 +92,7 @@ export default function BlogPost() {
 
                     <h2 className="text-3xl font-bold text-white mt-12 mb-6">Start Vibecoding Today</h2>
                     <p className="text-gray-300 mb-8">
-                        You don't need to be a senior engineer to build your dream app anymore. You just need the right vibe and the right tools.
+                        You don&apos;t need to be a senior engineer to build your dream app anymore. You just need the right vibe and the right tools.
                     </p>
                 </div>
 
