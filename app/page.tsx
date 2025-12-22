@@ -99,13 +99,19 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
-              onClick={() => redirect('/build')}
+              onClick={(e) => {
+                e.preventDefault();
+                redirect('/build');
+              }}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50"
             >
               Start Building Free →
             </button>
             <button
-              onClick={() => redirect('/templates')}
+              onClick={(e) => {
+                e.preventDefault();
+                redirect('/templates');
+              }}
               className="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg border border-gray-700 transition-all"
             >
               Browse Templates
@@ -354,7 +360,10 @@ export default function LandingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => redirect('/build')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  redirect('/build');
+                }}
                 className="block w-full py-3 px-6 text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all cursor-pointer"
               >
                 Get Started Free
@@ -508,13 +517,19 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => redirect('/build')}
+              onClick={(e) => {
+                e.preventDefault();
+                redirect('/build');
+              }}
               className="px-8 py-4 bg-white hover:bg-gray-100 text-purple-900 font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg cursor-pointer"
             >
               Start Building Free →
             </button>
             <button
-              onClick={() => redirect('/templates')}
+              onClick={(e) => {
+                e.preventDefault();
+                redirect('/templates');
+              }}
               className="px-8 py-4 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg border-2 border-white/20 transition-all cursor-pointer"
             >
               View Templates
