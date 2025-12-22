@@ -23,7 +23,46 @@ export default function LandingPage() {
       const data = await getLandingStats();
       setStats(data);
     };
+
+    // Initial fetch
     fetchStats();
+
+    // Set up real-time subscriptions
+    const setupSubscriptions = async () => {
+      const { supabase } = await import('@/lib/supabase');
+      if (!supabase) return;
+
+      // Subscribe to blueprints changes
+      const blueprintsSubscription = supabase
+        .channel('blueprints-changes')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'blueprints'
+        }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      // Subscribe to user_profiles changes
+      const usersSubscription = supabase
+        .channel('users-changes')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_profiles'
+        }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      return () => {
+        blueprintsSubscription.unsubscribe();
+        usersSubscription.unsubscribe();
+      };
+    };
+
+    setupSubscriptions();
   }, []);
 
   return (
