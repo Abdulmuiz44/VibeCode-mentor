@@ -3,20 +3,13 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    // Redirect all users from root path to /landing
-    const isRootPath = req.nextUrl.pathname === '/';
-
-    if (isRootPath) {
-      return NextResponse.redirect(new URL('/landing', req.url));
-    }
-
+    // No redirects needed - / now shows landing page content
     return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token }) => {
         // Return true to allow the middleware function to execute
-        // We handle the specific redirect logic inside the middleware function
         return true;
       },
     },
@@ -24,6 +17,5 @@ export default withAuth(
 );
 
 export const config = {
-  // Run middleware on the root path to handle the redirect
-  matcher: ['/'],
+  matcher: [],
 };
