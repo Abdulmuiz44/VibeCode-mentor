@@ -2,14 +2,37 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 import { getLandingStats, LandingStats } from '@/lib/stats';
 
+function ProUpgradeButton() {
+  try {
+    const { openUpgradeModal } = useProUpgradeModal();
+    return (
+      <button
+        type="button"
+        onClick={() => openUpgradeModal({ source: 'Landing Page' })}
+        className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
+      >
+        Upgrade to Pro →
+      </button>
+    );
+  } catch {
+    return (
+      <Link
+        href="/auth"
+        className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
+      >
+        Upgrade to Pro →
+      </Link>
+    );
+  }
+}
+
 export default function LandingPage() {
   const [email, setEmail] = useState('');
-  const { openUpgradeModal } = useProUpgradeModal();
   const [stats, setStats] = useState<LandingStats>({
     blueprintsCount: 10000,
     usersCount: 5000,
@@ -406,13 +429,9 @@ export default function LandingPage() {
                   <span className="text-white font-medium">Custom prompts library</span>
                 </li>
               </ul>
-              <button
-                type="button"
-                onClick={() => openUpgradeModal({ source: 'Landing Page' })}
-                className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
-              >
-                Upgrade to Pro →
-              </button>
+              <Suspense fallback={<div className="block w-full py-3 bg-gray-600 rounded-lg" />}>
+                <ProUpgradeButton />
+              </Suspense>
             </div>
           </div>
         </div>
