@@ -25,7 +25,7 @@ export async function getLandingStats(): Promise<LandingStats> {
 
         // Get users count
         const { count: usersCount, error: usersError } = await supabase
-            .from('user_profiles')
+            .from('users')
             .select('*', { count: 'exact', head: true });
 
         if (usersError) console.error('Error fetching users count:', usersError);

@@ -44,13 +44,13 @@ export default function LandingPage() {
         })
         .subscribe();
 
-      // Subscribe to user_profiles changes
+      // Subscribe to users changes
       const usersSubscription = supabase
         .channel('users-changes')
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
-          table: 'user_profiles'
+          table: 'users'
         }, () => {
           fetchStats();
         })
