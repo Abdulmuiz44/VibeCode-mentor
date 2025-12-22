@@ -73,9 +73,9 @@ export default function TemplatesPage() {
       return;
     }
 
-    // Store template prompt in sessionStorage and redirect to home
+    // Store template prompt in sessionStorage and redirect to build
     sessionStorage.setItem('selectedPrompt', template.prompt);
-    router.push('/');
+    router.push('/build');
   };
 
   return (

@@ -72,9 +72,9 @@ export default function PromptsPage() {
   }, [loadCustomPrompts]);
 
   const handleVibeClick = (vibe: string) => {
-    // Store selected prompt in sessionStorage and redirect to home
+    // Store selected prompt in sessionStorage and redirect to build
     sessionStorage.setItem('selectedPrompt', vibe);
-    router.push('/');
+    router.push('/build');
   };
 
   const handleSaveCustomPrompt = async () => {
