@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import { getLandingStats, LandingStats } from '@/lib/stats';
 import dynamic from 'next/dynamic';
@@ -13,12 +15,21 @@ const ProUpgradeButton = dynamic(
 );
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState<LandingStats>({
     blueprintsCount: 10000,
     usersCount: 5000,
     rating: 4.8
   });
+
+  // Redirect authenticated users to /build
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.replace('/build');
+    }
+  }, [status, session, router]);
 
   useEffect(() => {
     const fetchStats = async () => {
