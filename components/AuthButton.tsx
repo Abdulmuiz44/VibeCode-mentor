@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import LoginModal from './LoginModal';
 
 export default function AuthButton() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const loading = status === 'loading';
@@ -16,8 +18,9 @@ export default function AuthButton() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOut({ redirect: false });
     setShowDropdown(false);
+    router.push('/auth');
   };
 
   if (loading) {
