@@ -228,8 +228,8 @@ function AuthPageClient() {
         </div>
 
         <div className="mt-8 text-center space-y-2 text-sm text-gray-400">
-          <Link href="/landing" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Back to landing page
+          <Link href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+            Back to home
           </Link>
         </div>
       </div>
