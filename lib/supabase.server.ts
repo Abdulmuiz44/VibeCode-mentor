@@ -203,7 +203,7 @@ export const recordPayment = async (paymentData: {
   email: string;
   amount: number;
   currency: string;
-  paymentMethod: 'paypal' | 'flutterwave';
+  paymentMethod: 'paypal' | 'flutterwave' | 'lemonsqueezy';
   transactionId: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   metadata?: any;
