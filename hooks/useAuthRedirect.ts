@@ -20,3 +20,9 @@ export function useAuthRedirect() {
 
   return redirect;
 }
+
+// Helper function to redirect to /build
+export function useRedirectToBuild() {
+  const redirect = useAuthRedirect();
+  return useCallback(() => redirect('/build'), [redirect]);
+}
