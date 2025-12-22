@@ -2,34 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
-import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 import { getLandingStats, LandingStats } from '@/lib/stats';
+import dynamic from 'next/dynamic';
 
-function ProUpgradeButton() {
-  try {
-    const { openUpgradeModal } = useProUpgradeModal();
-    return (
-      <button
-        type="button"
-        onClick={() => openUpgradeModal({ source: 'Landing Page' })}
-        className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
-      >
-        Upgrade to Pro →
-      </button>
-    );
-  } catch {
-    return (
-      <Link
-        href="/auth"
-        className="block w-full cursor-pointer rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-center font-bold text-white transition hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-purple-500/50"
-      >
-        Upgrade to Pro →
-      </Link>
-    );
-  }
-}
+const ProUpgradeButton = dynamic(
+  () => import('@/components/ProUpgradeButton'),
+  { ssr: false, loading: () => <div className="block w-full py-3 bg-gray-600 rounded-lg" /> }
+);
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
@@ -429,9 +410,7 @@ export default function LandingPage() {
                   <span className="text-white font-medium">Custom prompts library</span>
                 </li>
               </ul>
-              <Suspense fallback={<div className="block w-full py-3 bg-gray-600 rounded-lg" />}>
-                <ProUpgradeButton />
-              </Suspense>
+              <ProUpgradeButton />
             </div>
           </div>
         </div>
