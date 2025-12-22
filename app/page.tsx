@@ -6,12 +6,10 @@ import { useState, useEffect } from 'react';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 import { getLandingStats, LandingStats } from '@/lib/stats';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function LandingPage() {
   const [email, setEmail] = useState('');
   const { openUpgradeModal } = useProUpgradeModal();
-  const redirect = useAuthRedirect();
   const [stats, setStats] = useState<LandingStats>({
     blueprintsCount: 10000,
     usersCount: 5000,
@@ -98,24 +96,18 @@ export default function LandingPage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                redirect('/build');
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50"
+            <Link
+              href="/build"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50 inline-block text-center"
             >
               Start Building Free →
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                redirect('/templates');
-              }}
-              className="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg border border-gray-700 transition-all"
+            </Link>
+            <Link
+              href="/templates"
+              className="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg border border-gray-700 transition-all inline-block text-center"
             >
               Browse Templates
-            </button>
+            </Link>
           </div>
 
           {/* Social Proof */}
@@ -359,15 +351,12 @@ export default function LandingPage() {
                   <span className="text-gray-300">Cloud sync</span>
                 </li>
               </ul>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  redirect('/build');
-                }}
+              <Link
+                href="/build"
                 className="block w-full py-3 px-6 text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all cursor-pointer"
               >
                 Get Started Free
-              </button>
+              </Link>
             </div>
 
             {/* Pro Plan */}
@@ -516,24 +505,18 @@ export default function LandingPage() {
             Join 5,000+ developers, creators, and founders building with VibeCode Mentor.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                redirect('/build');
-              }}
-              className="px-8 py-4 bg-white hover:bg-gray-100 text-purple-900 font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg cursor-pointer"
+            <Link
+              href="/build"
+              className="px-8 py-4 bg-white hover:bg-gray-100 text-purple-900 font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg cursor-pointer inline-block text-center"
             >
               Start Building Free →
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                redirect('/templates');
-              }}
-              className="px-8 py-4 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg border-2 border-white/20 transition-all cursor-pointer"
+            </Link>
+            <Link
+              href="/templates"
+              className="px-8 py-4 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg border-2 border-white/20 transition-all cursor-pointer inline-block text-center"
             >
               View Templates
-            </button>
+            </Link>
           </div>
           <p className="text-gray-300 mt-6 text-sm">
             No credit card required • Free forever • Upgrade anytime
