@@ -9,8 +9,8 @@ function AuthPageClient() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const returnTo = searchParams.get('returnTo') ?? '/';
-  const callbackUrl = useMemo(() => returnTo || '/', [returnTo]);
+  const returnTo = searchParams.get('returnTo') ?? '/build';
+  const callbackUrl = useMemo(() => returnTo || '/build', [returnTo]);
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
