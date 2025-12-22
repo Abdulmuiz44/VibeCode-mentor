@@ -3,12 +3,10 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    // Check if user is visiting the root path and is NOT authenticated
-    // req.nextauth.token is populated if the user is authenticated
+    // Redirect all users from root path to /landing
     const isRootPath = req.nextUrl.pathname === '/';
-    const isAuthenticated = !!req.nextauth.token;
 
-    if (isRootPath && !isAuthenticated) {
+    if (isRootPath) {
       return NextResponse.redirect(new URL('/landing', req.url));
     }
 
