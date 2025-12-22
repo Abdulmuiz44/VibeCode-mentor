@@ -12,7 +12,7 @@ An AI-powered project blueprint generator that transforms your ideas into produc
 - 💬 **AI Chat Assistant**: Context-aware AI help with unlimited Pro access
 - 🔐 **Google Authentication**: Secure sign-in via NextAuth + Supabase
 - ☁️ **Cloud Sync**: Save and access blueprints from anywhere
-- 💎 **Pro Subscription**: $5/month for unlimited features via Flutterwave
+- 💎 **Pro Subscription**: $5/month for unlimited features via Lemonsqueezy or Flutterwave
 - 📊 **Usage Analytics**: Track your generations and popular vibes
 - 📝 **Prompt Library**: Top 10 community vibes + custom prompts (Pro)
 - 📤 **Export Options**: PDF, Markdown, GitHub repo creation (Pro features)

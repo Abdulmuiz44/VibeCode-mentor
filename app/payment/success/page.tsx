@@ -1,181 +1,160 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
-function PaymentSuccessContent() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
+type PricingTier = 'monthly' | 'annual';
+
+export default function PaymentSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
+  const [countdown, setCountdown] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pricingTier, setPricingTier] = useState<PricingTier>('monthly');
 
   useEffect(() => {
-    async function verifyPayment() {
-      try {
-        // Get transaction details from URL params
-        const txRef = searchParams.get('tx_ref');
-        const transactionId = searchParams.get('transaction_id');
-        const paymentStatus = searchParams.get('status');
-
-        if (!txRef || paymentStatus !== 'successful') {
-          setStatus('error');
-          setErrorMessage('Payment confirmation missing or incomplete');
-          return;
-        }
-
-        // Verify payment with backend
-        const userId = session?.user?.id;
-        if (!userId) {
-          // For Flutterwave, user might not be logged in yet
-          // We'll just show success and let them login
-          setStatus('success');
-          setTimeout(() => {
-            router.push('/auth?returnTo=/profile');
-          }, 3000);
-          return;
-        }
-
-        const response = await fetch('/api/payments/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            transactionId: transactionId || txRef,
-            userId,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (data.verified && data.isPro) {
-          setStatus('success');
-          // Redirect to dashboard after 3 seconds
-          setTimeout(() => {
-            router.push('/profile');
-          }, 3000);
-        } else {
-          setStatus('error');
-          setErrorMessage(data.error || 'Payment verification failed. Please contact support.');
-        }
-      } catch (error) {
-        console.error('Payment verification error:', error);
-        setStatus('error');
-        setErrorMessage('Failed to verify payment. Please contact support if payment was deducted.');
-      }
+    // Get pricing tier from localStorage (saved during checkout)
+    const savedPricingTier = sessionStorage.getItem('checkout-pricing-tier') as PricingTier | null;
+    if (savedPricingTier) {
+      setPricingTier(savedPricingTier);
+      sessionStorage.removeItem('checkout-pricing-tier');
     }
 
-    verifyPayment();
-  }, [searchParams, router, session]);
+    // Wait for webhook to process (usually 1-2 seconds)
+    const processPayment = async () => {
+      try {
+        // Refresh session to get updated Pro status from webhook
+        await updateSession();
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error refreshing session:', error);
+        setIsLoading(false);
+      }
+    };
+
+    // Give webhook time to process
+    const timer = setTimeout(processPayment, 2000);
+    return () => clearTimeout(timer);
+  }, [updateSession]);
+
+  // Auto-redirect to home page after 5 seconds
+  useEffect(() => {
+    if (!isLoading && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+
+    if (countdown === 0 && !isLoading) {
+      router.push('/');
+    }
+  }, [countdown, isLoading, router]);
+
+  // Manual redirect button
+  const handleContinue = () => {
+    router.push('/');
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
-      <div className="container mx-auto px-4 max-w-2xl">
-        {status === 'loading' && (
-          <div className="text-center">
-            <div className="mb-6">
-              <svg className="animate-spin h-16 w-16 mx-auto text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Verifying Payment...</h1>
-            <p className="text-gray-400">Please wait while we confirm your subscription</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-950 to-black p-4">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-gray-950/80 backdrop-blur shadow-2xl p-8 text-center space-y-6 animate-in fade-in">
+        {/* Success Icon */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-lg opacity-75 animate-pulse"></div>
+            <div className="relative text-6xl">✓</div>
           </div>
-        )}
+        </div>
 
-        {status === 'success' && (
-          <div className="text-center">
-            <div className="mb-6">
-              <svg className="h-16 w-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-4">Welcome to Pro! 🎉</h1>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
-              <p className="text-gray-300 mb-4">Your Pro subscription is now active!</p>
-              <ul className="text-left space-y-2 text-gray-400">
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Unlimited blueprint generations
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Unlimited custom prompts
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Export to PDF, Markdown, GitHub
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Priority support
-                </li>
-              </ul>
-            </div>
-            <p className="text-sm text-gray-500">Redirecting to your profile...</p>
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-white">
+          Welcome to VibeCode Mentor Pro!
+        </h1>
+
+        {/* Message */}
+        <p className="text-gray-300 space-y-4">
+          <span className="block font-semibold text-lg">
+            Thank you for upgrading! 🎉
+          </span>
+
+          <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border border-purple-500/30 rounded-xl p-3">
+            <span className="block text-sm font-semibold text-purple-200">
+              {pricingTier === 'annual' ? '$50/year' : '$5/month'} Pro Plan
+            </span>
+            <span className="block text-xs text-gray-300 mt-1">
+              {pricingTier === 'annual'
+                ? 'Billed annually ($4.17/month equivalent)'
+                : 'Billed monthly, cancel anytime'}
+            </span>
           </div>
-        )}
 
-        {status === 'error' && (
-          <div className="text-center">
-            <div className="mb-6">
-              <svg className="h-16 w-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <span className="block text-sm">
+            Your subscription is now active and ready to use. A confirmation email has been sent to your account.
+          </span>
+
+          {/* Features List */}
+          <div className="text-left bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-white/10 rounded-2xl p-4 space-y-3">
+            <div className="flex gap-3 items-start">
+              <span className="text-purple-400 font-bold">✓</span>
+              <span className="text-sm text-gray-200">Unlimited blueprint generations + AI chat</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-4">Payment Verification Failed</h1>
-            <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4 mb-6">
-              <p className="text-gray-300 mb-2">{errorMessage}</p>
-              <p className="text-gray-400 text-sm">
-                If you were charged, please contact our support team with your transaction details.
-              </p>
+            <div className="flex gap-3 items-start">
+              <span className="text-purple-400 font-bold">✓</span>
+              <span className="text-sm text-gray-200">Save unlimited custom prompts and history</span>
             </div>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => router.push('/contact')}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200"
-              >
-                Contact Support
-              </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-200"
-              >
-                Go to Profile
-              </button>
+            <div className="flex gap-3 items-start">
+              <span className="text-purple-400 font-bold">✓</span>
+              <span className="text-sm text-gray-200">Export to PDF, Markdown, or GitHub</span>
+            </div>
+            <div className="flex gap-3 items-start">
+              <span className="text-purple-400 font-bold">✓</span>
+              <span className="text-sm text-gray-200">Priority support and early feature access</span>
+            </div>
+          </div>
+        </p>
+
+        {/* Countdown */}
+        <div className="text-sm text-gray-400">
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-purple-500 animate-bounce"></span>
+              <span>Processing your upgrade...</span>
+              <span className="inline-block h-2 w-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+            </div>
+          ) : (
+            <span>Redirecting in {countdown}s...</span>
+          )}
+        </div>
+
+        {/* Continue Button */}
+        <button
+          onClick={handleContinue}
+          disabled={isLoading}
+          className="w-full rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 text-white font-semibold transition hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Processing...' : 'Continue to Dashboard'}
+        </button>
+
+        {/* Back to Home Link */}
+        <button
+          onClick={() => router.push('/')}
+          className="w-full rounded-2xl border border-white/20 px-6 py-3 text-gray-300 font-semibold hover:bg-white/5 transition"
+        >
+          Back to Home
+        </button>
+
+        {/* Pro Status Badge */}
+        {session?.user && (
+          <div className="pt-4 border-t border-white/10">
+            <div className="inline-block bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-full px-4 py-2 text-sm text-purple-300 font-semibold">
+              ✨ Pro Member ✨
             </div>
           </div>
         )}
       </div>
-    </main>
-  );
-}
-
-export default function PaymentSuccessPage() {
-  return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="mb-6">
-            <svg className="animate-spin h-16 w-16 mx-auto text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-white">Loading...</h1>
-        </div>
-      </main>
-    }>
-      <PaymentSuccessContent />
-    </Suspense>
+    </div>
   );
 }
