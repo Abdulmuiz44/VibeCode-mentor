@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 type PricingTier = 'monthly' | 'annual';
 
@@ -12,6 +12,9 @@ interface LemonsqueezyButtonProps {
   onError?: (error: string) => void;
 }
 
+// Direct LemonSqueezy checkout URL
+const LEMONSQUEEZY_CHECKOUT_URL = 'https://vibe-code-mentor.lemonsqueezy.com/checkout/buy/f597bf10-3530-4b43-88c8-8b74eb4134c7';
+
 export default function LemonsqueezyButton({
   email: externalEmail,
   pricingTier = 'monthly',
@@ -20,91 +23,27 @@ export default function LemonsqueezyButton({
 }: LemonsqueezyButtonProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const checkoutAbortRef = useRef<AbortController | null>(null);
 
-  const handleCheckout = useCallback(async () => {
+  const handleCheckout = useCallback(() => {
     const email = externalEmail || session?.user?.email;
     
     if (!email) {
       const errorMsg = 'Email is required for checkout';
-      setError(errorMsg);
       onError?.(errorMsg);
       return;
     }
 
-    // Prevent multiple simultaneous requests
-    if (checkoutAbortRef.current) {
-      checkoutAbortRef.current.abort();
-    }
-    checkoutAbortRef.current = new AbortController();
-
     setLoading(true);
-    setError(null);
 
-    try {
-      const response = await fetch('/api/lemonsqueezy/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          name: session?.user?.name || email.split('@')[0],
-          userId: session?.user?.id,
-          pricingTier,
-        }),
-        signal: checkoutAbortRef.current.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.checkoutUrl) {
-        // Store checkout session data for recovery
-        sessionStorage.setItem('checkout-pending', JSON.stringify({
-          email,
-          timestamp: Date.now(),
-          checkoutUrl: data.checkoutUrl,
-        }));
-        
-        // Store pricing tier for success page
-        sessionStorage.setItem('checkout-pricing-tier', pricingTier);
-        
-        // Prevent page navigation interruption
-        const href = data.checkoutUrl;
-        // Use a slight delay to ensure storage is written
-        setTimeout(() => {
-          window.location.href = href;
-        }, 50);
-        return;
-      }
-
-      throw new Error(data.error || 'Unable to start checkout');
-    } catch (err) {
-      // Don't treat aborted requests as errors
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
-
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to start checkout';
-      console.error('Lemonsqueezy checkout error:', err);
-      setError(errorMessage);
-      onError?.(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [externalEmail, session?.user?.email, session?.user?.name, session?.user?.id, pricingTier, onError]);
+    // Store pricing tier for success page
+    sessionStorage.setItem('checkout-pricing-tier', pricingTier);
+    
+    // Redirect directly to LemonSqueezy checkout
+    window.location.href = LEMONSQUEEZY_CHECKOUT_URL;
+  }, [externalEmail, session?.user?.email, pricingTier, onError]);
 
   return (
     <div className="w-full space-y-3">
-      {error && (
-        <div className="p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-sm animate-in fade-in">
-          {error}
-        </div>
-      )}
       <button
         onClick={handleCheckout}
         disabled={loading || !session?.user?.email}
