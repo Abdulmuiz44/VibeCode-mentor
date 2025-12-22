@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       const userId = customData.userId;
       const customerEmail = subscription.customer_email;
       const subscriptionId = subscription.id;
-      const amount = parseFloat(subscription.total / 100) || 5.00; // Lemonsqueezy returns amount in cents
+      const amount = (subscription.total ? subscription.total / 100 : 5.00); // Lemonsqueezy returns amount in cents
 
       if (!userId || !customerEmail) {
         console.warn('Missing userId or email in webhook data');
