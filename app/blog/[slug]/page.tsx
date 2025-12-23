@@ -25,7 +25,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
           
           <h2 className="text-3xl font-bold mt-8 mb-4 text-white">The Core Concept</h2>
           <p>
-            In traditional development, you write code and manage syntax. In vibecoding, you focus on the "vibe" - the vision, direction, and high-level requirements. 
+            In traditional development, you write code and manage syntax. In vibecoding, you focus on the &quot;vibe&quot; - the vision, direction, and high-level requirements. 
             AI handles the implementation details, code generation, and optimization.
           </p>
 
@@ -48,7 +48,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
 
           <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Getting Started with Vibecoding</h2>
           <p>
-            Vibecoding is accessible to developers of all levels. Whether you're a seasoned engineer or a beginner, VibeCode Mentor provides the tools 
+            Vibecoding is accessible to developers of all levels. Whether you&apos;re a seasoned engineer or a beginner, VibeCode Mentor provides the tools 
             and guidance needed to harness this powerful methodology.
           </p>
         </>
@@ -213,7 +213,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
           <p className="text-gray-300 mb-6">
             {post.category === 'Trends' && 'Stay ahead of the curve and implement these trends with AI-assisted development.'}
             {post.category === 'Guide' && 'Master these concepts with AI guidance and automated blueprint generation.'}
-            {post.category === 'Tutorial' && 'Follow these patterns faster with VibeCode Mentor\'s intelligent code generation.'}
+            {post.category === 'Tutorial' && 'Follow these patterns faster with VibeCode Mentor&apos;s intelligent code generation.'}
             {post.category === 'Technical' && 'Implement complex technical solutions with AI-powered architectural guidance.'}
             {post.category === 'Learning' && 'Accelerate your learning by applying these concepts immediately in real projects.'}
             {post.category === 'Career' && 'Land your dream job faster by building impressive projects with VibeCode Mentor.'}
