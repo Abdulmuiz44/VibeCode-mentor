@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { blogPosts } from '@/lib/blogPosts';
+import { articleContent } from '@/lib/articleContent';
 import { notFound } from 'next/navigation';
 import ChatBubble from '@/components/ChatBubble';
 
@@ -12,113 +13,28 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
     notFound();
   }
 
-  // Generate SEO-optimized article content based on slug
-  const generateArticleContent = (slug: string) => {
-    const contentMap: Record<string, JSX.Element> = {
-      'what-is-vibecoding': (
-        <>
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">What is Vibecoding?</h2>
-          <p>
-            Vibecoding is a revolutionary paradigm in software development that shifts the focus from traditional coding to creative direction and conceptual guidance. 
-            Coined by Andrej Karpathy, this methodology embraces AI as a collaborative partner in the development process.
-          </p>
-          
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">The Core Concept</h2>
-          <p>
-            In traditional development, you write code and manage syntax. In vibecoding, you focus on the &quot;vibe&quot; - the vision, direction, and high-level requirements. 
-            AI handles the implementation details, code generation, and optimization.
-          </p>
-
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">How Vibecoding Works</h2>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Describe your vision and requirements</li>
-            <li>AI analyzes and generates comprehensive blueprints</li>
-            <li>Review and refine with AI guidance</li>
-            <li>Export and implement with confidence</li>
-          </ul>
-
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Key Benefits</h2>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Dramatically faster development cycles</li>
-            <li>Reduced syntax and implementation errors</li>
-            <li>Professional-grade architectural blueprints</li>
-            <li>AI-powered code suggestions and optimizations</li>
-            <li>Focus on creative problem-solving</li>
-          </ul>
-
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Getting Started with Vibecoding</h2>
-          <p>
-            Vibecoding is accessible to developers of all levels. Whether you&apos;re a seasoned engineer or a beginner, VibeCode Mentor provides the tools 
-            and guidance needed to harness this powerful methodology.
-          </p>
-        </>
-      ),
-      'vibecoding-vs-traditional-coding': (
-        <>
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Traditional Coding Approach</h2>
-          <p>
-            In traditional development, developers spend significant time on:
-          </p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Manual code writing and syntax management</li>
-            <li>Debugging and troubleshooting</li>
-            <li>Architecture design and planning</li>
-            <li>Code optimization and refactoring</li>
-          </ul>
-
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Vibecoding Approach</h2>
-          <p>
-            Vibecoding revolutionizes this process by:
-          </p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>AI handles code generation and syntax</li>
-            <li>Focus on creative direction and vision</li>
-            <li>Automated blueprint generation</li>
-            <li>AI-assisted optimization and best practices</li>
-          </ul>
-
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-white">Comparison Table</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse mt-4">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-2 px-3">Aspect</th>
-                  <th className="text-left py-2 px-3">Traditional</th>
-                  <th className="text-left py-2 px-3">Vibecoding</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-700">
-                  <td className="py-2 px-3">Speed</td>
-                  <td className="py-2 px-3">Slower</td>
-                  <td className="py-2 px-3">Faster</td>
-                </tr>
-                <tr className="border-b border-gray-700">
-                  <td className="py-2 px-3">Focus</td>
-                  <td className="py-2 px-3">Implementation</td>
-                  <td className="py-2 px-3">Vision</td>
-                </tr>
-                <tr className="border-b border-gray-700">
-                  <td className="py-2 px-3">Automation</td>
-                  <td className="py-2 px-3">Limited</td>
-                  <td className="py-2 px-3">Extensive</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </>
-      ),
-    };
-
-    return contentMap[slug] || (
+  // Get the full article content or fallback to excerpt
+  const getArticleContent = (slug: string) => {
+    if (articleContent[slug]) {
+      return articleContent[slug];
+    }
+    
+    // Fallback content for articles not yet in articleContent
+    return (
       <>
-        <p>
+        <p className="mb-4">
           {post?.excerpt}
         </p>
-        <p className="mt-6">
+        <p className="mt-6 text-gray-400">
           This is a comprehensive guide covering best practices, implementation strategies, and real-world examples. 
-          VibeCode Mentor provides AI-powered assistance throughout the process.
+          VibeCode Mentor provides AI-powered assistance throughout the process. For more related content, explore our comprehensive blog library.
         </p>
+        <div className="mt-8 p-6 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+          <h3 className="text-xl font-bold text-purple-300 mb-2">Coming Soon</h3>
+          <p className="text-gray-400">
+            This article is being expanded with comprehensive, SEO-optimized content. Check back soon for the complete guide.
+          </p>
+        </div>
       </>
     );
   };
@@ -174,7 +90,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
         {/* Article Content */}
         <article className="prose prose-invert max-w-none mb-12 prose-headings:mt-8 prose-headings:mb-4">
           <div className="space-y-6 text-gray-300 leading-relaxed">
-            {generateArticleContent(post.slug)}
+            {getArticleContent(post.slug)}
           </div>
         </article>
 
@@ -218,7 +134,10 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
             {post.category === 'Learning' && 'Accelerate your learning by applying these concepts immediately in real projects.'}
             {post.category === 'Career' && 'Land your dream job faster by building impressive projects with VibeCode Mentor.'}
             {post.category === 'Case Studies' && 'Learn from real-world examples and build similar solutions with AI assistance.'}
-            {!['Trends', 'Guide', 'Tutorial', 'Technical', 'Learning', 'Career', 'Case Studies'].includes(post.category) && 'Implement these strategies with VibeCode Mentor - the AI blueprint generator.'}
+            {post.category === 'Product' && 'Explore how VibeCode Mentor features can accelerate your development workflow.'}
+            {post.category === 'Community' && 'Join the vibecoding community and connect with like-minded developers.'}
+            {post.category === 'Ethics' && 'Build responsibly with ethical AI-assisted development practices.'}
+            {!['Trends', 'Guide', 'Tutorial', 'Technical', 'Learning', 'Career', 'Case Studies', 'Product', 'Community', 'Ethics'].includes(post.category) && 'Implement these strategies with VibeCode Mentor - the AI blueprint generator.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
