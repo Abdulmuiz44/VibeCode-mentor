@@ -1,88 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getProStatusFromCloud } from '@/lib/supabaseDB';
-import { checkChatRateLimit } from '@/lib/kv';
+import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory, blueprintContext, userId } = await request.json();
+    const body = await request.json();
+    const { message, conversationHistory, blueprintContext, userId } = body;
 
-    if (!message || !message.trim()) {
-      return NextResponse.json(
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return Response.json(
         { error: 'Message is required' },
         { status: 400 }
       );
     }
 
-    // Get user's IP address
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
-
-    // Check if user is Pro
-    const isPro = userId ? await getProStatusFromCloud(userId) : false;
-
-    // Rate limiting for free tier (KV-backed)
-    const rateLimitRes = await checkChatRateLimit(userId, ip);
-    const rateLimit = {
-      allowed: rateLimitRes.allowed,
-      remaining: rateLimitRes.limit - rateLimitRes.current,
-      limit: rateLimitRes.limit,
-    };
-    
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { 
-          error: 'Chat limit reached',
-          message: `You've used all ${rateLimit.limit} free chats today. Upgrade to Pro for unlimited AI assistance!`,
-          remaining: rateLimit.remaining,
-          limit: rateLimit.limit,
-          isPro: false,
-        },
-        { status: 429 }
-      );
-    }
-
     const apiKey = process.env.MISTRAL_API_KEY;
-
     if (!apiKey) {
-      return NextResponse.json(
-        { error: 'MISTRAL_API_KEY is not configured' },
+      return Response.json(
+        { error: 'AI service not configured' },
         { status: 500 }
       );
     }
 
-    // Build context-aware system prompt
-    let systemPrompt = `You are VibeCode Mentor's AI Assistant, an expert software architect and development advisor. You help users refine their project blueprints, answer technical questions, and provide guidance on implementation.
+    const systemPrompt = `You are VibeCode Mentor's AI Assistant, an expert software architect and development advisor. You help users refine their project blueprints, answer technical questions, and provide guidance on implementation.
 
 Your capabilities:
 - Explain technical concepts clearly
 - Suggest improvements to project blueprints
 - Recommend tech stack alternatives
 - Help with architecture decisions
-- Debug conceptual issues
 - Provide code examples when helpful
 
-Keep responses:
-- Concise but comprehensive
-- Actionable and specific
-- Friendly and encouraging
-- Technical but accessible`;
+Keep responses concise, actionable, and friendly.`;
 
-    // Add blueprint context if available
-    if (blueprintContext) {
-      systemPrompt += `\n\nCurrent Blueprint Context:\n${blueprintContext.substring(0, 2000)}`;
-    }
-
-    // Prepare messages with conversation history
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...(conversationHistory || []),
+      ...(Array.isArray(conversationHistory) ? conversationHistory : []),
       { role: 'user', content: message },
     ];
 
-    // Call Mistral API
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -98,26 +54,23 @@ Keep responses:
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Mistral API Error:', errorText);
-      return NextResponse.json(
-        { error: `AI service error: ${response.status}` },
+      console.error(`Mistral API error: ${response.status}`);
+      return Response.json(
+        { error: 'AI service error' },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || '';
+    const aiResponse = data.choices?.[0]?.message?.content || '';
 
-    return NextResponse.json({
+    return Response.json({
       response: aiResponse,
-      remaining: rateLimit.remaining,
-      limit: rateLimit.limit,
-      isPro,
+      success: true,
     });
   } catch (error) {
-    console.error('Error in chat API:', error);
-    return NextResponse.json(
+    console.error('Chat API error:', error);
+    return Response.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

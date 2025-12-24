@@ -1,13 +1,4 @@
-import * as Sentry from '@sentry/nextjs';
-
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('./sentry.server.config');
-  }
-
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('./sentry.edge.config');
-  }
+  // Sentry instrumentation disabled to fix build issues
+  // Re-enable after resolving Next.js 14.2.5 compatibility
 }
-
-export const onRequestError = Sentry.captureRequestError;

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAdminToken } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { password } = await request.json();
-    
+    const body = await request.json();
+    const { password } = body;
+
     const adminPassword = process.env.ADMIN_PASSWORD;
     
     if (!adminPassword) {
@@ -15,8 +15,10 @@ export async function POST(request: NextRequest) {
     }
     
     if (password === adminPassword) {
-      const token = generateAdminToken(adminPassword);
-      return NextResponse.json({ success: true, token });
+      return NextResponse.json({ 
+        success: true,
+        message: 'Authenticated',
+      });
     }
     
     return NextResponse.json(
@@ -24,8 +26,9 @@ export async function POST(request: NextRequest) {
       { status: 401 }
     );
   } catch (error) {
+    console.error('Admin auth error:', error);
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
