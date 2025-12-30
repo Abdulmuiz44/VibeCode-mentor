@@ -38,7 +38,7 @@ export default function MainHeader() {
             <button
               type="button"
               aria-label="Open menu"
-              className="rounded-full border border-gray-700 p-2 text-gray-300 transition hover:border-purple-500 hover:text-white lg:hidden"
+              className="rounded-full border border-gray-700 p-2 text-gray-300 transition hover:border-white hover:text-white lg:hidden"
               onClick={() => setIsMenuOpen(true)}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

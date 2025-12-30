@@ -93,18 +93,18 @@ export default function HomeClient() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+    <main className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-            VibeCode Mentor
-          </h1>
-          <p className="text-gray-300 text-lg mb-6 font-light">
-            Transform your ideas into production-ready blueprints with AI
-          </p>
-          <div className="max-w-3xl mx-auto mt-8 p-4 bg-purple-900/20 border border-purple-700/40 rounded-lg">
-            <p className="text-sm text-purple-300 mb-2 font-medium">💡 Pro Tips for Best Results:</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-purple-200">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 text-white">
+             VibeCode Mentor
+           </h1>
+           <p className="text-gray-300 text-lg mb-6 font-light">
+             Transform your ideas into production-ready blueprints with AI
+           </p>
+           <div className="max-w-3xl mx-auto mt-8 p-4 bg-gray-900 border border-gray-700 rounded-lg">
+             <p className="text-sm text-white mb-2 font-medium">💡 Pro Tips for Best Results:</p>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-gray-300">
               <div className="flex items-center gap-1.5">
                 <span>✓</span>
                 <span>Specify your tech stack</span>
@@ -132,7 +132,7 @@ export default function HomeClient() {
                  value={projectIdea}
                  onChange={(e) => setProjectIdea(e.target.value)}
                  placeholder="E.g., Build a real-time chat app with React, WebSockets, and MongoDB..."
-                 className="w-full h-40 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none text-white placeholder-gray-500 transition"
+                 className="w-full h-40 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-white focus:border-white outline-none resize-none text-white placeholder-gray-500 transition"
                  disabled={loading}
                />
               {!projectIdea && !blueprint && (

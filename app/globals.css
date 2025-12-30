@@ -3,10 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #f5f5f5;
-  --accent-primary: #8b5cf6;
-  --accent-secondary: #ec4899;
+  --background: #000000;
+  --foreground: #ffffff;
 }
 
 html {
@@ -30,28 +28,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p, span, li, a {
-  color: #f5f5f5;
+  color: #ffffff;
 }
 
 /* Input and textarea styling */
 input, textarea, select {
   background-color: #1a1a1a !important;
-  border-color: #2a2a2a !important;
+  border-color: #333333 !important;
   color: #ffffff !important;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #808080 !important;
+  color: #666666 !important;
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: #8b5cf6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
 }
 
 /* Button styling */
 button {
   transition: all 0.2s ease;
+  color: #ffffff;
+}
+
+/* Remove all color classes */
+[class*="bg-blue"], [class*="bg-purple"], [class*="bg-pink"], 
+[class*="text-blue"], [class*="text-purple"], [class*="text-pink"],
+[class*="border-blue"], [class*="border-purple"], [class*="border-pink"],
+[class*="from-blue"], [class*="via-blue"], [class*="to-blue"],
+[class*="from-purple"], [class*="via-purple"], [class*="to-purple"],
+[class*="from-pink"], [class*="via-pink"], [class*="to-pink"],
+[class*="ring-blue"], [class*="ring-purple"], [class*="ring-pink"] {
+  /* Neutralized */
 }
 
 @layer utilities {
