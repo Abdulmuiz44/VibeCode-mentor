@@ -31,14 +31,14 @@ export default function MainHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-gray-800 bg-[#050505]/80 backdrop-blur-xl shadow-lg">
+      <header className="sticky top-0 z-40 border-b border-gray-900 bg-black/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           {/* Left Side: Logo & Mobile Menu */}
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Open menu"
-              className="rounded-full border border-gray-700 p-2 text-gray-300 transition hover:border-pink-500 hover:text-white lg:hidden"
+              className="rounded-full border border-gray-700 p-2 text-gray-300 transition hover:border-purple-500 hover:text-white lg:hidden"
               onClick={() => setIsMenuOpen(true)}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
