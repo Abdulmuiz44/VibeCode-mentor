@@ -21,13 +21,22 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
   const handleBuildFullApp = async () => {
     // If not pro, show upgrade modal
     if (!isPro) {
+      // Store blueprint for after upgrade
+      sessionStorage.setItem(
+        'blueprintToBuild',
+        JSON.stringify({
+          projectIdea,
+          blueprint,
+          timestamp: Date.now(),
+        })
+      );
+      
       openUpgradeModal({
         source: 'build_full_app',
-        onSuccess: () => {
-          // After successful upgrade, start the build
-          startBuild();
-        },
       });
+      
+      // User will need to click button again after upgrading
+      // Pro status will update and startBuild will execute
       return;
     }
 

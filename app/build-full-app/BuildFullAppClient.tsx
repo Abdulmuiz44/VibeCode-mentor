@@ -4,10 +4,6 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ChatBubble from '@/components/ChatBubble';
-import { CodeGenerator } from '@/lib/code-generator/generator';
-import { Blueprint } from '@/lib/code-generator/types';
-import { ProjectDatabase, GitHubTokenDatabase } from '@/lib/db/projects';
-import { pushProjectToGithub } from '@/lib/github/repository';
 
 interface BuildState {
   step: number;
@@ -93,24 +89,29 @@ export default function BuildFullAppClient() {
     try {
       // Step 1: Parse blueprint
       updateStep(0, 'in-progress', 'Analyzing your blueprint...');
-      await new Promise(r => setTimeout(r, 500)); // Simulate work
+      await new Promise(r => setTimeout(r, 500));
       updateStep(0, 'completed');
 
-      // Step 2: Create project record
+      // Step 2: Create project record via API
       updateStep(1, 'in-progress', 'Setting up project structure...');
-      const blueprint = parseBlueprint(data.blueprint);
       
-      // Generate codes
-      const generator = new CodeGenerator(blueprint);
-      const generatedProject = generator.generate();
+      const response = await fetch('/api/generate-project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: data.projectIdea.split('\n')[0] || 'Generated Project',
+          description: data.projectIdea,
+          features: ['auth', 'realtime'],
+          databaseSchema: 'Users',
+          apiEndpoints: 'GET /api',
+          uiComponents: 'Dashboard',
+          deploymentRequirements: 'Vercel',
+        }),
+      });
 
-      // Store in database
-      const projectRecord = await ProjectDatabase.createProject(
-        userId,
-        blueprint,
-        generatedProject
-      );
-      setProjectId(projectRecord.id);
+      if (!response.ok) throw new Error('Failed to generate project');
+      const result = await response.json();
+      setProjectId(result.projectId);
       updateStep(1, 'completed');
 
       // Step 3: Database schema
@@ -140,61 +141,29 @@ export default function BuildFullAppClient() {
 
       // Step 8: GitHub push
       updateStep(7, 'in-progress', 'Pushing to GitHub...');
-
-      // Check if user has GitHub connected
-      const githubToken = await GitHubTokenDatabase.getToken(userId);
+      await new Promise(r => setTimeout(r, 2000));
       
-      if (githubToken) {
-        try {
-          const result = await pushProjectToGithub(
-            githubToken.access_token,
-            generatedProject.name,
-            blueprint.description,
-            generatedProject.files
-          );
-
-          // Update database with GitHub URL
-          await ProjectDatabase.updateProjectGithubUrl(
-            projectRecord.id,
-            result.repoUrl,
-            result.repoId
-          );
-
-          setGithubUrl(result.repoUrl);
-          updateStep(7, 'completed', `Repository created at ${result.repoUrl}`);
-        } catch (err) {
-          updateStep(7, 'completed', 'GitHub not connected - project generated locally');
+      // Check status
+      const statusResponse = await fetch(`/api/generate-project/${result.projectId}/status`);
+      if (statusResponse.ok) {
+        const status = await statusResponse.json();
+        if (status.githubUrl) {
+          setGithubUrl(status.githubUrl);
+          updateStep(7, 'completed', `Repository created`);
+        } else {
+          updateStep(7, 'completed', 'GitHub not connected');
         }
-      } else {
-        updateStep(7, 'completed', 'GitHub not connected - project generated locally');
       }
 
       setIsComplete(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed');
-      updateStep(currentStep, 'failed', error);
+      const errorMsg = err instanceof Error ? err.message : 'Generation failed';
+      setError(errorMsg);
+      updateStep(currentStep, 'failed', errorMsg);
     }
   };
 
-  const parseBlueprint = (blueprintText: string): Blueprint => {
-    // Extract blueprint sections from the generated blueprint
-    // This is a simplified parser - in production, enhance this
-    return {
-      projectName: blueprintData?.projectIdea?.split('\n')[0] || 'Generated Project',
-      description: blueprintData?.projectIdea || '',
-      features: ['auth', 'realtime', 'payments'], // Parse from blueprint
-      databaseSchema: extractSection(blueprintText, 'Database Schema') || 'Users',
-      apiEndpoints: extractSection(blueprintText, 'API Endpoints') || 'GET /api',
-      uiComponents: extractSection(blueprintText, 'Components') || 'Dashboard',
-      deploymentRequirements: extractSection(blueprintText, 'Deployment') || 'Vercel',
-    };
-  };
 
-  const extractSection = (text: string, sectionName: string): string => {
-    const regex = new RegExp(`### ${sectionName}[\\s\\S]*?(?=###|$)`);
-    const match = text.match(regex);
-    return match ? match[0] : '';
-  };
 
   const progress = steps.filter(s => s.status === 'completed').length;
   const progressPercent = Math.round((progress / steps.length) * 100);
