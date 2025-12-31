@@ -266,7 +266,10 @@ export class GitHubRepository {
       },
       enforce_admins: false,
       required_status_checks: null,
-    });
+      restrictions: null,
+      allow_force_pushes: false,
+      allow_deletions: false,
+    } as any);
   }
 }
 
