@@ -86,14 +86,18 @@ export default function BuildFullAppClient() {
   const startGeneration = async (data: typeof blueprintData, userId: string) => {
     if (!data) return;
 
+    let currentStepIndex = 0;
+
     try {
       // Step 1: Parse blueprint
-      updateStep(0, 'in-progress', 'Analyzing your blueprint...');
+      currentStepIndex = 0;
+      updateStep(currentStepIndex, 'in-progress', 'Analyzing your blueprint...');
       await new Promise(r => setTimeout(r, 500));
-      updateStep(0, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 2: Create project record via API
-      updateStep(1, 'in-progress', 'Setting up project structure...');
+      currentStepIndex = 1;
+      updateStep(currentStepIndex, 'in-progress', 'Setting up project structure...');
       
       const response = await fetch('/api/generate-project', {
         method: 'POST',
@@ -101,6 +105,7 @@ export default function BuildFullAppClient() {
         body: JSON.stringify({
           projectName: data.projectIdea.split('\n')[0] || 'Generated Project',
           description: data.projectIdea,
+          userId,
           features: ['auth', 'realtime'],
           databaseSchema: 'Users',
           apiEndpoints: 'GET /api',
@@ -109,38 +114,53 @@ export default function BuildFullAppClient() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to generate project');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate project');
+      }
+      
       const result = await response.json();
+      
+      if (!result.projectId) {
+        throw new Error('No project ID returned from server');
+      }
+      
       setProjectId(result.projectId);
-      updateStep(1, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 3: Database schema
-      updateStep(2, 'in-progress', 'Generating database migrations...');
+      currentStepIndex = 2;
+      updateStep(currentStepIndex, 'in-progress', 'Generating database migrations...');
       await new Promise(r => setTimeout(r, 800));
-      updateStep(2, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 4: API routes
-      updateStep(3, 'in-progress', 'Building API routes...');
+      currentStepIndex = 3;
+      updateStep(currentStepIndex, 'in-progress', 'Building API routes...');
       await new Promise(r => setTimeout(r, 1000));
-      updateStep(3, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 5: React components
-      updateStep(4, 'in-progress', 'Creating React components...');
+      currentStepIndex = 4;
+      updateStep(currentStepIndex, 'in-progress', 'Creating React components...');
       await new Promise(r => setTimeout(r, 1200));
-      updateStep(4, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 6: Authentication
-      updateStep(5, 'in-progress', 'Setting up authentication...');
+      currentStepIndex = 5;
+      updateStep(currentStepIndex, 'in-progress', 'Setting up authentication...');
       await new Promise(r => setTimeout(r, 500));
-      updateStep(5, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 7: Environment config
-      updateStep(6, 'in-progress', 'Configuring environment...');
+      currentStepIndex = 6;
+      updateStep(currentStepIndex, 'in-progress', 'Configuring environment...');
       await new Promise(r => setTimeout(r, 400));
-      updateStep(6, 'completed');
+      updateStep(currentStepIndex, 'completed');
 
       // Step 8: GitHub push
-      updateStep(7, 'in-progress', 'Pushing to GitHub...');
+      currentStepIndex = 7;
+      updateStep(currentStepIndex, 'in-progress', 'Pushing to GitHub...');
       await new Promise(r => setTimeout(r, 2000));
       
       // Check status
@@ -149,17 +169,19 @@ export default function BuildFullAppClient() {
         const status = await statusResponse.json();
         if (status.githubUrl) {
           setGithubUrl(status.githubUrl);
-          updateStep(7, 'completed', `Repository created`);
+          updateStep(currentStepIndex, 'completed', 'Repository created');
         } else {
-          updateStep(7, 'completed', 'GitHub not connected');
+          updateStep(currentStepIndex, 'completed', 'GitHub not connected');
         }
+      } else {
+        updateStep(currentStepIndex, 'completed', 'GitHub status unavailable');
       }
 
       setIsComplete(true);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Generation failed';
       setError(errorMsg);
-      updateStep(currentStep, 'failed', errorMsg);
+      updateStep(currentStepIndex, 'failed', errorMsg);
     }
   };
 
