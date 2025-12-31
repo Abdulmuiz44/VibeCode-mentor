@@ -12,6 +12,7 @@ import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/expor
 import CommentsSection from './CommentsSection';
 import ShareModal from './ShareModal';
 import { useProStatus } from '@/hooks/useProStatus';
+import BuildFullAppButton from './BuildFullAppButton';
 
 interface BlueprintOutputProps {
   blueprint: string;
@@ -554,6 +555,9 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
       {showComments && (
         <CommentsSection blueprintId={blueprintId || 0} />
       )}
-    </div>
-  );
-}
+
+      {/* Build Full App Button */}
+      <BuildFullAppButton blueprint={blueprint} projectIdea={projectIdea} />
+      </div>
+      );
+      }
