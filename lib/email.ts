@@ -1,40 +1,40 @@
-let Resend: any;
-let render: any;
-let WelcomeEmail: any;
-let PaymentConfirmationEmail: any;
-let RateLimitWarningEmail: any;
-let WeeklySummaryEmail: any;
+let ResendClass: any;
+let renderFn: any;
+let WelcomeEmailComponent: any;
+let PaymentConfirmationEmailComponent: any;
+let RateLimitWarningEmailComponent: any;
+let WeeklySummaryEmailComponent: any;
 
 // Dynamic imports to prevent build-time errors
 async function loadDependencies() {
-  if (!Resend) {
+  if (!ResendClass) {
     const resendModule = await import('resend');
-    Resend = resendModule.Resend;
+    ResendClass = resendModule.Resend;
   }
-  if (!render) {
+  if (!renderFn) {
     const emailComponents = await import('@react-email/components');
-    render = emailComponents.render;
+    renderFn = emailComponents.render;
   }
-  if (!WelcomeEmail) {
+  if (!WelcomeEmailComponent) {
     const welcomeEmailModule = await import('@/emails/WelcomeEmail');
-    WelcomeEmail = welcomeEmailModule.default;
+    WelcomeEmailComponent = welcomeEmailModule.default;
   }
-  if (!PaymentConfirmationEmail) {
+  if (!PaymentConfirmationEmailComponent) {
     const paymentEmailModule = await import('@/emails/PaymentConfirmationEmail');
-    PaymentConfirmationEmail = paymentEmailModule.default;
+    PaymentConfirmationEmailComponent = paymentEmailModule.default;
   }
-  if (!RateLimitWarningEmail) {
+  if (!RateLimitWarningEmailComponent) {
     const rateLimitEmailModule = await import('@/emails/RateLimitWarningEmail');
-    RateLimitWarningEmail = rateLimitEmailModule.default;
+    RateLimitWarningEmailComponent = rateLimitEmailModule.default;
   }
-  if (!WeeklySummaryEmail) {
+  if (!WeeklySummaryEmailComponent) {
     const weeklySummaryEmailModule = await import('@/emails/WeeklySummaryEmail');
-    WeeklySummaryEmail = weeklySummaryEmailModule.default;
+    WeeklySummaryEmailComponent = weeklySummaryEmailModule.default;
   }
 }
 
 // Lazy initialization to avoid build-time errors when API key is missing
-let resend: Resend | null = null;
+let resend: any = null;
 
 function getResendClient() {
   if (!resend) {
@@ -42,7 +42,7 @@ function getResendClient() {
     if (!apiKey) {
       throw new Error('RESEND_API_KEY is not configured');
     }
-    resend = new Resend(apiKey);
+    resend = new ResendClass(apiKey);
   }
   return resend;
 }
@@ -73,7 +73,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 export async function sendWelcomeEmail(to: string, userName: string) {
   try {
     await loadDependencies();
-    const html = await render(WelcomeEmail({ userName }));
+    const html = await renderFn(WelcomeEmailComponent({ userName }));
     
     return sendEmail({
       to,
@@ -95,8 +95,8 @@ export async function sendPaymentConfirmationEmail(
 ) {
   try {
     await loadDependencies();
-    const html = await render(
-      PaymentConfirmationEmail({
+    const html = await renderFn(
+      PaymentConfirmationEmailComponent({
         userName,
         amount,
         transactionId,
@@ -123,8 +123,8 @@ export async function sendRateLimitWarningEmail(
 ) {
   try {
     await loadDependencies();
-    const html = await render(
-      RateLimitWarningEmail({
+    const html = await renderFn(
+      RateLimitWarningEmailComponent({
         userName,
         limitType,
         remaining,
@@ -154,8 +154,8 @@ export async function sendWeeklySummaryEmail(
 ) {
   try {
     await loadDependencies();
-    const html = await render(
-      WeeklySummaryEmail({
+    const html = await renderFn(
+      WeeklySummaryEmailComponent({
         userName,
         blueprintsCreated,
         chatsUsed,

@@ -9,10 +9,6 @@ const nextConfig = {
       },
     ],
   },
-  // Fix for Next.js 14.2.x Babel 7.2 compatibility issue
-  experimental: {
-    disableOptimizedFontLoading: true,
-  },
 };
 
 export default nextConfig;
