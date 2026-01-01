@@ -1,9 +1,37 @@
-import { Resend } from 'resend';
-import { render } from '@react-email/components';
-import WelcomeEmail from '@/emails/WelcomeEmail';
-import PaymentConfirmationEmail from '@/emails/PaymentConfirmationEmail';
-import RateLimitWarningEmail from '@/emails/RateLimitWarningEmail';
-import WeeklySummaryEmail from '@/emails/WeeklySummaryEmail';
+let Resend: any;
+let render: any;
+let WelcomeEmail: any;
+let PaymentConfirmationEmail: any;
+let RateLimitWarningEmail: any;
+let WeeklySummaryEmail: any;
+
+// Dynamic imports to prevent build-time errors
+async function loadDependencies() {
+  if (!Resend) {
+    const resendModule = await import('resend');
+    Resend = resendModule.Resend;
+  }
+  if (!render) {
+    const emailComponents = await import('@react-email/components');
+    render = emailComponents.render;
+  }
+  if (!WelcomeEmail) {
+    const welcomeEmailModule = await import('@/emails/WelcomeEmail');
+    WelcomeEmail = welcomeEmailModule.default;
+  }
+  if (!PaymentConfirmationEmail) {
+    const paymentEmailModule = await import('@/emails/PaymentConfirmationEmail');
+    PaymentConfirmationEmail = paymentEmailModule.default;
+  }
+  if (!RateLimitWarningEmail) {
+    const rateLimitEmailModule = await import('@/emails/RateLimitWarningEmail');
+    RateLimitWarningEmail = rateLimitEmailModule.default;
+  }
+  if (!WeeklySummaryEmail) {
+    const weeklySummaryEmailModule = await import('@/emails/WeeklySummaryEmail');
+    WeeklySummaryEmail = weeklySummaryEmailModule.default;
+  }
+}
 
 // Lazy initialization to avoid build-time errors when API key is missing
 let resend: Resend | null = null;
@@ -44,6 +72,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 
 export async function sendWelcomeEmail(to: string, userName: string) {
   try {
+    await loadDependencies();
     const html = await render(WelcomeEmail({ userName }));
     
     return sendEmail({
@@ -65,6 +94,7 @@ export async function sendPaymentConfirmationEmail(
   nextBillingDate: string
 ) {
   try {
+    await loadDependencies();
     const html = await render(
       PaymentConfirmationEmail({
         userName,
@@ -92,6 +122,7 @@ export async function sendRateLimitWarningEmail(
   remaining: number
 ) {
   try {
+    await loadDependencies();
     const html = await render(
       RateLimitWarningEmail({
         userName,
@@ -122,6 +153,7 @@ export async function sendWeeklySummaryEmail(
   isPro: boolean
 ) {
   try {
+    await loadDependencies();
     const html = await render(
       WeeklySummaryEmail({
         userName,

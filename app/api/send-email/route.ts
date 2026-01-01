@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  sendWelcomeEmail,
-  sendPaymentConfirmationEmail,
-  sendRateLimitWarningEmail,
-  sendWeeklySummaryEmail,
-} from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+// Lazy load email functions to avoid build-time errors
+async function getEmailFunctions() {
+  const { sendWelcomeEmail, sendPaymentConfirmationEmail, sendRateLimitWarningEmail, sendWeeklySummaryEmail } = await import('@/lib/email');
+  return { sendWelcomeEmail, sendPaymentConfirmationEmail, sendRateLimitWarningEmail, sendWeeklySummaryEmail };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { sendWelcomeEmail, sendPaymentConfirmationEmail, sendRateLimitWarningEmail, sendWeeklySummaryEmail } = await getEmailFunctions();
     let result;
 
     switch (type) {
