@@ -5,7 +5,7 @@ import { ProjectDatabase } from '@/lib/db/projects';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function GET(
       );
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
 
     // Get project and verify ownership
     const project = await ProjectDatabase.getProject(projectId);
