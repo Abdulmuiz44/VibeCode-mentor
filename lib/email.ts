@@ -43,13 +43,18 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 }
 
 export async function sendWelcomeEmail(to: string, userName: string) {
-  const html = await render(WelcomeEmail({ userName }));
-  
-  return sendEmail({
-    to,
-    subject: 'Welcome to VibeCode Mentor - Start Building Amazing Projects! 🚀',
-    html,
-  });
+  try {
+    const html = await render(WelcomeEmail({ userName }));
+    
+    return sendEmail({
+      to,
+      subject: 'Welcome to VibeCode Mentor - Start Building Amazing Projects! 🚀',
+      html,
+    });
+  } catch (error) {
+    console.error('Error rendering welcome email:', error);
+    return { success: false, error };
+  }
 }
 
 export async function sendPaymentConfirmationEmail(
@@ -59,20 +64,25 @@ export async function sendPaymentConfirmationEmail(
   transactionId: string,
   nextBillingDate: string
 ) {
-  const html = await render(
-    PaymentConfirmationEmail({
-      userName,
-      amount,
-      transactionId,
-      nextBillingDate,
-    })
-  );
-  
-  return sendEmail({
-    to,
-    subject: 'Payment Confirmed - Welcome to VibeCode Mentor Pro! 🎉',
-    html,
-  });
+  try {
+    const html = await render(
+      PaymentConfirmationEmail({
+        userName,
+        amount,
+        transactionId,
+        nextBillingDate,
+      })
+    );
+    
+    return sendEmail({
+      to,
+      subject: 'Payment Confirmed - Welcome to VibeCode Mentor Pro! 🎉',
+      html,
+    });
+  } catch (error) {
+    console.error('Error rendering payment confirmation email:', error);
+    return { success: false, error };
+  }
 }
 
 export async function sendRateLimitWarningEmail(
@@ -81,21 +91,26 @@ export async function sendRateLimitWarningEmail(
   limitType: 'blueprints' | 'chats',
   remaining: number
 ) {
-  const html = await render(
-    RateLimitWarningEmail({
-      userName,
-      limitType,
-      remaining,
-    })
-  );
-  
-  const limitText = limitType === 'blueprints' ? 'Blueprint Generations' : 'AI Chats';
-  
-  return sendEmail({
-    to,
-    subject: `⚠️ Low on ${limitText} - Upgrade to Pro for Unlimited Access`,
-    html,
-  });
+  try {
+    const html = await render(
+      RateLimitWarningEmail({
+        userName,
+        limitType,
+        remaining,
+      })
+    );
+    
+    const limitText = limitType === 'blueprints' ? 'Blueprint Generations' : 'AI Chats';
+    
+    return sendEmail({
+      to,
+      subject: `⚠️ Low on ${limitText} - Upgrade to Pro for Unlimited Access`,
+      html,
+    });
+  } catch (error) {
+    console.error('Error rendering rate limit warning email:', error);
+    return { success: false, error };
+  }
 }
 
 export async function sendWeeklySummaryEmail(
@@ -106,19 +121,24 @@ export async function sendWeeklySummaryEmail(
   topVibe: string,
   isPro: boolean
 ) {
-  const html = await render(
-    WeeklySummaryEmail({
-      userName,
-      blueprintsCreated,
-      chatsUsed,
-      topVibe,
-      isPro,
-    })
-  );
-  
-  return sendEmail({
-    to,
-    subject: 'Your VibeCode Mentor Weekly Summary 📊',
-    html,
-  });
+  try {
+    const html = await render(
+      WeeklySummaryEmail({
+        userName,
+        blueprintsCreated,
+        chatsUsed,
+        topVibe,
+        isPro,
+      })
+    );
+    
+    return sendEmail({
+      to,
+      subject: 'Your VibeCode Mentor Weekly Summary 📊',
+      html,
+    });
+  } catch (error) {
+    console.error('Error rendering weekly summary email:', error);
+    return { success: false, error };
+  }
 }
