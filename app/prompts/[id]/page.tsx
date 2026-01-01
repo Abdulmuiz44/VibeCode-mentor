@@ -2,8 +2,9 @@ import { notFound } from 'next/navigation';
 import { getPublicPromptById } from '@/lib/supabase.server';
 import Link from 'next/link';
 
-export default async function PromptPage({ params }: { params: { id: string } }) {
-    const prompt = await getPublicPromptById(params.id);
+export default async function PromptPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const prompt = await getPublicPromptById(id);
 
     if (!prompt) {
         notFound();

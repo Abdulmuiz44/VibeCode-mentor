@@ -1,13 +1,12 @@
-'use client';
-
 import Link from 'next/link';
 import { blogPosts } from '@/lib/blogPosts';
 import { articleContent } from '@/lib/articleContent';
 import { notFound } from 'next/navigation';
 import ChatBubble from '@/components/ChatBubble';
 
-export default function BlogArticle({ params }: { params: { slug: string } }) {
-  const post = blogPosts.find(p => p.slug === params.slug);
+export default async function BlogArticle({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = blogPosts.find(p => p.slug === slug);
 
   if (!post) {
     notFound();
