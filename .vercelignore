@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+npm-debug.log
+.next
+.env*.local
+.env*.example
+README.md
+SETUP_GUIDE.md
+QUICK_START.md
+*.md
+.vscode
+.github
+.eslintrc.js
+fix_quotes.py
+scripts
