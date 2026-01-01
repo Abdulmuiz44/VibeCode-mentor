@@ -54,17 +54,6 @@ button {
   color: #ffffff;
 }
 
-/* Remove all color classes */
-[class*="bg-blue"], [class*="bg-purple"], [class*="bg-pink"], 
-[class*="text-blue"], [class*="text-purple"], [class*="text-pink"],
-[class*="border-blue"], [class*="border-purple"], [class*="border-pink"],
-[class*="from-blue"], [class*="via-blue"], [class*="to-blue"],
-[class*="from-purple"], [class*="via-purple"], [class*="to-purple"],
-[class*="from-pink"], [class*="via-pink"], [class*="to-pink"],
-[class*="ring-blue"], [class*="ring-purple"], [class*="ring-pink"] {
-  /* Neutralized */
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
