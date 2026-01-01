@@ -7,11 +7,21 @@
   --foreground: #ffffff;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  height: 100%;
 }
 
 body {
+  width: 100%;
+  height: 100%;
   color: var(--foreground);
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -19,41 +29,57 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
 }
 
-/* Global text consistency */
+/* Ensure all text inherits white color */
 h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
   font-weight: 600;
+  margin: 0;
+  padding: 0;
 }
 
-p, span, li, a {
-  color: #ffffff;
+p, span, li, a, button, div, section, article {
+  color: inherit;
 }
 
 /* Input and textarea styling */
 input, textarea, select {
-  background-color: #1a1a1a !important;
-  border-color: #333333 !important;
-  color: #ffffff !important;
+  background-color: #1a1a1a;
+  border-color: #333333;
+  color: #ffffff;
+  font-family: inherit;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #666666 !important;
+  color: #666666;
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
-  outline: none !important;
+  border-color: #ffffff;
+  outline: none;
 }
 
 /* Button styling */
 button {
   transition: all 0.2s ease;
-  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
 }
 
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Remove default list styles */
+ul, ol {
+  list-style: none;
+}
+
+/* Utility animations */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -72,5 +98,14 @@ button {
   
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
