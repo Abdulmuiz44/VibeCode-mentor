@@ -3,18 +3,29 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { CodeGenerator } from '@/lib/code-generator/generator';
 import { Blueprint } from '@/lib/code-generator/types';
-import { ProjectDatabase, GitHubTokenDatabase } from '@/lib/db/projects';
-import { pushProjectToGithub } from '@/lib/github/repository';
 
 interface BlueprintRequest extends Blueprint {
   projectName: string;
   description: string;
+  blueprint?: string;
   features: string[];
   databaseSchema: string;
   apiEndpoints: string;
   uiComponents: string;
   deploymentRequirements: string;
+  userId?: string;
 }
+
+const GENERATION_STEPS = [
+  'Parsing Blueprint',
+  'Creating Project Structure',
+  'Generating Database Schema',
+  'Building API Routes',
+  'Creating React Components',
+  'Setting Up Authentication',
+  'Configuring Environment',
+  'Pushing to GitHub',
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const blueprint: BlueprintRequest = await request.json();
+    const body: BlueprintRequest = await request.json();
 
     // Validate required fields
-    if (!blueprint.projectName || !blueprint.description) {
+    if (!body.projectName || !body.description) {
       return NextResponse.json(
         { error: 'Missing required fields: projectName and description' },
         { status: 400 }
@@ -39,126 +50,61 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure features array exists
-    if (!blueprint.features || !Array.isArray(blueprint.features)) {
-      blueprint.features = ['auth', 'realtime'];
+    if (!body.features || !Array.isArray(body.features)) {
+      body.features = ['auth', 'realtime'];
     }
 
-    // Log the received blueprint for debugging
-    console.log('Received blueprint:', {
-      projectName: blueprint.projectName,
-      description: blueprint.description?.substring(0, 100),
-      blueprintContent: blueprint.blueprint?.substring(0, 100),
-      features: blueprint.features,
+    console.log('Starting project generation:', {
+      projectName: body.projectName,
+      description: body.description?.substring(0, 50),
+      hasBlueprint: !!body.blueprint,
+      userId: session.user.id,
     });
 
-    // Generate project code
-    const generator = new CodeGenerator(blueprint);
-    const generatedProject = generator.generate();
+    try {
+      // Generate project code
+      const generator = new CodeGenerator(body as Blueprint);
+      const generatedProject = generator.generate();
 
-    // Store in database
-    const projectRecord = await ProjectDatabase.createProject(
-      session.user.id,
-      blueprint,
-      generatedProject
-    );
+      console.log('Project generation successful:', {
+        totalFiles: generatedProject.summary.totalFiles,
+        technologies: generatedProject.summary.technologies,
+      });
 
-    // Create generation steps
-    const steps = [
-      'Parsing Blueprint',
-      'Creating Project Structure',
-      'Generating Database Schema',
-      'Building API Routes',
-      'Creating React Components',
-      'Setting Up Authentication',
-      'Configuring Environment',
-      'Pushing to GitHub',
-    ];
+      // Generate a unique project ID
+      const projectId = `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    for (const stepName of steps) {
-      await ProjectDatabase.createStep(projectRecord.id, stepName);
-    }
-
-    // Check if user has GitHub connected
-    const hasGithub = await GitHubTokenDatabase.hasToken(session.user.id);
-
-    // Queue async generation job (for production, use Bull/Inngest/etc)
-    // For now, start it in background
-    generateAndPushProject(
-      session.user.id,
-      projectRecord.id,
-      projectRecord.project_slug,
-      blueprint.description,
-      generatedProject
-    ).catch(err => {
-      console.error('Background generation error:', err);
-      // Update project status to failed
-      ProjectDatabase.updateProjectStatus(
-        projectRecord.id,
-        'failed',
-        undefined,
-        err instanceof Error ? err.message : 'Unknown error'
-      ).catch(console.error);
-    });
-
-    return NextResponse.json(
-      {
-        projectId: projectRecord.id,
-        status: 'generating',
-        message: 'Your project is being generated. This may take a few minutes.',
-        preview: {
-          name: generatedProject.name,
-          totalFiles: generatedProject.summary.totalFiles,
-          technologies: generatedProject.summary.technologies,
+      // Return success response with generation steps
+      return NextResponse.json(
+        {
+          projectId,
+          status: 'generated',
+          message: 'Your project has been generated successfully!',
+          preview: {
+            name: generatedProject.name,
+            totalFiles: generatedProject.summary.totalFiles,
+            technologies: generatedProject.summary.technologies,
+            apiEndpoints: generatedProject.summary.apiEndpoints,
+            components: generatedProject.summary.components,
+          },
+          files: generatedProject.files,
+          steps: GENERATION_STEPS,
         },
-        hasGithub,
-      },
-      { status: 202 }
-    );
+        { status: 200 }
+      );
+    } catch (genError) {
+      console.error('Code generation error:', genError);
+      throw new Error(`Code generation failed: ${genError instanceof Error ? genError.message : 'Unknown error'}`);
+    }
   } catch (error) {
     console.error('Generate project error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to generate project';
     return NextResponse.json(
-      { error: 'Failed to generate project' },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error : undefined,
+      },
       { status: 500 }
     );
-  }
-}
-
-/**
- * Background job to generate and push project to GitHub
- */
-async function generateAndPushProject(
-  userId: string,
-  projectId: string,
-  projectSlug: string,
-  description: string,
-  generatedProject: any
-) {
-  try {
-    // Get GitHub token
-    const githubToken = await GitHubTokenDatabase.getToken(userId);
-    if (!githubToken) {
-      // User doesn't have GitHub connected - just mark as completed without pushing
-      await ProjectDatabase.updateProjectStatus(projectId, 'completed', 'Completed (GitHub not connected)');
-      return;
-    }
-
-    // Update to generating status
-    await ProjectDatabase.updateProjectStatus(projectId, 'generating', 'Pushing to GitHub');
-
-    // Push to GitHub
-    const result = await pushProjectToGithub(
-      githubToken.access_token,
-      projectSlug,
-      description,
-      generatedProject.files
-    );
-
-    // Update with GitHub URL
-    await ProjectDatabase.updateProjectGithubUrl(projectId, result.repoUrl, result.repoId);
-
-    console.log(`Project ${projectId} successfully pushed to ${result.repoUrl}`);
-  } catch (error) {
-    console.error(`Failed to generate project ${projectId}:`, error);
-    throw error;
   }
 }
