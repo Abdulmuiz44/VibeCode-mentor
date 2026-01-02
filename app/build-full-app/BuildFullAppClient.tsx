@@ -159,26 +159,46 @@ export default function BuildFullAppClient() {
       await new Promise(r => setTimeout(r, 400));
       updateStep(currentStepIndex, 'completed');
 
-      // Step 8: GitHub push
+      // Step 8: GitHub push - requires authentication
       currentStepIndex = 7;
       updateStep(currentStepIndex, 'in-progress', 'Pushing to GitHub...');
-      await new Promise(r => setTimeout(r, 2000));
       
-      // Check status
-      const statusResponse = await fetch(`/api/generate-project/${result.projectId}/status`);
-      if (statusResponse.ok) {
-        const status = await statusResponse.json();
-        if (status.githubUrl) {
-          setGithubUrl(status.githubUrl);
-          updateStep(currentStepIndex, 'completed', 'Repository created');
-        } else {
-          updateStep(currentStepIndex, 'completed', 'GitHub not connected');
-        }
+      // Check if user has GitHub token
+      const tokenResponse = await fetch(`/api/github/token-status`);
+      let hasGitHubToken = false;
+      
+      if (tokenResponse.ok) {
+        const tokenData = await tokenResponse.json();
+        hasGitHubToken = tokenData.hasToken;
+      }
+      
+      if (!hasGitHubToken) {
+        // Redirect to GitHub OAuth
+        const githubAuthUrl = `/api/auth/github/authorize?projectId=${result.projectId}`;
+        window.location.href = githubAuthUrl;
+        return;
+      }
+
+      // Attempt GitHub push
+      const pushResponse = await fetch(`/api/github/push-project`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: result.projectId }),
+      });
+
+      if (pushResponse.ok) {
+        const pushData = await pushResponse.json();
+        setGithubUrl(pushData.githubUrl);
+        updateStep(currentStepIndex, 'completed', 'Repository created & code pushed');
       } else {
-        updateStep(currentStepIndex, 'completed', 'GitHub status unavailable');
+        updateStep(currentStepIndex, 'completed', 'GitHub push optional - project generated');
       }
 
       setIsComplete(true);
+      // Redirect to project dashboard
+      setTimeout(() => {
+        router.push(`/projects/${result.projectId}`);
+      }, 3000);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Generation failed';
       setError(errorMsg);

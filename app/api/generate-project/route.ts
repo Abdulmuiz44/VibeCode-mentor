@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { CodeGenerator } from '@/lib/code-generator/generator';
 import { Blueprint } from '@/lib/code-generator/types';
+import { saveBlueprintToHistory } from '@/lib/supabase.server';
+import { ProjectDatabase } from '@/lib/db/projects';
 
 interface BlueprintRequest extends Blueprint {
   projectName: string;
@@ -71,15 +73,40 @@ export async function POST(request: NextRequest) {
         technologies: generatedProject.summary.technologies,
       });
 
-      // Generate a unique project ID
-      const projectId = `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Create project record in database
+      const projectRecord = await ProjectDatabase.createProject(
+        session.user.id,
+        body as Blueprint,
+        generatedProject
+      );
 
-      // Return success response with generation steps
+      // Initialize generation steps in database
+      for (const stepName of GENERATION_STEPS) {
+        await ProjectDatabase.createStep(projectRecord.id, stepName);
+      }
+
+      // Save generated blueprint to Supabase history
+      const blueprintContent = JSON.stringify({
+        projectId: projectRecord.id,
+        projectName: body.projectName,
+        description: body.description,
+        files: generatedProject.files,
+        summary: generatedProject.summary,
+      }, null, 2);
+
+      await saveBlueprintToHistory(
+        session.user.id,
+        body.projectName,
+        blueprintContent,
+        'code-generated'
+      );
+
+      // Return success response with project ID
       return NextResponse.json(
         {
-          projectId,
-          status: 'generated',
-          message: 'Your project has been generated successfully!',
+          projectId: projectRecord.id,
+          status: 'generating',
+          message: 'Project created. Starting generation...',
           preview: {
             name: generatedProject.name,
             totalFiles: generatedProject.summary.totalFiles,
@@ -87,8 +114,6 @@ export async function POST(request: NextRequest) {
             apiEndpoints: generatedProject.summary.apiEndpoints,
             components: generatedProject.summary.components,
           },
-          files: generatedProject.files,
-          steps: GENERATION_STEPS,
         },
         { status: 200 }
       );

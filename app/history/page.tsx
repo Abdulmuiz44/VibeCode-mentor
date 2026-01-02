@@ -2,12 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSavedBlueprints, deleteSavedBlueprint, exportBlueprintJSON } from '@/utils/localStorage';
 import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
-import { FREE_SAVE_LIMIT } from '@/utils/pro';
 import { exportToGitHubGist } from '@/utils/github';
 import { useSession } from 'next-auth/react';
-import { getBlueprintsFromCloud, deleteBlueprintFromCloud, saveBlueprintToCloud } from '@/lib/supabaseDB';
+import { getBlueprintsFromCloud, deleteBlueprintFromCloud } from '@/lib/supabaseDB';
 import { fetchCollaborationComments, postCollaborationComment } from '@/utils/collaboration';
 import ChatBubble from '@/components/ChatBubble';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
@@ -47,21 +45,19 @@ export default function HistoryPage() {
         setSaves(cloudBlueprints.sort((a, b) => b.timestamp - a.timestamp));
         setSyncStatus('synced');
       } else {
-        // Load from local storage
-        const localSaves = getSavedBlueprints();
-        setSaves(localSaves.sort((a, b) => b.timestamp - a.timestamp));
+        // Redirect to login if not authenticated
+        router.push('/auth/signin');
+        setSaves([]);
         setSyncStatus('local');
       }
     } catch (error) {
       console.error('Error loading blueprints:', error);
-      // Fallback to local
-      const localSaves = getSavedBlueprints();
-      setSaves(localSaves.sort((a, b) => b.timestamp - a.timestamp));
+      setSaves([]);
       setSyncStatus('local');
     } finally {
       setSyncing(false);
     }
-  }, [user]);
+  }, [user, router]);
 
   useEffect(() => {
     loadBlueprints();

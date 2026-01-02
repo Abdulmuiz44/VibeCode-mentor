@@ -3,9 +3,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { saveBlueprint } from '@/utils/localStorage';
-import { canSaveBlueprint, FREE_SAVE_LIMIT } from '@/utils/pro';
-import { getSavedBlueprints } from '@/utils/localStorage';
 import { useSession } from 'next-auth/react';
 import { saveBlueprintToCloud } from '@/lib/supabaseDB';
 import { exportToPDF, createGitHubRepo, downloadAsMarkdown } from '@/utils/exportHelpers';
@@ -93,32 +90,29 @@ export default function BlueprintOutput({ blueprint, projectIdea }: BlueprintOut
 
   const handleSave = async () => {
     try {
-      const currentSaves = getSavedBlueprints();
-
-      // Check if user can save (Pro users or within free limit)
-      if (!isPro && !canSaveBlueprint(currentSaves.length)) {
-        showToastMessage(`Free limit: ${FREE_SAVE_LIMIT} saves. Upgrade to Pro for unlimited!`);
+      // Require authentication to save
+      if (!user) {
+        showToastMessage('Sign in to save blueprints');
         return;
       }
 
-      // Save to local storage
-      const savedBlueprint = saveBlueprint(projectIdea, blueprint);
-      setBlueprintId(savedBlueprint.id);
+      // Save to cloud only
+      const savedBlueprint = {
+        id: Date.now(),
+        vibe: projectIdea,
+        blueprint,
+        timestamp: Date.now(),
+      };
 
-      // Save to cloud if logged in
-      if (user) {
-        const cloudSaved = await saveBlueprintToCloud(user.id, savedBlueprint);
-        if (cloudSaved) {
-          showToastMessage('Saved to cloud! View in History');
-        } else {
-          showToastMessage('Saved locally! (Cloud sync failed)');
-        }
+      const cloudSaved = await saveBlueprintToCloud(user.id, savedBlueprint);
+      if (cloudSaved) {
+        setBlueprintId(savedBlueprint.id);
+        showToastMessage('Saved to cloud! View in History');
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
       } else {
-        showToastMessage('Saved! Sign in to sync to cloud');
+        showToastMessage('Failed to save blueprint');
       }
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       console.error('Failed to save:', err);
       showToastMessage('Failed to save blueprint');

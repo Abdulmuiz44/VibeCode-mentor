@@ -26,7 +26,7 @@ export const getBlueprintsFromCloud = async (userId: string): Promise<SavedBluep
       .from('blueprints')
       .select('*')
       .eq('user_id', userId)
-      .order('timestamp', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Supabase getBlueprints error:', error);
@@ -35,9 +35,9 @@ export const getBlueprintsFromCloud = async (userId: string): Promise<SavedBluep
 
     return (data as any[]).map((row) => ({
       id: row.id,
-      vibe: row.vibe,
-      blueprint: row.blueprint,
-      timestamp: row.timestamp,
+      vibe: row.vibe || 'default',
+      blueprint: row.content,
+      timestamp: new Date(row.created_at).getTime(),
     }));
   } catch (error) {
     console.error('Error getting blueprints from supabase:', error);
@@ -45,13 +45,14 @@ export const getBlueprintsFromCloud = async (userId: string): Promise<SavedBluep
   }
 };
 
-export const deleteBlueprintFromCloud = async (userId: string, blueprintId: number) => {
+export const deleteBlueprintFromCloud = async (userId: string, blueprintId: string) => {
   if (!supabase) return false;
   try {
     const { error } = await supabase
       .from('blueprints')
       .delete()
-      .match({ id: blueprintId, user_id: userId });
+      .eq('id', blueprintId)
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Supabase delete blueprint error:', error);
