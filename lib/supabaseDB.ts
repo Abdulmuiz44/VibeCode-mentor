@@ -7,7 +7,7 @@ export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBluep
   try {
     const { error } = await supabase
       .from('blueprints')
-      .insert([{ id: blueprint.id, user_id: userId, vibe: blueprint.vibe, content: blueprint.blueprint, project_idea: 'Generated Blueprint' }]);
+      .insert([{ user_id: userId, vibe: blueprint.vibe, content: blueprint.blueprint, project_idea: 'Generated Blueprint' }]);
     if (error) {
       console.error('Supabase save error:', error);
       return false;
@@ -72,7 +72,7 @@ export const syncLocalToCloud = async (userId: string, localBlueprints: SavedBlu
     const cloudBlueprints = await getBlueprintsFromCloud(userId);
     const cloudIds = new Set(cloudBlueprints.map((b) => b.id));
 
-    const toInsert = localBlueprints.filter((b) => !cloudIds.has(b.id)).map(b => ({ id: b.id, user_id: userId, vibe: b.vibe, content: b.blueprint, project_idea: 'Generated Blueprint' }));
+    const toInsert = localBlueprints.filter((b) => !cloudIds.has(b.id)).map(b => ({ user_id: userId, vibe: b.vibe, content: b.blueprint, project_idea: 'Generated Blueprint' }));
 
     if (toInsert.length === 0) return true;
 
