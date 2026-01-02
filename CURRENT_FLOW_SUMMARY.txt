@@ -1,0 +1,466 @@
+================================================================================
+                    VIBECODE MENTOR: CURRENT USER FLOW
+================================================================================
+
+How does it work now? What happens after user generates a blueprint?
+
+================================================================================
+                          THE SHORT VERSION
+================================================================================
+
+1. User enters project idea (text)
+   └─ "Build a REST API with authentication and database"
+
+2. User clicks "Generate Blueprint"
+   └─ Frontend calls POST /api/mentor
+
+3. Mistral AI generates blueprint (30 seconds)
+   └─ Returns formatted markdown text
+
+4. Blueprint displays nicely
+   └─ With buttons: [Copy] [Save] [Export ▼]
+
+5. User sees "Build Full App" button
+   └─ If FREE:  Shows "Upgrade to Pro" modal
+   └─ If PRO:   Redirects to /build-full-app for code generation
+
+6. That's it for free users
+   └─ They either download markdown or upgrade
+
+7. For pro users:
+   └─ Full app code is generated and pushed to GitHub
+
+================================================================================
+                       THE DETAILED FLOW (STEP BY STEP)
+================================================================================
+
+STEP 1: User Lands & Authenticates
+──────────────────────────────────────
+URL: vibecodemantor.com
+  ↓
+(If not signed in) Redirects to /auth
+  ↓
+Google OAuth Sign-In (NextAuth)
+  ↓
+Redirects to /build (HomeClient component)
+
+STEP 2: User Generates Blueprint
+──────────────────────────────────────
+User sees:
+  └─ Textarea: "Describe your project idea"
+  └─ Button: "Generate Blueprint"
+  └─ Tips: "Specify tech stack, mention features, etc."
+
+User actions:
+  1. Types: "Build REST API with Node.js, Express, PostgreSQL, JWT auth"
+  2. Clicks "Generate Blueprint"
+  3. Sees loading spinner
+  4. Waits ~30 seconds
+
+Backend processing:
+  POST /api/mentor
+  ├─ Check rate limit:
+  │  └─ SELECT COUNT(*) FROM blueprints WHERE user_id = ? AND created_at > NOW() - 1 DAY
+  │  └─ If count >= 3 AND not pro → Return 429 error
+  │
+  ├─ Call Mistral AI:
+  │  └─ Send: "Build REST API with Node.js, Express, PostgreSQL, JWT auth"
+  │  └─ Receive: Structured markdown blueprint
+  │
+  ├─ Save to database:
+  │  └─ INSERT INTO blueprints (user_id, vibe, blueprint) VALUES (...)
+  │
+  └─ Return to frontend:
+     └─ { "blueprint": "# Project Architecture\n\n...", "id": 12345 }
+
+STEP 3: Blueprint Displays
+──────────────────────────────────────
+Frontend renders BlueprintOutput component:
+
+┌─────────────────────────────────────────────┐
+│                                             │
+│  [💾 Save Blueprint] [📋 Copy] [📤 Export] │
+│                                             │
+│  ┌───────────────────────────────────────┐  │
+│  │  # REST API Project Architecture      │  │
+│  │                                       │  │
+│  │  ## Overview                          │  │
+│  │  Build a REST API backend with...    │  │
+│  │                                       │  │
+│  │  ## Tech Stack                        │  │
+│  │  - Node.js v18+                       │  │
+│  │  - Express.js                         │  │
+│  │  - PostgreSQL 14+                     │  │
+│  │  - JWT Authentication                 │  │
+│  │                                       │  │
+│  │  ## Architecture                      │  │
+│  │  ### API Endpoints                    │  │
+│  │  - POST /auth/register                │  │
+│  │  - POST /auth/login                   │  │
+│  │  - GET /api/users                     │  │
+│  │  - POST /api/users                    │  │
+│  │                                       │  │
+│  │  ## Database Schema                   │  │
+│  │  ...more details...                   │  │
+│  │                                       │  │
+│  └───────────────────────────────────────┘  │
+│                                             │
+│  ┌─────────────────────────────────────────┐│
+│  │ 🚀 Start Building Your App             ││
+│  │                                         ││
+│  │ Generate a complete production-ready  ││
+│  │ application with auto-generated code, ││
+│  │ database schema, and GitHub           ││
+│  │ integration                           ││
+│  │                                         ││
+│  │ [⭐ Upgrade to Pro] or [Build Full App]││
+│  │ (depends on subscription)              ││
+│  └─────────────────────────────────────────┘│
+│                                             │
+└─────────────────────────────────────────────┘
+
+STEP 4: The Critical Decision Point
+──────────────────────────────────────────────────────────────────
+
+User clicks "Build Full App" button
+  ↓
+BuildFullAppButton.tsx executes:
+  ├─ Check: isPro = SELECT is_pro FROM users WHERE id = ?
+  │
+  ├─ If NOT Pro:
+  │  ├─ Save blueprint to sessionStorage
+  │  │  └─ { projectIdea, blueprint, timestamp }
+  │  ├─ Open ProUpgradeModal
+  │  └─ User sees:
+  │     ├─ Monthly: $5/month
+  │     └─ Annual: $50/year
+  │
+  └─ If IS Pro:
+     ├─ Save blueprint to sessionStorage
+     ├─ Redirect to /build-full-app
+     └─ Code generation starts automatically
+
+STEP 5A: Free User Path (Needs to Upgrade)
+──────────────────────────────────────────────
+ProUpgradeModal opens:
+  ├─ "Upgrade to VibeCode Mentor Pro"
+  ├─ Features listed
+  ├─ Pricing shown ($5/mo or $50/yr)
+  └─ [Upgrade Button]
+
+User clicks "Upgrade"
+  ↓
+Lemonsqueezy Payment Gateway:
+  ├─ Collects email
+  ├─ Collects card details
+  ├─ Processes payment
+  └─ Sends webhook: order_completed
+
+Backend webhook handler:
+  ├─ Verify HMAC signature
+  ├─ UPDATE users SET is_pro = true WHERE id = ?
+  ├─ Send confirmation email
+  └─ Return 200 OK
+
+Browser redirects to /payment/success:
+  ├─ Shows "✓ Welcome to VibeCode Mentor Pro!"
+  ├─ Lists Pro features
+  ├─ Shows 5-second countdown
+  └─ Redirects to /dashboard
+
+User now has Pro status but:
+  └─ Must click "Build Full App" again to trigger code generation
+
+STEP 5B: Pro User Path (Direct to Code Generation)
+──────────────────────────────────────────────────
+User clicks "Build Full App"
+  ↓
+BuildFullAppButton detects: isPro = true
+  ↓
+Immediately redirects to /build-full-app
+  ↓
+/build-full-app page:
+  ├─ Loads blueprint from sessionStorage
+  ├─ Initiates code generation
+  │
+  └─ Shows progress:
+     ├─ Step 1: Parsing blueprint structure (5 sec)
+     ├─ Step 2: Generating code files (20 sec)
+     └─ Step 3: Creating GitHub repository (10 sec)
+  ↓
+Final page shows:
+  ├─ ✅ Code generation complete
+  ├─ GitHub repository link
+  ├─ "Clone and start building" button
+  ├─ Download code as ZIP
+  └─ Next deployment steps
+
+================================================================================
+                          CURRENT FEATURES BY TIER
+================================================================================
+
+FREE USER CAPABILITIES:
+  ├─ 3 blueprints per day
+  ├─ Unlimited blueprint viewing
+  ├─ Copy blueprint to clipboard
+  ├─ Save blueprints locally (5 maximum)
+  ├─ Download as Markdown (.md)
+  ├─ 3 AI chats per day (limited)
+  ├─ View "Build Full App" button
+  └─ → Must upgrade to proceed
+
+PRO USER CAPABILITIES (Everything above + ):
+  ├─ Unlimited blueprints per day
+  ├─ Export to PDF (professional document)
+  ├─ Create GitHub repository automatically
+  ├─ Generate full application code (40-60 files)
+  ├─ Database migrations included
+  ├─ Deployment setup included
+  ├─ Unlimited AI chats
+  ├─ Unlimited blueprint saves
+  └─ → Full app generation included
+
+================================================================================
+                       CURRENT RATE LIMITING
+================================================================================
+
+Checked on every blueprint generation:
+
+For FREE users:
+  SELECT COUNT(*) FROM blueprints 
+  WHERE user_id = ? 
+  AND created_at > NOW() - INTERVAL '1 day'
+  
+  If count >= 3:
+    └─ Return 429 Too Many Requests
+    └─ Show: "Rate limit exceeded. Upgrade to Pro for unlimited!"
+
+For PRO users:
+  └─ No limit, generation allowed
+
+================================================================================
+                       CURRENT DATA FLOW (SIMPLIFIED)
+================================================================================
+
+User Input
+  ├─ projectIdea: "Build REST API..."
+  └─ userId: "user-123"
+       ↓
+POST /api/mentor API
+  ├─ Rate limit check
+  ├─ Call Mistral AI
+  └─ Save to blueprints table
+       ↓
+Response
+  └─ { blueprint: "# Architecture\n\n..." }
+       ↓
+Frontend State
+  └─ setBlueprint(data.blueprint)
+       ↓
+React Re-render
+  └─ BlueprintOutput shows formatted markdown
+       ↓
+User Actions
+  ├─ Copy
+  ├─ Save
+  ├─ Export
+  └─ Build Full App
+       ↓
+       ├─ If Free → Upgrade modal
+       ├─ If Pro → Code generation
+       └─ If Payment Pending → /payment/success
+
+================================================================================
+                    CURRENT DATABASE OPERATIONS
+================================================================================
+
+When blueprint is generated:
+  1. INSERT INTO blueprints (user_id, vibe, blueprint, created_at)
+  2. SELECT COUNT(*) FROM blueprints (rate limit check)
+
+When user saves locally:
+  localStorage.setItem('blueprint_' + timestamp, JSON.stringify({...}))
+
+When user saves to cloud:
+  INSERT INTO user_blueprints (user_id, blueprint_id, saved_at)
+
+When checking pro status:
+  SELECT is_pro FROM users WHERE id = ?
+
+When payment completes:
+  UPDATE users SET is_pro = true WHERE id = ?
+
+================================================================================
+                       CURRENT COMPONENT HIERARCHY
+================================================================================
+
+app/home/HomeClient.tsx (Main component)
+├─ Form input for projectIdea
+├─ Generate button with loading state
+└─ Conditionally renders BlueprintOutput
+
+components/BlueprintOutput.tsx
+├─ Renders markdown as HTML
+├─ Action buttons (Copy, Save, Export)
+├─ Export menu dropdown
+├─ GitHub modal (Pro only)
+└─ BuildFullAppButton child component
+
+components/BuildFullAppButton.tsx
+├─ Checks useProStatus hook
+├─ If not Pro:
+│  └─ Shows upgrade modal
+└─ If Pro:
+   └─ Redirects to /build-full-app
+
+components/ProUpgradeModal.tsx
+├─ Shows pricing tiers
+├─ Lemonsqueezy payment integration
+└─ Handles checkout flow
+
+components/ChatBubble.tsx
+├─ AI assistant chat window
+└─ Context-aware responses about blueprint
+
+================================================================================
+                      CURRENT API ENDPOINTS
+================================================================================
+
+POST /api/mentor
+├─ Request: { projectIdea, userId }
+├─ Rate limit check
+├─ Mistral AI call
+├─ Database save
+└─ Response: { blueprint, id, timestamp }
+
+POST /api/auth/signin
+└─ NextAuth sign-in
+
+POST /api/lemonsqueezy/checkout
+├─ Request: { email, userId, pricingTier }
+├─ Create Lemonsqueezy checkout
+└─ Response: { checkoutUrl }
+
+POST /api/lemonsqueezy/webhook
+├─ Receives: order_completed event
+├─ Verifies signature
+├─ Updates user.is_pro = true
+└─ Returns 200 OK
+
+================================================================================
+                        CURRENT USER EXPERIENCE
+================================================================================
+
+FREE USER TYPICAL SESSION:
+1. Sign in (1 min)
+2. Enter project idea (2 min)
+3. Generate blueprint (1 min)
+4. View blueprint (2 min)
+5. Copy & download (1 min)
+6. See "Upgrade" button (seen but ignored)
+7. Leave and never return ❌
+
+Total time: ~7 minutes, no recurring engagement
+
+PRO USER TYPICAL SESSION:
+1. Sign in (1 min)
+2. Enter project idea (2 min)
+3. Generate blueprint (1 min)
+4. View blueprint (2 min)
+5. Click "Build Full App" (1 sec)
+6. Code generation runs (35 min total)
+7. Download code from GitHub (1 min)
+8. Clone and start building (ongoing)
+9. Returns later for next projects ✅
+
+Total time: 40+ minutes, high recurring engagement
+
+================================================================================
+                     PROBLEMS WITH CURRENT SYSTEM
+================================================================================
+
+1. No Project Tracking
+   └─ Blueprint is just a text document, no ongoing project management
+
+2. No Team Features
+   └─ Completely single-user, can't collaborate with teammates
+
+3. No Community
+   └─ Can't share projects or learn from other developers
+
+4. No Code Reuse
+   └─ Each blueprint is isolated, can't reuse snippets/components
+
+5. Low Stickiness
+   └─ Users generate blueprint once and leave
+
+6. One-time Transaction
+   └─ Limited recurring engagement and revenue
+
+7. No Network Effects
+   └─ Users are isolated, no incentive to stay
+
+================================================================================
+                      THE HUB TRANSFORMATION FIXES THIS
+================================================================================
+
+Current:  Blueprint Generator (One-time use)
+          └─ User generates, downloads, leaves
+
+Future:   Project Hub (Recurring platform)
+          ├─ Generate blueprint
+          ├─ Create project
+          ├─ Track progress
+          ├─ Invite team
+          ├─ Share snippets
+          ├─ Join community
+          ├─ Generate code
+          └─ Deploy app
+             ↓ (Next project)
+             └─ Repeat cycle
+
+From single-transaction to recurring engagement.
+
+================================================================================
+                         KEY FILES TO UNDERSTAND
+================================================================================
+
+Frontend:
+  app/home/HomeClient.tsx        ← Main generator UI & form
+  components/BlueprintOutput.tsx ← Display & action buttons
+  components/BuildFullAppButton  ← Pro/Free decision point
+  components/ProUpgradeModal.tsx ← Pricing & payment
+
+Backend:
+  app/api/mentor/route.ts        ← Blueprint generation API
+  app/api/lemonsqueezy/webhook   ← Payment webhook
+
+Database:
+  blueprints table               ← Stores generated blueprints
+  users table                    ← User profile & is_pro flag
+  payments table (optional)      ← Transaction records
+
+================================================================================
+
+SUMMARY:
+
+After a user generates a blueprint:
+1. If FREE → They can view, copy, download as markdown
+2. If FREE + click "Build" → They must upgrade ($5/month)
+3. If PRO → They get full app code generated automatically
+
+Currently it's a simple 2-tier SaaS model:
+  - Free: Blueprint generator only
+  - Pro: Blueprint + Full app code generation
+
+The Hub transformation adds:
+  - Project management
+  - Team collaboration
+  - Community features
+  - Analytics & insights
+  - Code snippet library
+  - Template marketplace
+
+Making it a sticky, recurring platform instead of a one-time tool.
+
+================================================================================
