@@ -73,19 +73,24 @@ export default function ProjectDetailPage() {
   const downloadProject = async () => {
     if (!project?.generated_files?.files) return;
 
-    const zip = await import('jszip').then(m => new m.default());
-    
-    project.generated_files.files.forEach(file => {
-      zip.file(file.path, file.content);
-    });
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+      project.generated_files.files.forEach(file => {
+        zip.file(file.path, file.content);
+      });
 
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${project.project_name.replace(/\s+/g, '-')}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${project.project_name.replace(/\s+/g, '-')}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download:', error);
+    }
   };
 
   if (loading) {
