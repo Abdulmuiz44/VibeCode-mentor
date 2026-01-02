@@ -31,12 +31,25 @@ export async function POST(request: NextRequest) {
     const blueprint: BlueprintRequest = await request.json();
 
     // Validate required fields
-    if (!blueprint.projectName || !blueprint.description || blueprint.features.length === 0) {
+    if (!blueprint.projectName || !blueprint.description) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: projectName and description' },
         { status: 400 }
       );
     }
+
+    // Ensure features array exists
+    if (!blueprint.features || !Array.isArray(blueprint.features)) {
+      blueprint.features = ['auth', 'realtime'];
+    }
+
+    // Log the received blueprint for debugging
+    console.log('Received blueprint:', {
+      projectName: blueprint.projectName,
+      description: blueprint.description?.substring(0, 100),
+      blueprintContent: blueprint.blueprint?.substring(0, 100),
+      features: blueprint.features,
+    });
 
     // Generate project code
     const generator = new CodeGenerator(blueprint);

@@ -105,6 +105,7 @@ export default function BuildFullAppClient() {
         body: JSON.stringify({
           projectName: data.projectIdea.split('\n')[0] || 'Generated Project',
           description: data.projectIdea,
+          blueprint: data.blueprint,
           userId,
           features: ['auth', 'realtime'],
           databaseSchema: 'Users',
