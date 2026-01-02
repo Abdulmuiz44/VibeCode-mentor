@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ChatBubble from '@/components/ChatBubble';
@@ -37,53 +37,7 @@ export default function BuildFullAppClient() {
   const [error, setError] = useState<string>('');
   const [isComplete, setIsComplete] = useState(false);
 
-  useEffect(() => {
-    if (!session?.user?.id) {
-      router.replace('/auth?returnTo=/build-full-app');
-      return;
-    }
-
-    // Load blueprint from session storage
-    const stored = sessionStorage.getItem('blueprintToBuild');
-    if (!stored) {
-      router.replace('/build');
-      return;
-    }
-
-    try {
-      const data = JSON.parse(stored);
-      setBlueprintData(data);
-      sessionStorage.removeItem('blueprintToBuild');
-
-      // Initialize steps
-      const initialSteps = GENERATION_STEPS.map(name => ({
-        step: GENERATION_STEPS.indexOf(name),
-        stepName: name,
-        status: 'pending' as const,
-        details: '',
-      }));
-      setSteps(initialSteps);
-
-      // Start generation
-      startGeneration(data, session.user.id);
-    } catch (err) {
-      setError('Failed to load blueprint data');
-    }
-  }, [session, router]);
-
-  const updateStep = (stepIndex: number, status: BuildState['status'], details?: string) => {
-    setSteps(prev => {
-      const updated = [...prev];
-      updated[stepIndex] = {
-        ...updated[stepIndex],
-        status,
-        details: details || updated[stepIndex].details,
-      };
-      return updated;
-    });
-  };
-
-  const startGeneration = async (data: typeof blueprintData, userId: string) => {
+  const startGenerationFlow = useCallback(async (data: typeof blueprintData, userId: string) => {
     if (!data) return;
 
     let currentStepIndex = 0;
@@ -204,8 +158,53 @@ export default function BuildFullAppClient() {
       setError(errorMsg);
       updateStep(currentStepIndex, 'failed', errorMsg);
     }
-  };
+  }, [router]);
 
+  useEffect(() => {
+    if (!session?.user?.id) {
+      router.replace('/auth?returnTo=/build-full-app');
+      return;
+    }
+
+    // Load blueprint from session storage
+    const stored = sessionStorage.getItem('blueprintToBuild');
+    if (!stored) {
+      router.replace('/build');
+      return;
+    }
+
+    try {
+      const data = JSON.parse(stored);
+      setBlueprintData(data);
+      sessionStorage.removeItem('blueprintToBuild');
+
+      // Initialize steps
+      const initialSteps = GENERATION_STEPS.map(name => ({
+        step: GENERATION_STEPS.indexOf(name),
+        stepName: name,
+        status: 'pending' as const,
+        details: '',
+      }));
+      setSteps(initialSteps);
+
+      // Start generation
+      startGenerationFlow(data, session.user.id);
+    } catch (err) {
+      setError('Failed to load blueprint data');
+    }
+  }, [session, router, startGenerationFlow]);
+
+  const updateStep = (stepIndex: number, status: BuildState['status'], details?: string) => {
+    setSteps(prev => {
+      const updated = [...prev];
+      updated[stepIndex] = {
+        ...updated[stepIndex],
+        status,
+        details: details || updated[stepIndex].details,
+      };
+      return updated;
+    });
+  };
 
 
   const progress = steps.filter(s => s.status === 'completed').length;

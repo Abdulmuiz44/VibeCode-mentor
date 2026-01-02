@@ -50,14 +50,11 @@ export async function POST(request: NextRequest) {
       false
     );
 
-    // Convert generated files to proper format
-    const files = (project.generated_files?.files || []).map((file: any) => ({
-      path: file.path,
-      content: file.content,
-    }));
+    // Use generated files directly (already in correct format)
+    const files = project.generated_files?.files || [];
 
     // Push files to repository
-    await github.pushFiles(repo.full_name.split('/')[0], repo.name, files);
+    await github.pushFiles(repo.full_name.split('/')[0], repo.name, files as any);
 
     // Update project with GitHub URL
     await ProjectDatabase.updateProjectGithubUrl(

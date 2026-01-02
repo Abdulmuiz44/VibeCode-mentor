@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SavedBlueprint, CollaborationComment } from '@/types/blueprint';
 import { exportToGitHubGist } from '@/utils/github';
+import { exportBlueprintJSON } from '@/utils/localStorage';
+import { FREE_SAVE_LIMIT } from '@/utils/pro';
 import { useSession } from 'next-auth/react';
 import { getBlueprintsFromCloud, deleteBlueprintFromCloud } from '@/lib/supabaseDB';
 import { fetchCollaborationComments, postCollaborationComment } from '@/utils/collaboration';
@@ -130,14 +132,12 @@ export default function HistoryPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     if (confirm('Delete this blueprint?')) {
       // Delete from cloud if logged in
       if (user) {
-        await deleteBlueprintFromCloud(user.id, id);
+        await deleteBlueprintFromCloud(user.id, String(id));
       }
-      // Delete from local
-      deleteSavedBlueprint(id);
       setSaves(saves.filter(s => s.id !== id));
       showToastMessage('Blueprint deleted');
     }
