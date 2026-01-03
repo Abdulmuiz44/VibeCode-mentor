@@ -45,7 +45,10 @@ const MAX_RETRIES = 3;
  */
 async function validateRequest(
   req: NextRequest
-): Promise<{ valid: boolean; error?: ExecuteBuildResponse; userId?: string }> {
+): Promise<
+  | { valid: true; userId: string }
+  | { valid: false; error: ExecuteBuildResponse }
+> {
   // Get auth header
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
