@@ -19,6 +19,7 @@ function AuthPageClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -55,13 +56,14 @@ function AuthPageClient() {
           throw new Error('Supabase client not initialized');
         }
 
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError, data } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               name: name || email.split('@')[0],
-            }
+            },
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
           }
         });
 
@@ -69,11 +71,15 @@ function AuthPageClient() {
           throw new Error(signUpError.message);
         }
 
-        // Success - switch to login and show message
-        setSuccessMessage('Account created successfully! Please sign in with your password.');
-        setIsLogin(true);
-        // Keep password state filled for easy login
-        // setPassword(''); // Don't clear password to make it "seamless"
+        // Check if email confirmation is required
+        if (data?.user && !data.user.email_confirmed_at) {
+          setEmailSent(true);
+          setSuccessMessage(`Confirmation email sent to ${email}. Please check your inbox to verify your email.`);
+        } else {
+          // Email auto-confirmed (disabled in Supabase settings)
+          setSuccessMessage('Account created successfully! Please sign in with your password.');
+          setIsLogin(true);
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -126,7 +132,31 @@ function AuthPageClient() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {emailSent && (
+          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex gap-3">
+              <svg className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-blue-300">Verify your email</p>
+                <p className="text-xs text-blue-200 mt-1">We sent a confirmation link to {email}. Click the link to activate your account.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmailSent(false);
+                    setSuccessMessage('');
+                  }}
+                  className="text-xs text-blue-300 hover:text-blue-200 mt-2 underline"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4" style={{ display: emailSent ? 'none' : 'block' }}>
           {!isLogin && (
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1 uppercase">Name</label>

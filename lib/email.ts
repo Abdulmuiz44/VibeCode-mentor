@@ -1,176 +1,236 @@
-let ResendClass: any;
-let renderFn: any;
-let WelcomeEmailComponent: any;
-let PaymentConfirmationEmailComponent: any;
-let RateLimitWarningEmailComponent: any;
-let WeeklySummaryEmailComponent: any;
+/**
+ * Email Service Handler
+ * Manages email operations via Supabase Auth
+ */
 
-// Dynamic imports to prevent build-time errors
-async function loadDependencies() {
-  if (!ResendClass) {
-    const resendModule = await import('resend');
-    ResendClass = resendModule.Resend;
-  }
-  if (!renderFn) {
-    const emailComponents = await import('@react-email/components');
-    renderFn = emailComponents.render;
-  }
-  if (!WelcomeEmailComponent) {
-    const welcomeEmailModule = await import('@/emails/WelcomeEmail');
-    WelcomeEmailComponent = welcomeEmailModule.default;
-  }
-  if (!PaymentConfirmationEmailComponent) {
-    const paymentEmailModule = await import('@/emails/PaymentConfirmationEmail');
-    PaymentConfirmationEmailComponent = paymentEmailModule.default;
-  }
-  if (!RateLimitWarningEmailComponent) {
-    const rateLimitEmailModule = await import('@/emails/RateLimitWarningEmail');
-    RateLimitWarningEmailComponent = rateLimitEmailModule.default;
-  }
-  if (!WeeklySummaryEmailComponent) {
-    const weeklySummaryEmailModule = await import('@/emails/WeeklySummaryEmail');
-    WeeklySummaryEmailComponent = weeklySummaryEmailModule.default;
-  }
+import { supabase } from '@/lib/supabase';
+
+export interface EmailVerificationResult {
+  success: boolean;
+  message: string;
+  error?: string;
 }
 
-// Lazy initialization to avoid build-time errors when API key is missing
-let resend: any = null;
-
-function getResendClient() {
-  if (!resend) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error('RESEND_API_KEY is not configured');
+/**
+ * Send verification email
+ * Used when user manually requests a new verification link
+ */
+export async function resendVerificationEmail(email: string): Promise<EmailVerificationResult> {
+  try {
+    if (!supabase) {
+      return {
+        success: false,
+        message: 'Email service not available',
+        error: 'Supabase not initialized',
+      };
     }
-    resend = new ResendClass(apiKey);
-  }
-  return resend;
-}
 
-export interface SendEmailParams {
-  to: string;
-  subject: string;
-  html: string;
-}
-
-export async function sendEmail({ to, subject, html }: SendEmailParams) {
-  try {
-    const client = getResendClient();
-    const data = await client.emails.send({
-      from: 'VibeCode Mentor <vibecodeguide@gmail.com>',
-      to,
-      subject,
-      html,
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
+      },
     });
-    
-    return { success: true, data };
-  } catch (error) {
-    console.error('Email send error:', error);
-    return { success: false, error };
-  }
-}
 
-export async function sendWelcomeEmail(to: string, userName: string) {
-  try {
-    await loadDependencies();
-    const html = await renderFn(WelcomeEmailComponent({ userName }));
-    
-    return sendEmail({
-      to,
-      subject: 'Welcome to VibeCode Mentor - Start Building Amazing Projects! 🚀',
-      html,
-    });
-  } catch (error) {
-    console.error('Error rendering welcome email:', error);
-    return { success: false, error };
+    if (error) {
+      return {
+        success: false,
+        message: 'Failed to send verification email',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Verification email sent to ${email}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Error sending verification email',
+      error: error.message,
+    };
   }
 }
 
-export async function sendPaymentConfirmationEmail(
-  to: string,
-  userName: string,
-  amount: string,
-  transactionId: string,
-  nextBillingDate: string
-) {
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(email: string): Promise<EmailVerificationResult> {
   try {
-    await loadDependencies();
-    const html = await renderFn(
-      PaymentConfirmationEmailComponent({
-        userName,
-        amount,
-        transactionId,
-        nextBillingDate,
-      })
-    );
-    
-    return sendEmail({
-      to,
-      subject: 'Payment Confirmed - Welcome to VibeCode Mentor Pro! 🎉',
-      html,
+    if (!supabase) {
+      return {
+        success: false,
+        message: 'Email service not available',
+        error: 'Supabase not initialized',
+      };
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password`,
     });
-  } catch (error) {
-    console.error('Error rendering payment confirmation email:', error);
-    return { success: false, error };
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Failed to send password reset email',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Password reset email sent to ${email}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Error sending password reset email',
+      error: error.message,
+    };
   }
 }
 
-export async function sendRateLimitWarningEmail(
-  to: string,
-  userName: string,
-  limitType: 'blueprints' | 'chats',
-  remaining: number
-) {
+/**
+ * Check if user's email is verified
+ */
+export async function isEmailVerified(userId: string): Promise<boolean> {
   try {
-    await loadDependencies();
-    const html = await renderFn(
-      RateLimitWarningEmailComponent({
-        userName,
-        limitType,
-        remaining,
-      })
-    );
-    
-    const limitText = limitType === 'blueprints' ? 'Blueprint Generations' : 'AI Chats';
-    
-    return sendEmail({
-      to,
-      subject: `⚠️ Low on ${limitText} - Upgrade to Pro for Unlimited Access`,
-      html,
-    });
+    if (!supabase) return false;
+
+    const { data: { user }, error } = await supabase.auth.admin.getUserById(userId);
+
+    if (error || !user) {
+      return false;
+    }
+
+    return user.email_confirmed_at !== null;
   } catch (error) {
-    console.error('Error rendering rate limit warning email:', error);
-    return { success: false, error };
+    console.error('Error checking email verification:', error);
+    return false;
   }
 }
 
-export async function sendWeeklySummaryEmail(
-  to: string,
-  userName: string,
-  blueprintsCreated: number,
-  chatsUsed: number,
-  topVibe: string,
-  isPro: boolean
-) {
+/**
+ * Mark email as verified (admin only)
+ */
+export async function markEmailAsVerified(userId: string): Promise<EmailVerificationResult> {
   try {
-    await loadDependencies();
-    const html = await renderFn(
-      WeeklySummaryEmailComponent({
-        userName,
-        blueprintsCreated,
-        chatsUsed,
-        topVibe,
-        isPro,
-      })
-    );
-    
-    return sendEmail({
-      to,
-      subject: 'Your VibeCode Mentor Weekly Summary 📊',
-      html,
+    if (!supabase) {
+      return {
+        success: false,
+        message: 'Service not available',
+        error: 'Supabase not initialized',
+      };
+    }
+
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      email_confirm: true,
     });
-  } catch (error) {
-    console.error('Error rendering weekly summary email:', error);
-    return { success: false, error };
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Failed to verify email',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Email verified successfully',
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Error verifying email',
+      error: error.message,
+    };
+  }
+}
+
+/**
+ * Send magic link (passwordless login)
+ */
+export async function sendMagicLink(email: string): Promise<EmailVerificationResult> {
+  try {
+    if (!supabase) {
+      return {
+        success: false,
+        message: 'Email service not available',
+        error: 'Supabase not initialized',
+      };
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Failed to send magic link',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Magic link sent to ${email}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Error sending magic link',
+      error: error.message,
+    };
+  }
+}
+
+/**
+ * Verify OTP token (from email link)
+ */
+export async function verifyEmailOtp(
+  email: string,
+  token: string,
+  type: 'email' | 'sms' = 'email'
+): Promise<EmailVerificationResult> {
+  try {
+    if (!supabase) {
+      return {
+        success: false,
+        message: 'Service not available',
+        error: 'Supabase not initialized',
+      };
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type,
+    });
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Invalid or expired token',
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Email verified successfully',
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: 'Error verifying token',
+      error: error.message,
+    };
   }
 }
