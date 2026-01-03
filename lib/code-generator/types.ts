@@ -8,6 +8,28 @@ export interface Blueprint {
   deploymentRequirements: string;
 }
 
+export interface BlueprintV2 extends Blueprint {
+  id?: string;
+  version?: number;
+  isLocked?: boolean;
+  lockedAt?: string;
+  lockedForBuildId?: string;
+  tags?: {
+    framework?: string; // 'nextjs' | 'react'
+    database?: string; // 'postgres' | 'mongodb'
+    auth?: string; // 'supabase' | 'auth0'
+    ui?: string; // 'tailwind' | 'shadcn'
+    payments?: string; // 'stripe' | 'lemonsqueezy'
+    deployment?: string; // 'vercel' | 'netlify'
+  };
+  buildConfig?: {
+    linting: 'eslint' | 'eslint-strict';
+    formatting: 'prettier';
+    typeChecking: 'strict' | 'standard';
+    testing: 'jest' | 'vitest' | 'none';
+  };
+}
+
 export interface GeneratedFile {
   path: string;
   content: string;

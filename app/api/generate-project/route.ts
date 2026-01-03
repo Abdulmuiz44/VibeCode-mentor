@@ -124,10 +124,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Generate project error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to generate project';
+    const errorDetails = error instanceof Error ? error.stack : String(error);
+    console.error('Error stack:', errorDetails);
     return NextResponse.json(
       { 
         error: errorMessage,
-        details: process.env.NODE_ENV === 'development' ? error : undefined,
+        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined,
       },
       { status: 500 }
     );
