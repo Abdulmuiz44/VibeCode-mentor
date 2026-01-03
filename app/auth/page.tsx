@@ -184,7 +184,14 @@ function AuthPageClient() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1 uppercase">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-gray-400 uppercase">Password</label>
+              {isLogin && (
+                <Link href="/auth/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  Forgot?
+                </Link>
+              )}
+            </div>
             <input
               type="password"
               value={password}

@@ -25,6 +25,8 @@ export async function resendVerificationEmail(email: string): Promise<EmailVerif
       };
     }
 
+    console.log(`[Email] Resending verification email to: ${email}`);
+
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
@@ -34,6 +36,7 @@ export async function resendVerificationEmail(email: string): Promise<EmailVerif
     });
 
     if (error) {
+      console.error(`[Email] Failed to resend verification: ${error.message}`);
       return {
         success: false,
         message: 'Failed to send verification email',
@@ -41,11 +44,13 @@ export async function resendVerificationEmail(email: string): Promise<EmailVerif
       };
     }
 
+    console.log(`[Email] Verification email sent successfully to: ${email}`);
     return {
       success: true,
       message: `Verification email sent to ${email}`,
     };
   } catch (error: any) {
+    console.error(`[Email] Error sending verification email:`, error);
     return {
       success: false,
       message: 'Error sending verification email',
@@ -67,11 +72,14 @@ export async function sendPasswordResetEmail(email: string): Promise<EmailVerifi
       };
     }
 
+    console.log(`[Email] Sending password reset email to: ${email}`);
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password`,
     });
 
     if (error) {
+      console.error(`[Email] Failed to send password reset: ${error.message}`);
       return {
         success: false,
         message: 'Failed to send password reset email',
@@ -79,11 +87,13 @@ export async function sendPasswordResetEmail(email: string): Promise<EmailVerifi
       };
     }
 
+    console.log(`[Email] Password reset email sent successfully to: ${email}`);
     return {
       success: true,
       message: `Password reset email sent to ${email}`,
     };
   } catch (error: any) {
+    console.error(`[Email] Error sending password reset email:`, error);
     return {
       success: false,
       message: 'Error sending password reset email',
