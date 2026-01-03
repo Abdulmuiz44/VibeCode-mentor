@@ -111,48 +111,58 @@ function AuthPageClient() {
           )}
         </div>
 
-        <div className="flex gap-4 mb-6 p-1 bg-gray-800/50 rounded-lg">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLogin
-              ? 'bg-gray-700 text-white shadow-sm'
-              : 'text-gray-400 hover:text-gray-300'
-              }`}
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLogin
-              ? 'bg-gray-700 text-white shadow-sm'
-              : 'text-gray-400 hover:text-gray-300'
-              }`}
-          >
-            Sign Up
-          </button>
-        </div>
+        {!emailSent && (
+          <div className="flex gap-4 mb-6 p-1 bg-gray-800/50 rounded-lg">
+            <button
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLogin
+                ? 'bg-gray-700 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-300'
+                }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLogin
+                ? 'bg-gray-700 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-300'
+                }`}
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
 
         {emailSent && (
-          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <div className="flex gap-3">
-              <svg className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <p className="text-sm font-medium text-blue-300">Verify your email</p>
-                <p className="text-xs text-blue-200 mt-1">We sent a confirmation link to {email}. Click the link to activate your account.</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setSuccessMessage('');
-                  }}
-                  className="text-xs text-blue-300 hover:text-blue-200 mt-2 underline"
-                >
-                  Back to sign in
-                </button>
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div className="flex gap-3">
+                <svg className="h-6 w-6 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-blue-300">Check your email!</p>
+                  <p className="text-xs text-blue-200 mt-1">We sent a confirmation link to <strong>{email}</strong></p>
+                  <p className="text-xs text-blue-200 mt-2">Click the link in the email to verify your account. The link expires in 24 hours.</p>
+                </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmailSent(false);
+                setSuccessMessage('');
+                setEmail('');
+                setPassword('');
+                setName('');
+                setIsLogin(true);
+              }}
+              className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all"
+            >
+              Back to Sign In
+            </button>
           </div>
         )}
 
