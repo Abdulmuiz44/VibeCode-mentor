@@ -179,10 +179,11 @@ export class BuildErrorHandler {
       };
     }
 
+    const typedData = data as QuotaCheckResult;
     return {
-      can_build: data.can_build,
-      remaining_builds: data.remaining_builds,
-      reason: data.reason,
+      can_build: typedData.can_build,
+      remaining_builds: typedData.remaining_builds,
+      reason: typedData.reason,
     };
   }
 
@@ -194,15 +195,16 @@ export class BuildErrorHandler {
     endpoint: string
   ): Promise<RateLimitResult> {
     try {
-      const allowed = await this.supabase
+      const { data } = await this.supabase
         .rpc("record_rate_limit_event", {
           p_user_id: userId,
           p_endpoint: endpoint,
         })
         .single();
 
+      const typedData = data as boolean;
       return {
-        allowed: allowed.data || false,
+        allowed: typedData || false,
         requests_made: 0,
         limit: 30,
       };
@@ -235,10 +237,11 @@ export class BuildErrorHandler {
       return { isDuplicate: false };
     }
 
-    if (data?.is_duplicate) {
+    const typedData = data as { is_duplicate: boolean; previous_build_id?: string };
+    if (typedData?.is_duplicate) {
       return {
         isDuplicate: true,
-        previousBuildId: data.previous_build_id,
+        previousBuildId: typedData.previous_build_id,
       };
     }
 
@@ -455,7 +458,8 @@ export class BuildErrorHandler {
       return 0;
     }
 
-    return data || 0;
+    const typedData = data as number;
+    return typedData || 0;
   }
 }
 

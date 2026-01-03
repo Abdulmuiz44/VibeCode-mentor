@@ -1,8 +1,12 @@
 /**
  * Build System Validation Tests
  * Comprehensive test suite for error handling and edge cases
+ * 
+ * NOTE: Test file - will be executed by jest during test runs
+ * Not included in production build
  */
 
+// @ts-expect-error - Jest is only available in test environment
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { BuildErrorHandler, ErrorDefinitions } from "./build-error-handler";
 
@@ -52,7 +56,7 @@ describe("BuildErrorHandler", () => {
     });
 
     it("should reject blueprint exceeding file limit", () => {
-      const structure = { type: "folder", children: [] };
+      const structure: any = { type: "folder", children: [] };
 
       // Add 501 files to exceed limit
       for (let i = 0; i < 501; i++) {

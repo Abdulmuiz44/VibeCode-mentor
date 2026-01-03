@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -23,17 +21,19 @@ export function UpgradeModal({ isOpen, onClose, blueprintName }: UpgradeModalPro
     }
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Unlock Blueprint Building</DialogTitle>
-          <DialogDescription>
-            Build production-ready apps from your blueprints
-          </DialogDescription>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-4 py-4">
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">Unlock Blueprint Building</h2>
+          <p className="text-sm text-gray-600">
+            Build production-ready apps from your blueprints
+          </p>
+        </div>
+
+        <div className="space-y-4 px-6 py-6">
           {blueprintName && (
             <p className="text-sm text-gray-600">
               Ready to build <strong>{blueprintName}</strong>?
@@ -64,19 +64,22 @@ export function UpgradeModal({ isOpen, onClose, blueprintName }: UpgradeModalPro
           </ul>
 
           <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
               Cancel
-            </Button>
-            <Button 
-              onClick={handleUpgrade} 
+            </button>
+            <button
+              onClick={handleUpgrade}
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? 'Loading...' : 'Upgrade to Pro'}
-            </Button>
+            </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

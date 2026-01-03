@@ -95,11 +95,10 @@ async function validateRequest(
 async function validateAndFetchBlueprint(
   blueprintId: string,
   userId: string
-): Promise<{
-  valid: boolean;
-  blueprint?: Record<string, any>;
-  error?: ExecuteBuildResponse;
-}> {
+): Promise<
+  | { valid: true; blueprint: Record<string, any> }
+  | { valid: false; error: ExecuteBuildResponse }
+> {
   // Fetch blueprint
   const { data: blueprint, error: fetchError } = await supabase
     .from("blueprints")
@@ -147,10 +146,10 @@ async function validateAndFetchBlueprint(
 async function checkUserLimits(
   userId: string,
   endpoint: string
-): Promise<{
-  allowed: boolean;
-  error?: ExecuteBuildResponse;
-}> {
+): Promise<
+  | { allowed: true }
+  | { allowed: false; error: ExecuteBuildResponse }
+> {
   // Check quota
   const quotaResult = await errorHandler.checkUserQuota(userId);
   if (!quotaResult.can_build) {
@@ -201,10 +200,10 @@ async function checkDuplicate(
   userId: string,
   blueprint: Record<string, any>,
   force?: boolean
-): Promise<{
-  isDuplicate: boolean;
-  error?: ExecuteBuildResponse;
-}> {
+): Promise<
+  | { isDuplicate: false }
+  | { isDuplicate: true; error: ExecuteBuildResponse }
+> {
   if (force) {
     return { isDuplicate: false };
   }
@@ -236,10 +235,10 @@ async function createBuildExecution(
   blueprintId: string,
   userId: string,
   blueprintVersion: number = 1
-): Promise<{
-  buildId: string;
-  error?: ExecuteBuildResponse;
-}> {
+): Promise<
+  | { success: true; buildId: string }
+  | { success: false; error: ExecuteBuildResponse }
+> {
   const { data: build, error } = await supabase
     .from("build_executions")
     .insert({
@@ -255,7 +254,7 @@ async function createBuildExecution(
 
   if (error || !build) {
     return {
-      buildId: "",
+      success: false,
       error: {
         success: false,
         error: {
@@ -267,7 +266,7 @@ async function createBuildExecution(
     };
   }
 
-  return { buildId: build.id };
+  return { success: true, buildId: build.id };
 }
 
 /**
@@ -404,7 +403,7 @@ export async function POST(
       userId,
       body.blueprint_version
     );
-    if (execResult.error) {
+    if (!execResult.success) {
       return NextResponse.json(execResult.error, { status: 500 });
     }
 

@@ -86,6 +86,8 @@ export class BlueprintValidator {
     tags: BlueprintV2['tags'],
     errors: ValidationError[]
   ): void {
+    if (!tags) return;
+
     const supportedFrameworks = ['nextjs', 'react', 'nuxt', 'vue'];
     const supportedDatabases = ['postgres', 'mongodb', 'mysql'];
     const supportedAuth = ['supabase', 'auth0', 'next-auth'];
@@ -93,42 +95,42 @@ export class BlueprintValidator {
     const supportedPayments = ['stripe', 'lemonsqueezy'];
     const supportedDeployment = ['vercel', 'netlify', 'aws'];
 
-    if (tags.framework && !supportedFrameworks.includes(tags.framework)) {
+    if (tags?.framework && !supportedFrameworks.includes(tags.framework)) {
       errors.push({
         field: 'tags.framework',
         message: `Unsupported framework: ${tags.framework}. Supported: ${supportedFrameworks.join(', ')}`,
       });
     }
 
-    if (tags.database && !supportedDatabases.includes(tags.database)) {
+    if (tags?.database && !supportedDatabases.includes(tags.database)) {
       errors.push({
         field: 'tags.database',
         message: `Unsupported database: ${tags.database}. Supported: ${supportedDatabases.join(', ')}`,
       });
     }
 
-    if (tags.auth && !supportedAuth.includes(tags.auth)) {
+    if (tags?.auth && !supportedAuth.includes(tags.auth)) {
       errors.push({
         field: 'tags.auth',
         message: `Unsupported auth: ${tags.auth}. Supported: ${supportedAuth.join(', ')}`,
       });
     }
 
-    if (tags.ui && !supportedUI.includes(tags.ui)) {
+    if (tags?.ui && !supportedUI.includes(tags.ui)) {
       errors.push({
         field: 'tags.ui',
         message: `Unsupported UI framework: ${tags.ui}. Supported: ${supportedUI.join(', ')}`,
       });
     }
 
-    if (tags.payments && !supportedPayments.includes(tags.payments)) {
+    if (tags?.payments && !supportedPayments.includes(tags.payments)) {
       errors.push({
         field: 'tags.payments',
         message: `Unsupported payments: ${tags.payments}. Supported: ${supportedPayments.join(', ')}`,
       });
     }
 
-    if (tags.deployment && !supportedDeployment.includes(tags.deployment)) {
+    if (tags?.deployment && !supportedDeployment.includes(tags.deployment)) {
       errors.push({
         field: 'tags.deployment',
         message: `Unsupported deployment: ${tags.deployment}. Supported: ${supportedDeployment.join(', ')}`,
@@ -136,11 +138,11 @@ export class BlueprintValidator {
     }
 
     // Stack compatibility checks
-    if (tags.framework === 'nextjs' && tags.database === 'mongodb') {
+    if (tags?.framework === 'nextjs' && tags?.database === 'mongodb') {
       // Both work fine, no issue
     }
 
-    if (tags.database === 'postgres' && !tags.auth) {
+    if (tags?.database === 'postgres' && !tags?.auth) {
       errors.push({
         field: 'tags.auth',
         message: 'PostgreSQL requires an auth provider. Please specify tags.auth',
@@ -152,33 +154,35 @@ export class BlueprintValidator {
     config: BlueprintV2['buildConfig'],
     errors: ValidationError[]
   ): void {
+    if (!config) return;
+
     const validLinting = ['eslint', 'eslint-strict'];
     const validFormatting = ['prettier'];
     const validTypeChecking = ['strict', 'standard'];
     const validTesting = ['jest', 'vitest', 'none'];
 
-    if (config.linting && !validLinting.includes(config.linting)) {
+    if (config?.linting && !validLinting.includes(config.linting)) {
       errors.push({
         field: 'buildConfig.linting',
         message: `Invalid linting: ${config.linting}. Supported: ${validLinting.join(', ')}`,
       });
     }
 
-    if (config.formatting && !validFormatting.includes(config.formatting)) {
+    if (config?.formatting && !validFormatting.includes(config.formatting)) {
       errors.push({
         field: 'buildConfig.formatting',
         message: `Invalid formatting: ${config.formatting}. Supported: ${validFormatting.join(', ')}`,
       });
     }
 
-    if (config.typeChecking && !validTypeChecking.includes(config.typeChecking)) {
+    if (config?.typeChecking && !validTypeChecking.includes(config.typeChecking)) {
       errors.push({
         field: 'buildConfig.typeChecking',
         message: `Invalid typeChecking: ${config.typeChecking}. Supported: ${validTypeChecking.join(', ')}`,
       });
     }
 
-    if (config.testing && !validTesting.includes(config.testing)) {
+    if (config?.testing && !validTesting.includes(config.testing)) {
       errors.push({
         field: 'buildConfig.testing',
         message: `Invalid testing: ${config.testing}. Supported: ${validTesting.join(', ')}`,
