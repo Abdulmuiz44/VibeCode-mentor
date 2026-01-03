@@ -5,7 +5,7 @@ import { BuildDatabase } from '@/lib/db/builds';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { buildId: string } }
+  { params }: { params: Promise<{ buildId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,11 +13,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { buildId } = await params;
+
     // Fetch build execution
-    const build = await BuildDatabase.getBuild(params.buildId, session.user.id);
+    const build = await BuildDatabase.getBuild(buildId, session.user.id);
     
     // Fetch build steps
-    const steps = await BuildDatabase.getBuildSteps(params.buildId);
+    const steps = await BuildDatabase.getBuildSteps(buildId);
 
     // Calculate progress
     const completedSteps = steps.filter(s => s.status === 'completed').length;
