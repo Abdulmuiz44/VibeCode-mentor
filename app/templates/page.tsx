@@ -79,11 +79,11 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+    <div className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4 text-white">
             📋 Blueprint Templates
           </h1>
           <p className="text-gray-400 text-base md:text-lg px-4">
@@ -115,7 +115,7 @@ export default function TemplatesPage() {
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-4 md:px-6 py-2 md:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm md:text-base ${selectedCategory === category.id
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                    ? 'bg-black text-white border border-gray-700'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                   }`}
               >
@@ -208,7 +208,7 @@ export default function TemplatesPage() {
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200"
+              className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg transition-all duration-200 border border-gray-700"
             >
               Reset Filters
             </button>
@@ -217,7 +217,7 @@ export default function TemplatesPage() {
 
         {/* Pro CTA */}
         {!isPro && (
-          <div className="mt-12 md:mt-16 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-6 md:p-8 text-center">
+          <div className="mt-12 md:mt-16 bg-gray-800 border border-gray-700 rounded-2xl p-6 md:p-8 text-center">
             <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
               Unlock All Premium Templates
             </h3>

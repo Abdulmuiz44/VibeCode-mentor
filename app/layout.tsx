@@ -12,85 +12,85 @@ import MainHeader from "@/components/MainHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VibeCode Mentor - AI Project Blueprint Generator & Vibecoding Tool",
-  description: "The ultimate Vibecoding platform. Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
-  keywords: ["Vibecoding", "Vibe Coding", "AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
-  authors: [{ name: "VibeCode Mentor Team" }],
-  creator: "VibeCode Mentor",
-  publisher: "Abdulmuiz Adeyemo",
-  manifest: "/manifest.json",
-  metadataBase: new URL("https://vibecodementor.app"),
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "VibeCode",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://vibecodementor.app",
-    title: "VibeCode Mentor - AI Project Blueprint Generator",
-    description: "Generate complete project blueprints with AI guidance from Mistral AI",
-    siteName: "VibeCode Mentor",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "VibeCode Mentor - AI Project Blueprint Generator",
-    description: "Generate complete project blueprints with AI guidance from Mistral AI",
-    creator: "@AbdMuizAdeyemo",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+    title: "VibeCode Mentor - AI Project Blueprint Generator & Vibecoding Tool",
+    description: "The ultimate Vibecoding platform. Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
+    keywords: ["Vibecoding", "Vibe Coding", "AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
+    authors: [{ name: "VibeCode Mentor Team" }],
+    creator: "VibeCode Mentor",
+    publisher: "Abdulmuiz Adeyemo",
+    manifest: "/manifest.json",
+    metadataBase: new URL("https://vibecodementor.app"),
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "VibeCode",
     },
-  },
+    other: {
+        "mobile-web-app-capable": "yes",
+    },
+    openGraph: {
+        type: "website",
+        locale: "en_US",
+        url: "https://vibecodementor.app",
+        title: "VibeCode Mentor - AI Project Blueprint Generator",
+        description: "Generate complete project blueprints with AI guidance from Mistral AI",
+        siteName: "VibeCode Mentor",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "VibeCode Mentor - AI Project Blueprint Generator",
+        description: "Generate complete project blueprints with AI guidance from Mistral AI",
+        creator: "@AbdMuizAdeyemo",
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        },
+    },
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#000000',
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#000000',
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <head>
-        <GoogleAnalytics />
-        <StructuredData />
-      </head>
-      <body className="antialiased min-h-screen bg-black text-white">
-        <NextAuthProvider>
-          <ProUpgradeModalProvider>
-            <MainHeader />
+    return (
+        <html lang="en">
+            <head>
+                <GoogleAnalytics />
+                <StructuredData />
+            </head>
+            <body className="antialiased min-h-screen bg-white text-black dark:bg-black dark:text-white">
+                <NextAuthProvider>
+                    <ProUpgradeModalProvider>
+                        <MainHeader />
 
-            {children}
+                        {children}
 
-            {/* PWA Install Prompt */}
-            <PWAInstall />
+                        {/* PWA Install Prompt */}
+                        <PWAInstall />
 
-            {/* Keyboard Shortcuts */}
-            <KeyboardShortcuts />
+                        {/* Keyboard Shortcuts */}
+                        <KeyboardShortcuts />
 
-            {/* Analytics */}
-            <Analytics />
-            <SpeedInsights />
-          </ProUpgradeModalProvider>
-        </NextAuthProvider>
-      </body>
-    </html>
-  );
+                        {/* Analytics */}
+                        <Analytics />
+                        <SpeedInsights />
+                    </ProUpgradeModalProvider>
+                </NextAuthProvider>
+            </body>
+        </html>
+    );
 }

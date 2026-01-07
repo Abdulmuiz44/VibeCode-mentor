@@ -78,8 +78,8 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
   return (
     <div className={`mt-8 p-6 rounded-lg border ${
       isPro
-        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/50'
-        : 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/50'
+        ? 'bg-gray-800 border-gray-700'
+        : 'bg-gray-800 border-gray-700'
     }`}>
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-1">
@@ -93,7 +93,7 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
             }
           </p>
           {!isPro && (
-            <div className="mt-3 p-3 bg-orange-900/30 border border-orange-700/50 rounded text-orange-300 text-xs">
+            <div className="mt-3 p-3 bg-gray-700 border border-gray-600 rounded text-gray-300 text-xs">
               <p className="font-semibold mb-1">Pro features included:</p>
               <ul className="space-y-1">
                 <li>✓ Full app code generation</li>
@@ -109,8 +109,8 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
           disabled={isLoading}
           className={`px-8 py-3 rounded-lg font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
             isPro
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
-              : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white'
+              ? 'bg-black hover:bg-gray-800 text-white border border-gray-700'
+              : 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {isLoading ? (

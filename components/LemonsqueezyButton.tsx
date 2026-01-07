@@ -61,7 +61,7 @@ export default function LemonsqueezyButton({
           'Checkout - $5/month'
         )}
       </button>
-      <p className="text-xs text-center text-gray-400">
+      <p className="text-xs text-center text-gray-600 dark:text-gray-400">
         Secure payment via Lemonsqueezy. You will be redirected to complete payment.
       </p>
     </div>

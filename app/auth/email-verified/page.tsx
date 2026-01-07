@@ -3,54 +3,33 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 
-export default function EmailVerification() {
+export default function EmailVerifiedPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [verificationStatus, setVerificationStatus] = useState<'checking' | 'success' | 'error'>('checking');
+  const [verificationStatus, setVerificationStatus] = useState<'success' | 'error' | 'loading'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const verifyEmail = async () => {
-      try {
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
 
-        if (!token || type !== 'email') {
-          setErrorMessage('Invalid verification link');
-          setVerificationStatus('error');
-          return;
-        }
+    if (success === 'true') {
+      setVerificationStatus('success');
+      // Redirect to dashboard after 3 seconds
+      const timeout = setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
 
-        // Verify the token with Supabase
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'email',
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setVerificationStatus('success');
-
-        // Redirect to dashboard after 2 seconds
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
-      } catch (error: any) {
-        setErrorMessage(error.message || 'Failed to verify email');
-        setVerificationStatus('error');
-      }
-    };
-
-    if (searchParams.toString()) {
-      verifyEmail();
+    if (error) {
+      setVerificationStatus('error');
+      setErrorMessage(decodeURIComponent(error));
     }
   }, [searchParams, router]);
 
-  if (verificationStatus === 'checking') {
+  if (verificationStatus === 'loading') {
     return (
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-gray-900/80 border border-gray-800 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
@@ -80,7 +59,8 @@ export default function EmailVerification() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-white">Email Verified!</h1>
-            <p className="text-gray-400">Your email has been successfully confirmed. Redirecting to dashboard...</p>
+            <p className="text-gray-400">Your email has been successfully confirmed. Your account is now active.</p>
+            <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
           </div>
         </div>
       </main>
@@ -98,17 +78,25 @@ export default function EmailVerification() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white mb-2">Verification Failed</h1>
-            <p className="text-gray-400">{errorMessage}</p>
+            <p className="text-gray-400 text-sm">{errorMessage}</p>
           </div>
 
           <div className="space-y-3 pt-4">
             <p className="text-sm text-gray-500">The verification link may have expired or is invalid.</p>
+            
             <Link
               href="/auth"
               className="inline-block w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all text-center"
             >
               Back to Sign In
             </Link>
+
+            <p className="text-xs text-gray-500">
+              Need help?{' '}
+              <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300">
+                Request a new verification email
+              </Link>
+            </p>
           </div>
         </div>
       </div>

@@ -79,10 +79,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden relative">
+            <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden relative text-black dark:text-white">
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                    className="absolute top-4 right-4 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -91,22 +91,22 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                 <div className="p-8">
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                        <h2 className="text-2xl font-bold text-black dark:text-white mb-2">
                             {isLogin ? 'Welcome Back' : 'Create Account'}
                         </h2>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {isLogin
                                 ? 'Enter your details to access your account'
                                 : 'Sign up to start building your ideas'}
                         </p>
                     </div>
 
-                    <div className="flex gap-4 mb-6 p-1 bg-gray-800/50 rounded-lg">
+                    <div className="flex gap-4 mb-6 p-1 bg-gray-100 dark:bg-gray-800/50 rounded-lg">
                         <button
                             onClick={() => setIsLogin(true)}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLogin
-                                ? 'bg-gray-700 text-white shadow-sm'
-                                : 'text-gray-400 hover:text-gray-300'
+                                ? 'bg-gray-200 dark:bg-gray-700 text-black dark:text-white shadow-sm'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             Sign In
@@ -114,8 +114,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         <button
                             onClick={() => setIsLogin(false)}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLogin
-                                ? 'bg-gray-700 text-white shadow-sm'
-                                : 'text-gray-400 hover:text-gray-300'
+                                ? 'bg-gray-200 dark:bg-gray-700 text-black dark:text-white shadow-sm'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
                             Sign Up
@@ -125,12 +125,12 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {!isLogin && (
                             <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1 uppercase">Name</label>
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-400 mb-1 uppercase">Name</label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+                                    className="w-full px-4 py-3 bg-white dark:bg-black/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-600 transition-all"
                                     placeholder="John Doe"
                                     required={!isLogin}
                                 />
@@ -138,24 +138,24 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         )}
 
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1 uppercase">Email</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-400 mb-1 uppercase">Email</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+                                className="w-full px-4 py-3 bg-white dark:bg-black/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-600 transition-all"
                                 placeholder="you@example.com"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1 uppercase">Password</label>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-400 mb-1 uppercase">Password</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+                                className="w-full px-4 py-3 bg-white dark:bg-black/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-600 transition-all"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
@@ -163,7 +163,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+                            <div className="p-3 bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20 rounded-lg text-red-800 dark:text-red-400 text-sm text-center">
                                 {error}
                             </div>
                         )}
@@ -190,16 +190,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     <div className="mt-6">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-800"></div>
+                                <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-gray-900 text-gray-500">Or continue with</span>
+                                <span className="px-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-500">Or continue with</span>
                             </div>
                         </div>
 
                         <button
                             onClick={handleGoogleLogin}
-                            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 bg-white hover:bg-gray-100 text-gray-900 font-medium rounded-lg transition-colors"
+                            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-lg transition-colors"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path

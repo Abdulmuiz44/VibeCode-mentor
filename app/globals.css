@@ -5,6 +5,14 @@
 :root {
   --background: #000000;
   --foreground: #ffffff;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
 }
 
 * {
@@ -32,9 +40,9 @@ body {
   line-height: 1.5;
 }
 
-/* Ensure all text inherits white color */
+/* Ensure all text inherits foreground color */
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+  color: var(--foreground);
   font-weight: 600;
   margin: 0;
   padding: 0;
@@ -46,18 +54,31 @@ p, span, li, a, button, div, section, article {
 
 /* Input and textarea styling */
 input, textarea, select {
-  background-color: #1a1a1a;
-  border-color: #333333;
-  color: #ffffff;
+  background-color: var(--background);
+  border-color: #cccccc;
+  color: var(--foreground);
   font-family: inherit;
 }
 
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    background-color: #1a1a1a;
+    border-color: #333333;
+  }
+}
+
 input::placeholder, textarea::placeholder {
-  color: #666666;
+  color: #999999;
+}
+
+@media (prefers-color-scheme: dark) {
+  input::placeholder, textarea::placeholder {
+    color: #666666;
+  }
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: #ffffff;
+  border-color: var(--foreground);
   outline: none;
 }
 
