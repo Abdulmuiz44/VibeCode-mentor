@@ -54,7 +54,7 @@ export default function BlueprintsPage() {
       } else {
         console.log('No user session found');
         // Redirect to login if not authenticated
-        router.push('/auth/signin');
+        router.push('/auth');
         setSaves([]);
         setSyncStatus('local');
       }
