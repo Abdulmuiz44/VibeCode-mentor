@@ -207,7 +207,7 @@ export async function sendMagicLink(email: string): Promise<EmailVerificationRes
 export async function verifyEmailOtp(
   email: string,
   token: string,
-  type: 'email' | 'sms' = 'email'
+  type: any = 'email'
 ): Promise<EmailVerificationResult> {
   try {
     if (!supabase) {

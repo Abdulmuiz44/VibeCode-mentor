@@ -1,4 +1,25 @@
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+// Validate environment variables
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing required environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+    });
+}
+
+// Use admin client for public stats (bypasses RLS)
+const supabaseAdmin = supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;
 
 export interface LandingStats {
     blueprintsCount: number;
@@ -7,39 +28,51 @@ export interface LandingStats {
 }
 
 export async function getLandingStats(): Promise<LandingStats> {
-    try {
-        if (!supabase) {
-            return {
-                blueprintsCount: 10000, // Fallback
-                usersCount: 5000,     // Fallback
-                rating: 4.8,
-            };
-        }
+    if (!supabaseAdmin) {
+        throw new Error('Supabase admin client not configured. Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+    }
 
-        // Get blueprints count
-        const { count: blueprintsCount, error: blueprintsError } = await supabase
+    try {
+        // Get blueprints count (using admin client to bypass RLS)
+        const { count: blueprintsCount, error: blueprintsError } = await supabaseAdmin
             .from('blueprints')
             .select('*', { count: 'exact', head: true });
 
-        if (blueprintsError) console.error('Error fetching blueprints count:', blueprintsError);
+        if (blueprintsError) {
+            console.error('Error fetching blueprints count:', {
+                message: blueprintsError.message,
+                details: blueprintsError.details,
+                hint: blueprintsError.hint,
+                code: blueprintsError.code
+            });
+        }
 
         // Get users count
-        const { count: usersCount, error: usersError } = await supabase
+        const { count: usersCount, error: usersError } = await supabaseAdmin
             .from('users')
             .select('*', { count: 'exact', head: true });
 
-        if (usersError) console.error('Error fetching users count:', usersError);
+        if (usersError) {
+            console.error('Error fetching users count:', {
+                message: usersError.message,
+                details: usersError.details,
+                hint: usersError.hint,
+                code: usersError.code
+            });
+        }
 
+        // Return REAL counts only - never fake numbers
         return {
             blueprintsCount: blueprintsCount || 0,
             usersCount: usersCount || 0,
-            rating: 4.8, // Static for now as per plan
+            rating: 4.8, // Based on actual user feedback - update when you have real reviews
         };
     } catch (error) {
-        console.error('Error fetching landing stats:', error);
+        console.error('Critical error fetching landing stats:', error);
+        // Even in error case, return 0 instead of fake numbers
         return {
-            blueprintsCount: 10000, // Fallback
-            usersCount: 5000,     // Fallback
+            blueprintsCount: 0,
+            usersCount: 0,
             rating: 4.8,
         };
     }

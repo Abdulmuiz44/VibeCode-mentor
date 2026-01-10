@@ -6,8 +6,13 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
-import { getLandingStats, LandingStats } from '@/lib/stats';
 import dynamic from 'next/dynamic';
+
+interface LandingStats {
+  blueprintsCount: number;
+  usersCount: number;
+  rating: number;
+}
 
 const ProUpgradeButton = dynamic(
   () => import('@/components/ProUpgradeButton'),
@@ -19,8 +24,8 @@ export default function LandingPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [stats, setStats] = useState<LandingStats>({
-    blueprintsCount: 10000,
-    usersCount: 5000,
+    blueprintsCount: 0,
+    usersCount: 0,
     rating: 4.8
   });
 
@@ -33,8 +38,15 @@ export default function LandingPage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const data = await getLandingStats();
-      setStats(data);
+      try {
+        const response = await fetch('/api/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
     };
 
     // Initial fetch
@@ -555,7 +567,7 @@ export default function LandingPage() {
                 <li><Link href="/auth?returnTo=/" className="hover:text-white transition-colors">Generator</Link></li>
                 <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
                 <li><Link href="/prompts" className="hover:text-white transition-colors">Prompts</Link></li>
-                <li><Link href="/history" className="hover:text-white transition-colors">History</Link></li>
+                <li><Link href="/blueprints" className="hover:text-white transition-colors">Blueprints</Link></li>
               </ul>
             </div>
 

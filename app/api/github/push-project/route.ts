@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { ProjectDatabase, GitHubTokenDatabase } from '@/lib/db/projects';
+import { ProjectDatabase } from '@/lib/db/projects';
+import { GitHubTokenDatabase } from '@/lib/db/github';
 import { GitHubRepository } from '@/lib/github/repository';
 
 export async function POST(request: NextRequest) {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     const repoName = project.project_slug.replace(/\s+/g, '-').toLowerCase();
     const repo = await github.createRepository(
       repoName,
-      project.description,
+      project.description || '',
       false
     );
 

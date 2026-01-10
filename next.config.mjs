@@ -9,6 +9,25 @@ const nextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['dockerode', 'simple-git'],
+  transpilePackages: [
+    'react-markdown',
+    'remark-gfm',
+    'micromark',
+    'micromark-util-symbol',
+    'micromark-core-commonmark',
+    'vfile',
+    'vfile-message',
+    'unified',
+    'remark-parse',
+    'remark-rehype',
+    'rehype-stringify',
+    'mdast-util-from-markdown',
+    'mdast-util-to-string',
+    'micromark-util-character',
+    'micromark-factory-space',
+    'devlop'
+  ],
 };
 
 export default nextConfig;

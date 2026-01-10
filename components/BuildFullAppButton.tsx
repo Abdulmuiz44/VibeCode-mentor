@@ -5,21 +5,30 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useProStatus } from '@/hooks/useProStatus';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
+import GitHubConnectionModal from './GitHubConnectionModal';
 
 interface BuildFullAppButtonProps {
   blueprint: string;
   projectIdea: string;
+  blueprintId?: string;
 }
 
-export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFullAppButtonProps) {
+export default function BuildFullAppButton({ blueprint, projectIdea, blueprintId }: BuildFullAppButtonProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const { isPro } = useProStatus();
   const { openUpgradeModal } = useProUpgradeModal();
   const [isLoading, setIsLoading] = useState(false);
+  const [showGitHubModal, setShowGitHubModal] = useState(false);
 
   const handleBuildFullApp = async () => {
-    // If not pro, show upgrade modal
+    // 1. Check for logged in session
+    if (!session?.user?.id) {
+      router.push('/auth');
+      return;
+    }
+
+    // 2. Check Pro status
     if (!isPro) {
       // Store blueprint for after upgrade
       sessionStorage.setItem(
@@ -30,17 +39,29 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
           timestamp: Date.now(),
         })
       );
-      
+
       openUpgradeModal({
         source: 'build_full_app',
       });
-      
+
       // User will need to click button again after upgrading
       // Pro status will update and startBuild will execute
       return;
     }
 
-    // If already pro, start build immediately
+    // 3. Check for GitHub connection
+    try {
+      const ghRes = await fetch('/api/vibecode/github/check');
+      const ghData = await ghRes.json();
+      if (!ghData.connected) {
+        setShowGitHubModal(true);
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to check GitHub status:", err);
+    }
+
+    // If already pro and connected, start build immediately
     startBuild();
   };
 
@@ -52,20 +73,29 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
     setIsLoading(true);
 
     try {
-      // Store blueprint in sessionStorage for the build page
-      sessionStorage.setItem(
-        'blueprintToBuild',
-        JSON.stringify({
+      // Call the promotion API
+      const response = await fetch('/api/vibecode/projects/create-from-blueprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           projectIdea,
           blueprint,
-          timestamp: Date.now(),
-        })
-      );
+          blueprintId,
+        }),
+      });
 
-      // Redirect to the build generation page
-      router.push('/build-full-app');
-    } catch (error) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to convert blueprint to project');
+      }
+
+      const { projectId } = await response.json();
+
+      // Redirect to the project chat
+      router.push(`/projects/${projectId}`);
+    } catch (error: any) {
       console.error('Failed to start build:', error);
+      alert(error.message || 'Failed to start building. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -76,18 +106,17 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
   }
 
   return (
-    <div className={`mt-8 p-6 rounded-lg border ${
-      isPro
-        ? 'bg-gray-800 border-gray-700'
-        : 'bg-gray-800 border-gray-700'
-    }`}>
+    <div className={`mt-8 p-6 rounded-lg border ${isPro
+      ? 'bg-gray-800 border-gray-700'
+      : 'bg-gray-800 border-gray-700'
+      }`}>
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <span>{isPro ? '🚀' : '⭐'}</span> {isPro ? 'Start Building Your App' : 'Upgrade to Build Full Apps'}
           </h3>
           <p className="text-gray-300 text-sm mt-2">
-            {isPro 
+            {isPro
               ? 'Generate a complete production-ready application with auto-generated code, database schema, and GitHub integration'
               : 'Unlock full app generation with production-ready code, database migrations, and GitHub integration'
             }
@@ -107,11 +136,10 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
         <button
           onClick={handleBuildFullApp}
           disabled={isLoading}
-          className={`px-8 py-3 rounded-lg font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
-            isPro
-              ? 'bg-black hover:bg-gray-800 text-white border border-gray-700'
-              : 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`px-8 py-3 rounded-lg font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${isPro
+            ? 'bg-black hover:bg-gray-800 text-white border border-gray-700'
+            : 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {isLoading ? (
             <>
@@ -131,6 +159,18 @@ export default function BuildFullAppButton({ blueprint, projectIdea }: BuildFull
           )}
         </button>
       </div>
+      <GitHubConnectionModal
+        isOpen={showGitHubModal}
+        onClose={() => {
+          setShowGitHubModal(false);
+          // Even if they skip, we allow them to proceed (it will just fail to push or show warning)
+          startBuild();
+        }}
+        onConnected={() => {
+          setShowGitHubModal(false);
+          startBuild();
+        }}
+      />
     </div>
   );
 }

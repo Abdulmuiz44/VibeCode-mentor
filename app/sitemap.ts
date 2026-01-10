@@ -23,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/history`,
+      url: `${baseUrl}/blueprints`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,

@@ -161,11 +161,15 @@ Make the blueprint actionable, specific, and production-ready. Include best prac
     await logGeneration(userId || null, projectIdea, isPro);
 
     // Save to history if user is logged in
+    let blueprintId = null;
     if (userId) {
-      await saveBlueprintToHistory(userId, projectIdea, blueprint);
+      const saved = await saveBlueprintToHistory(userId, projectIdea, blueprint);
+      if (saved.success) {
+        blueprintId = saved.id;
+      }
     }
 
-    return NextResponse.json({ blueprint });
+    return NextResponse.json({ blueprint, blueprintId });
   } catch (error) {
     console.error('Error in mentor API:', error);
     return NextResponse.json(

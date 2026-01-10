@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { GitHubTokenDatabase } from '@/lib/db/projects';
+import { GitHubTokenDatabase } from '@/lib/db/github';
 
 export async function GET(request: NextRequest) {
   try {

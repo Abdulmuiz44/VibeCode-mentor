@@ -14,7 +14,7 @@ const navLinks = [
     { label: 'Home', href: '/' },
     { label: 'Templates', href: '/templates' },
     { label: 'Prompts', href: '/prompts' },
-    { label: 'History', href: '/history' },
+    { label: 'Blueprints', href: '/blueprints' },
 ];
 
 export default function MainHeader() {

@@ -5,9 +5,17 @@ import { SavedBlueprint, CollaborationComment, CustomPrompt } from '@/types/blue
 export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBlueprint) => {
   if (!supabase) return false;
   try {
+    // Ensure vibe is not empty - use it as the project idea
+    const projectIdea = blueprint.vibe && blueprint.vibe.trim() ? blueprint.vibe : 'Untitled Blueprint';
+    
     const { error } = await supabase
       .from('blueprints')
-      .insert([{ user_id: userId, vibe: blueprint.vibe, content: blueprint.blueprint, project_idea: 'Generated Blueprint' }]);
+      .insert([{ 
+        user_id: userId, 
+        vibe: projectIdea, 
+        content: blueprint.blueprint, 
+        project_idea: projectIdea 
+      }]);
     if (error) {
       console.error('Supabase save error:', error);
       return false;
@@ -20,8 +28,16 @@ export const saveBlueprintToCloud = async (userId: string, blueprint: SavedBluep
 };
 
 export const getBlueprintsFromCloud = async (userId: string): Promise<SavedBlueprint[]> => {
-  if (!supabase) return [];
+  if (!supabase) {
+    console.warn('Supabase client not initialized');
+    return [];
+  }
+  if (!userId) {
+    console.warn('userId is empty');
+    return [];
+  }
   try {
+    console.log(`Fetching blueprints for user: ${userId}`);
     const { data, error } = await supabase
       .from('blueprints')
       .select('*')
@@ -29,13 +45,25 @@ export const getBlueprintsFromCloud = async (userId: string): Promise<SavedBluep
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase getBlueprints error:', error);
+      console.error('Supabase getBlueprints error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        userId,
+      });
       return [];
     }
 
+    if (!data || data.length === 0) {
+      console.log('No blueprints found for user:', userId);
+      return [];
+    }
+
+    console.log(`Found ${data.length} blueprints for user ${userId}`);
     return (data as any[]).map((row) => ({
       id: row.id,
-      vibe: row.vibe || 'default',
+      vibe: row.vibe || row.project_idea || 'Untitled Blueprint',
       blueprint: row.content,
       timestamp: new Date(row.created_at).getTime(),
     }));

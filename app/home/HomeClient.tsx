@@ -92,6 +92,33 @@ export default function HomeClient() {
         }
     };
 
+    const handleCreateProject = async () => {
+        try {
+            const response = await fetch('/api/hub/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: projectIdea.split('\n')[0].substring(0, 50),
+                    vibe: projectIdea,
+                    description: blueprint.substring(0, 200),
+                    blueprint_id: null,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create project');
+            }
+
+            const data = await response.json();
+            router.push(`/hub/projects/${data.project.id}`);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        }
+    };
+
     return (
         <main className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
             <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -196,7 +223,25 @@ export default function HomeClient() {
                     )}
                 </div>
 
-                {blueprint && <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />}
+                {blueprint && (
+                    <>
+                        <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />
+                        <div className="mt-8 flex gap-4">
+                            <button
+                                onClick={handleCreateProject}
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                💼 Create Project in Hub
+                            </button>
+                            <button
+                                onClick={() => window.history.back()}
+                                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 font-semibold rounded-lg transition-all duration-200"
+                            >
+                                ← Generate Another Blueprint
+                            </button>
+                        </div>
+                    </>
+                )}
 
                 <ChatBubble blueprintContext={blueprint} />
             </div>

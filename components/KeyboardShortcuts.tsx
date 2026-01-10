@@ -41,7 +41,7 @@ export default function KeyboardShortcuts() {
       // Cmd/Ctrl + 1-5: Navigate to pages
       if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4', '5'].includes(e.key)) {
         e.preventDefault();
-        const pages = ['/', '/templates', '/prompts', '/history', '/admin'];
+        const pages = ['/', '/templates', '/prompts', '/blueprints', '/admin'];
         const index = parseInt(e.key) - 1;
         if (pages[index]) {
           router.push(pages[index]);

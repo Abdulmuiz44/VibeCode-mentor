@@ -9,13 +9,13 @@ import { getBlueprintsFromCloud } from '@/lib/supabaseDB';
 
 interface Project {
   id: string;
-  project_name: string;
+  name: string;
   description: string;
   status: 'generating' | 'completed' | 'failed';
-  total_files: number;
+  totalFiles: number;
   technologies: string[];
-  created_at: string;
-  github_url: string | null;
+  createdAt: string;
+  githubUrl: string | null;
 }
 
 export default function DashboardPage() {
@@ -27,15 +27,18 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'projects' | 'blueprints'>('projects');
 
   useEffect(() => {
+    // Wait until session status is known before checking if user is logged in
+    if (status === 'loading') return;
+
     if (!session?.user?.id) {
-      router.replace('/auth/signin');
+      router.replace('/auth');
       return;
     }
 
     const fetchData = async () => {
       try {
         // Fetch projects
-        const projectsRes = await fetch('/api/projects');
+        const projectsRes = await fetch('/api/vibecode/projects?userId=' + session.user.id);
         if (projectsRes.ok) {
           const projectsData = await projectsRes.json();
           setProjects(projectsData);
@@ -57,8 +60,8 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-gray-600 border-t-white rounded-full animate-spin mx-auto mb-4" />
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-600 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Loading your dashboard...</p>
         </div>
       </div>
@@ -80,21 +83,19 @@ export default function DashboardPage() {
         <div className="flex gap-4 mb-8 border-b border-gray-800">
           <button
             onClick={() => setActiveTab('projects')}
-            className={`px-6 py-3 font-semibold transition-all border-b-2 ${
-              activeTab === 'projects'
-                ? 'border-purple-500 text-purple-400'
-                : 'border-transparent text-gray-400 hover:text-gray-300'
-            }`}
+            className={`px-6 py-3 font-semibold transition-all border-b-2 ${activeTab === 'projects'
+              ? 'border-purple-500 text-purple-400'
+              : 'border-transparent text-gray-400 hover:text-gray-300'
+              }`}
           >
             Projects ({projects.length})
           </button>
           <button
             onClick={() => setActiveTab('blueprints')}
-            className={`px-6 py-3 font-semibold transition-all border-b-2 ${
-              activeTab === 'blueprints'
-                ? 'border-purple-500 text-purple-400'
-                : 'border-transparent text-gray-400 hover:text-gray-300'
-            }`}
+            className={`px-6 py-3 font-semibold transition-all border-b-2 ${activeTab === 'blueprints'
+              ? 'border-purple-500 text-purple-400'
+              : 'border-transparent text-gray-400 hover:text-gray-300'
+              }`}
           >
             Blueprints ({blueprints.length})
           </button>
@@ -125,16 +126,15 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="text-lg font-bold text-white group-hover:text-purple-400 transition-colors line-clamp-2">
-                        {project.project_name}
+                        {project.name}
                       </h3>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
-                          project.status === 'completed'
-                            ? 'bg-green-500/20 text-green-300'
-                            : project.status === 'generating'
+                        className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${project.status === 'completed'
+                          ? 'bg-green-500/20 text-green-300'
+                          : project.status === 'generating'
                             ? 'bg-purple-500/20 text-purple-300'
                             : 'bg-red-500/20 text-red-300'
-                        }`}
+                          }`}
                       >
                         {project.status === 'completed' && '✓'}
                         {project.status === 'generating' && '⟳'}
@@ -158,11 +158,11 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="text-xs text-gray-500 mb-4">
-                      {project.total_files} files • {new Date(project.created_at).toLocaleDateString()}
+                      {project.totalFiles} files • {new Date(project.createdAt).toLocaleDateString()}
                     </div>
-                    {project.github_url && (
+                    {project.githubUrl && (
                       <a
-                        href={project.github_url}
+                        href={project.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={e => e.stopPropagation()}
@@ -198,7 +198,7 @@ export default function DashboardPage() {
                 {blueprints.map(blueprint => (
                   <div
                     key={blueprint.id}
-                    onClick={() => router.push('/history')}
+                    onClick={() => router.push('/blueprints')}
                     className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-all cursor-pointer group"
                   >
                     <div className="flex items-start justify-between">

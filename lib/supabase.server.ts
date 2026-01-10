@@ -104,10 +104,10 @@ export const saveBlueprintToHistory = async (
   projectIdea: string,
   blueprint: string,
   vibe: string = 'default'
-): Promise<boolean> => {
-  if (!supabaseAdmin) return false;
+): Promise<{ success: boolean; id?: string }> => {
+  if (!supabaseAdmin) return { success: false };
   try {
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('blueprints')
       .insert({
         user_id: userId,
@@ -115,16 +115,18 @@ export const saveBlueprintToHistory = async (
         content: blueprint,
         vibe,
         created_at: new Date().toISOString()
-      });
+      })
+      .select('id')
+      .single();
 
     if (error) {
       console.error('Error saving blueprint to history:', error);
-      return false;
+      return { success: false };
     }
-    return true;
+    return { success: true, id: data.id };
   } catch (error) {
     console.error('Error in saveBlueprintToHistory:', error);
-    return false;
+    return { success: false };
   }
 };
 

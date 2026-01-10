@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String   // Links to Clerk/Supabase user ID
+  
+  status      String   @default("generating") // "generating" | "completed" | "failed"
+  githubUrl   String?
+  githubRepoId Int?
+  totalFiles  Int      @default(0)
+  technologies String[]
+
+  blueprints  Blueprint[]
+  agentRuns   AgentRun[]
+  messages    Message[]
+  deployments Deployment[]
+}
+
+model Blueprint {
+  id        String   @id @default(uuid())
+  content   String   // JSON content of the architectural plan
+  codeJson  String?  // JSON content of the generated files
+  version   Int      @default(1)
+  title     String?
+  description String?
+  createdAt DateTime @default(now())
+  
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model AgentRun {
+  id        String   @id @default(uuid())
+  prompt    String
+  status    String   // "PLANNING", "GENERATING", "COMPLETED", "FAILED"
+  result    String?  // JSON result or error message
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  role      String   // "user", "assistant", "system"
+  content   String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Deployment {
+  id        String   @id @default(uuid())
+  url       String?
+  status    String   // "PENDING", "ACTIVE", "FAILED"
+  commitHash String?
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

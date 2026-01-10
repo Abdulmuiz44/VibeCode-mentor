@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { GitHubOAuth } from '@/lib/github/oauth';
-import { GitHubTokenDatabase } from '@/lib/db/projects';
+import { GitHubTokenDatabase } from '@/lib/db/github';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       return NextResponse.redirect(
         new URL(
-          `/dashboard/connected-accounts?error=${encodeURIComponent(
+          `/projects?error=${encodeURIComponent(
             `GitHub error: ${error}`
           )}`,
           request.url
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (!code) {
       return NextResponse.redirect(
         new URL(
-          '/dashboard/connected-accounts?error=Missing authorization code',
+          '/projects?error=Missing authorization code',
           request.url
         )
       );
@@ -34,10 +34,17 @@ export async function GET(request: NextRequest) {
 
     // Verify CSRF state
     const storedState = request.cookies.get('github_oauth_state')?.value;
+    console.log('OAuth state validation:', {
+      receivedState: state,
+      storedState: storedState,
+      match: storedState === state
+    });
+
     if (!storedState || storedState !== state) {
+      console.error('State mismatch! Stored:', storedState, 'Received:', state);
       return NextResponse.redirect(
         new URL(
-          '/dashboard/connected-accounts?error=Invalid state parameter (CSRF protection)',
+          '/projects?error=OAuth state validation failed. Please try connecting GitHub again.',
           request.url
         )
       );
@@ -61,13 +68,14 @@ export async function GET(request: NextRequest) {
     await GitHubTokenDatabase.saveToken(
       session.user.id,
       tokenData.access_token,
-      userInfo.login
+      userInfo.login,
+      userInfo.id
     );
 
     // Redirect to success page
     const response = NextResponse.redirect(
       new URL(
-        `/dashboard/connected-accounts?github_connected=true&github_username=${encodeURIComponent(
+        `/projects?github_connected=true&github_username=${encodeURIComponent(
           userInfo.login
         )}`,
         request.url
@@ -82,7 +90,7 @@ export async function GET(request: NextRequest) {
     console.error('GitHub callback error:', error);
     return NextResponse.redirect(
       new URL(
-        `/dashboard/connected-accounts?error=${encodeURIComponent(
+        `/projects?error=${encodeURIComponent(
           error instanceof Error ? error.message : 'OAuth error'
         )}`,
         request.url

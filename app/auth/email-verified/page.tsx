@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function EmailVerifiedPage() {
+function EmailVerifiedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [verificationStatus, setVerificationStatus] = useState<'success' | 'error' | 'loading'>('loading');
@@ -83,7 +83,7 @@ export default function EmailVerifiedPage() {
 
           <div className="space-y-3 pt-4">
             <p className="text-sm text-gray-500">The verification link may have expired or is invalid.</p>
-            
+
             <Link
               href="/auth"
               className="inline-block w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all text-center"
@@ -101,5 +101,13 @@ export default function EmailVerifiedPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function EmailVerifiedPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><p className="text-white">Loading...</p></div>}>
+      <EmailVerifiedContent />
+    </Suspense>
   );
 }
