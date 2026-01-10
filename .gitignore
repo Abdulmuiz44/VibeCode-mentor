@@ -44,3 +44,7 @@ context/AuthContext.tsx.old
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+# Ignore backend directory
+/backend
+backend/node_modules

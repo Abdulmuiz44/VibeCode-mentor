@@ -1,6 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  webpack: (config, { isServer }) => {
+    // Exclude backend directory from webpack bundling
+    config.externals.push(({ context, request }, callback) => {
+      if (request && request.startsWith('./backend')) {
+        return callback(null, 'commonjs ' + request);
+      }
+      callback();
+    });
+    return config;
+  },
   images: {
     remotePatterns: [
       {
