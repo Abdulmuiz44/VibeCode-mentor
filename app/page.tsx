@@ -29,12 +29,12 @@ export default function LandingPage() {
     rating: 4.8
   });
 
-  // Redirect authenticated users to /build
+  // Redirect all users to /build
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    if (status !== 'loading') {
       router.replace('/build');
     }
-  }, [status, session, router]);
+  }, [status, router]);
 
   useEffect(() => {
     const fetchStats = async () => {
