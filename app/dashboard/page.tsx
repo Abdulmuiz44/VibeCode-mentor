@@ -19,7 +19,7 @@ interface Project {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [blueprints, setBlueprints] = useState<SavedBlueprint[]>([]);
