@@ -536,7 +536,7 @@ export default function LandingPage() {
             Ready to Ship Your Next Project?
           </h2>
           <p className="text-xl text-gray-200 mb-8">
-            Join 5,000+ developers, creators, and founders building with VibeCode Mentor.
+            Join {stats.usersCount.toLocaleString()}+ developers, creators, and founders building with VibeCode Mentor.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
