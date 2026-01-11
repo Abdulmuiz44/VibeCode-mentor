@@ -14,7 +14,12 @@ const supabase = createClient(
 export interface ProjectRequest {
   userId: string;
   projectName: string;
-  prompt: string;
+  
+  // Three options (in priority order):
+  blueprintId?: string;                    // Use existing saved blueprint
+  blueprint?: any;                         // Use provided blueprint object
+  prompt?: string;                         // Generate new blueprint from prompt
+  
   requirements?: {
     techStack?: string[];
     features?: string[];
@@ -58,12 +63,41 @@ export class AgentOrchestrator {
     const projectId = await this.createProject(request);
 
     try {
-      // Phase 1: Generate Blueprint
-      await this.executePhase(projectId, 'blueprint_generation', async () => {
-        const blueprint = await this.blueprintGenerator.generate(request.prompt, request.requirements);
-        await this.updateProject(projectId, { blueprint, current_phase: 'scaffolding' });
-        return { blueprint };
-      });
+      // Phase 1: Generate Blueprint (CONDITIONAL)
+      let blueprint: any;
+      
+      if (request.blueprintId) {
+        // Option 1: Use existing saved blueprint
+        console.log(`Loading existing blueprint: ${request.blueprintId}`);
+        blueprint = await this.loadBlueprint(request.blueprintId);
+        await this.updateProject(projectId, { 
+          blueprint, 
+          current_phase: 'scaffolding',
+          progress_percentage: 10  // Phase 1 skipped, jump to 10%
+        });
+        
+      } else if (request.blueprint) {
+        // Option 2: Use provided blueprint object
+        console.log('Using provided blueprint');
+        blueprint = request.blueprint;
+        await this.updateProject(projectId, { 
+          blueprint, 
+          current_phase: 'scaffolding',
+          progress_percentage: 10
+        });
+        
+      } else if (request.prompt) {
+        // Option 3: Generate new blueprint from prompt
+        console.log(`Generating blueprint from prompt`);
+        await this.executePhase(projectId, 'blueprint_generation', async () => {
+          blueprint = await this.blueprintGenerator.generate(request.prompt, request.requirements);
+          await this.updateProject(projectId, { blueprint, current_phase: 'scaffolding' });
+          return { blueprint };
+        });
+        
+      } else {
+        throw new Error('Must provide blueprintId, blueprint, or prompt');
+      }
 
       // Phase 2: Scaffold Code
       await this.executePhase(projectId, 'scaffolding', async () => {
@@ -189,6 +223,21 @@ export class AgentOrchestrator {
       await this.auditLog(projectId, stepName, 'failure', { error: errorMessage });
       throw error;
     }
+  }
+
+  /**
+   * Load existing blueprint from database
+   */
+  private async loadBlueprint(blueprintId: string): Promise<any> {
+    const { data, error } = await supabase
+      .from('blueprints')
+      .select('blueprint, vibe')
+      .eq('id', blueprintId)
+      .single();
+
+    if (error) throw new Error(`Blueprint not found: ${blueprintId}`);
+    console.log(`Loaded blueprint: ${data.vibe}`);
+    return data.blueprint;
   }
 
   // Helper methods
