@@ -1,9 +1,13 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
-import ProjectsClient from './ProjectsClient';
+export default async function ProjectsPage() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    redirect('/auth?returnTo=/dashboard');
+  }
 
-export const dynamic = 'force-dynamic';
-
-export default function ProjectsPage() {
-  return <ProjectsClient />;
+  redirect('/dashboard');
 }
