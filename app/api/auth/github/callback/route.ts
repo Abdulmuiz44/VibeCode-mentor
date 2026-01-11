@@ -59,10 +59,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange code for token
-    const tokenData = await GitHubOAuth.getAccessToken(code);
+    let tokenData;
+    try {
+      tokenData = await GitHubOAuth.getAccessToken(code);
+    } catch (error) {
+      console.error('Failed to get access token:', error);
+      throw new Error(`Failed to exchange code for token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 
     // Get GitHub user info
-    const userInfo = await GitHubOAuth.getUserInfo(tokenData.access_token);
+    let userInfo;
+    try {
+      userInfo = await GitHubOAuth.getUserInfo(tokenData.access_token);
+    } catch (error) {
+      console.error('Failed to get user info:', error);
+      throw new Error(`Failed to get GitHub user info: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 
     // Save token to database
     await GitHubTokenDatabase.saveToken(

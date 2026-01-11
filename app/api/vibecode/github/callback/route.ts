@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
         // For now, redirect to projects
         return NextResponse.redirect(new URL('/projects?github_connected=true', request.url));
     } catch (error) {
-        console.error('GitHub callback error:', error);
-        return NextResponse.redirect(new URL('/projects?error=github_callback_failed', request.url));
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('GitHub callback error:', errorMessage, error);
+        return NextResponse.redirect(new URL(`/projects?error=${encodeURIComponent(errorMessage)}`, request.url));
     }
 }
