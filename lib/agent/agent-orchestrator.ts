@@ -90,7 +90,7 @@ export class AgentOrchestrator {
         // Option 3: Generate new blueprint from prompt
         console.log(`Generating blueprint from prompt`);
         await this.executePhase(projectId, 'blueprint_generation', async () => {
-          blueprint = await this.blueprintGenerator.generate(request.prompt, request.requirements);
+          blueprint = await this.blueprintGenerator.generate(request.prompt as string, request.requirements);
           await this.updateProject(projectId, { blueprint, current_phase: 'scaffolding' });
           return { blueprint };
         });
