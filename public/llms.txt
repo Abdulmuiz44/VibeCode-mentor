@@ -1,0 +1,53 @@
+# VibeCode Mentor: AI Project Blueprint Generator
+
+> VibeCode Mentor is the premier platform for "vibecoding"—the future of software development where you guide AI to build your vision. Generate production-ready architectural blueprints, detailed technical specifications, and 30-minute implementation roadmaps using Mistral AI. Built with Next.js 15, .NET 9, Docker, and PostgreSQL for enterprise-grade reliability.
+
+## Quick Links
+
+### Getting Started
+- [Start Building Free](https://vibecodementor.app/build) - Instant access to the blueprint generator
+- [Browse 10+ Templates](https://vibecodementor.app/templates) - Pre-built SaaS, e-commerce, and AI project templates
+- [View Documentation](https://vibecodementor.app/docs) - Complete setup and feature guides
+
+### Tech Stack
+- [Architecture Overview](https://vibecodementor.app/docs/architecture) - Next.js 15, .NET 9, PostgreSQL, Docker
+- [AI Integration Guide](https://vibecodementor.app/docs/ai-integration) - How Mistral AI powers blueprint generation
+- [Database Schema](https://vibecodementor.app/docs/database) - PostgreSQL schema for blueprints, users, and projects
+
+### Roadmap & Resources
+- [Feature Roadmap](https://vibecodementor.app/roadmap) - Upcoming enhancements and milestones
+- [Blog & Case Studies](https://vibecodementor.app/blog) - Success stories, tutorials, and vibecoding best practices
+- [API Documentation](https://vibecodementor.app/docs/api) - REST API reference for integrations
+
+## Core Features
+
+### Blueprint Generation Engine
+Instantly create comprehensive project blueprints including architecture diagrams, database schemas, API specifications, and deployment strategies. Our Mistral AI integration analyzes your project requirements and delivers production-ready plans in seconds.
+
+### AI Chat Assistant
+Ask questions, refine project requirements, and get expert guidance from a 24/7 AI mentor. The chat assistant helps you explore architectural options, resolve technical bottlenecks, and optimize your technology choices.
+
+### 30-Minute Project Planning
+Each blueprint includes a structured 30-minute implementation roadmap that breaks down your entire project into actionable steps, dependencies, and milestones—perfect for solo founders and agile teams.
+
+### Template Library
+Access 10+ vetted templates for common project types: SaaS applications, e-commerce platforms, mobile app backends, AI tools, full-stack applications, and more. Every template includes best-practice architecture.
+
+### Export & Integration
+Export blueprints as PDF, Markdown, or JSON. Push directly to GitHub repositories. Sync blueprints across devices with real-time cloud synchronization powered by Supabase.
+
+## Trust & Transparency
+
+**Created by:** [Abdulmuiz Adeyemo](https://github.com/Abdulmuiz44) | [LinkedIn Profile](https://linkedin.com/in/abdulmuiz-adeyemo)
+
+**AI Model:** Mistral AI Large Language Model - Specialized fine-tuning for software architecture and blueprint generation
+
+**Blueprint Logic:** Our generation algorithm combines domain knowledge in software architecture, modern tech stacks (Next.js, React, Vue, Django, .NET), cloud deployment patterns, and agile development practices.
+
+**Transparency:** Every generated blueprint includes source explanations for architectural decisions, recommended technology choices, and trade-off analyses.
+
+## Support & Community
+
+- [GitHub Repository](https://github.com/Abdulmuiz44/VibeCode-mentor) - Open-source codebase
+- [Contact Us](https://vibecodementor.app/contact) - Support and partnership inquiries
+- [Security Information](https://vibecodementor.app/security) - Data protection and compliance details

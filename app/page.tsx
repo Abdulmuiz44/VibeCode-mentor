@@ -153,18 +153,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* What is Vibecoding Section */}
+      {/* What is Vibecoding Section - AEO Optimized with Direct Answer */}
       <section className="px-4 py-20 border-y border-gray-800 bg-gray-900/50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white text-center">
             What is <span className="text-purple-400">Vibecoding</span>?
           </h2>
-          <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
+          
+          {/* Direct Answer Paragraph for AI Extraction (40-60 words) */}
+          <div className="bg-gray-800 border-l-4 border-purple-500 p-6 mb-8 rounded max-w-2xl mx-auto">
+            <p className="text-gray-200 font-medium italic">
+              Vibecoding is a modern software development paradigm where developers focus on creative vision and direction while AI handles implementation details. Instead of writing syntax, you guide AI to build your vision. VibeCode Mentor generates professional blueprints to ensure AI-generated code is robust, scalable, and production-ready.
+            </p>
+          </div>
+
+          <p className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto">
             Vibecoding is a new paradigm in software development where you focus on the creative direction—the &quot;vibe&quot;—while AI handles the heavy lifting.
             Instead of getting bogged down in syntax, you guide the AI to build your vision.
             <br className="my-4 block" />
             <strong className="text-white">VibeCode Mentor</strong> is the first platform designed specifically to power this workflow, giving you professional architectural blueprints to ensure your AI-generated code is robust, scalable, and production-ready.
           </p>
+
+          <div className="mt-8 text-center">
+            <a href="/about" className="text-purple-400 hover:text-purple-300 font-semibold">
+              Learn more about vibecoding →
+            </a>
+          </div>
         </div>
       </section>
 
@@ -179,41 +193,44 @@ export default function LandingPage() {
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
+            {/* Feature 1 - Blueprint Generation */}
             <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-gray-500 transition-all group">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-all">
                 <Image src="/logo.png" alt="VibeCode Logo" width={24} height={24} className="w-6 h-6 object-contain" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Vibecoding Blueprint</h3>
-              <p className="text-gray-400">
-                Mistral AI generates comprehensive vibecoding workflows with architecture, tech stack, and implementation steps.
+              <h3 className="text-lg font-bold text-white mb-3">How do I generate a production-ready blueprint?</h3>
+              <p className="text-gray-400 mb-3">
+                Describe your project idea and VibeCode Mentor instantly generates a comprehensive blueprint with system architecture, database schema, API specifications, tech stack recommendations, and a 30-minute implementation roadmap—all powered by Mistral AI.
               </p>
+              <a href="#" className="text-blue-400 hover:text-blue-300 text-sm font-semibold">Learn about blueprint generation →</a>
             </div>
 
-            {/* Feature 2 */}
+            {/* Feature 2 - AI Chat */}
             <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-gray-500 transition-all group">
               <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-500/20 transition-all">
                 <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">AI Chat Assistant</h3>
-              <p className="text-gray-400">
-                Ask questions, refine ideas, and get expert guidance. It&apos;s like having a senior dev mentor 24/7.
+              <h3 className="text-lg font-bold text-white mb-3">What questions can I ask the AI assistant?</h3>
+              <p className="text-gray-400 mb-3">
+                Ask anything about your blueprint: Why use PostgreSQL instead of MongoDB? How do we scale to 1M users? What security vulnerabilities exist? The AI answers with detailed explanations and can refine your architecture in real-time.
               </p>
+              <a href="#" className="text-purple-400 hover:text-purple-300 text-sm font-semibold">Try AI chat →</a>
             </div>
 
-            {/* Feature 3 */}
+            {/* Feature 3 - Templates */}
             <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-gray-500 transition-all group">
               <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-pink-500/20 transition-all">
                 <svg className="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">10+ Templates</h3>
-              <p className="text-gray-400">
-                Pre-built templates for SaaS, e-commerce, mobile apps, AI tools, and more. Start with best practices.
+              <h3 className="text-lg font-bold text-white mb-3">Which templates can speed up my project?</h3>
+              <p className="text-gray-400 mb-3">
+                We offer 10+ pre-built templates for SaaS applications, e-commerce platforms, AI tools, mobile backends, real-time dashboards, and more. Each includes complete architecture, database schema, and best practices to start your project right.
               </p>
+              <a href="/templates" className="text-pink-400 hover:text-pink-300 text-sm font-semibold">Browse templates →</a>
             </div>
 
             {/* Feature 4 */}
