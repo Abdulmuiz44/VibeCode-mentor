@@ -3,12 +3,22 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { ProjectDatabase } from '@/lib/db/projects';
 import { PlannerAgent } from '@/lib/agents/planner';
+import { getProStatusFromCloud } from '@/lib/supabase.server';
 
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Check Pro status
+        const isPro = await getProStatusFromCloud(session.user.id);
+        if (!isPro) {
+            return NextResponse.json(
+                { error: 'Upgrade to Pro to build full applications' },
+                { status: 403 }
+            );
         }
 
         const { projectIdea, blueprint, blueprintId } = await req.json();

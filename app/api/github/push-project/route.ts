@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import { ProjectDatabase } from '@/lib/db/projects';
 import { GitHubTokenDatabase } from '@/lib/db/github';
 import { GitHubRepository } from '@/lib/github/repository';
+import { getProStatusFromCloud } from '@/lib/supabase.server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Check Pro status
+    const isPro = await getProStatusFromCloud(session.user.id);
+    if (!isPro) {
+      return NextResponse.json(
+        { error: 'Upgrade to Pro to push to GitHub' },
+        { status: 403 }
       );
     }
 

@@ -1,6 +1,6 @@
 # VibeCode Mentor
 
-An AI-powered project blueprint generator that transforms your ideas into production-ready development plans using Mistral AI. **Built for developers, creators, solo founders, and builders.**
+Turn Your Ideas Into Production Ready APPs. An AI-powered co-founder that plans, builds, and deploys your full-stack applications using Google Gemini (Pro). **From Vibe to Live in minutes.**
 
 ## ✨ Features
 

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { CodeGenerator } from '@/lib/code-generator/generator';
 import { Blueprint } from '@/lib/code-generator/types';
-import { saveBlueprintToHistory } from '@/lib/supabase.server';
+import { saveBlueprintToHistory, getProStatusFromCloud } from '@/lib/supabase.server';
 import { ProjectDatabase } from '@/lib/db/projects';
 
 interface BlueprintRequest extends Blueprint {
@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Check Pro status - Only Pro users can generate full apps
+    const isPro = await getProStatusFromCloud(session.user.id);
+    if (!isPro) {
+      return NextResponse.json(
+        { error: 'Upgrade to Pro to build full applications' },
+        { status: 403 }
       );
     }
 

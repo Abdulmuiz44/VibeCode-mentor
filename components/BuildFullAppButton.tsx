@@ -73,26 +73,19 @@ export default function BuildFullAppButton({ blueprint, projectIdea, blueprintId
     setIsLoading(true);
 
     try {
-      // Call the promotion API
-      const response = await fetch('/api/vibecode/projects/create-from-blueprint', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Store blueprint for the generation page
+      sessionStorage.setItem(
+        'blueprintToBuild',
+        JSON.stringify({
           projectIdea,
           blueprint,
           blueprintId,
-        }),
-      });
+          timestamp: Date.now(),
+        })
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to convert blueprint to project');
-      }
-
-      const { projectId } = await response.json();
-
-      // Redirect to the project chat
-      router.push(`/projects/${projectId}`);
+      // Redirect to the generation progress page
+      router.push('/build-full-app');
     } catch (error: any) {
       console.error('Failed to start build:', error);
       alert(error.message || 'Failed to start building. Please try again.');

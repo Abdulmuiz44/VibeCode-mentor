@@ -57,9 +57,10 @@ export default function BuildFullAppClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectName: data.projectIdea.split('\n')[0] || 'Generated Project',
+          projectName: data.projectIdea.split('\n')[0].substring(0, 50) || 'Generated Project',
           description: data.projectIdea,
           blueprint: data.blueprint,
+          blueprintId: (data as any).blueprintId,
           userId,
           features: ['auth', 'realtime'],
           databaseSchema: 'Users',
@@ -83,35 +84,40 @@ export default function BuildFullAppClient() {
       setProjectId(result.projectId);
       updateStep(currentStepIndex, 'completed');
 
+      // Helper function to execute a step
+      const executeNextStep = async (index: number, details: string) => {
+        updateStep(index, 'in-progress', details);
+        const res = await fetch('/api/vibecode/agent/execute-next', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: result.projectId }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed at step: ${GENERATION_STEPS[index]}`);
+        }
+        updateStep(index, 'completed');
+      };
+
       // Step 3: Database schema
       currentStepIndex = 2;
-      updateStep(currentStepIndex, 'in-progress', 'Generating database migrations...');
-      await new Promise(r => setTimeout(r, 800));
-      updateStep(currentStepIndex, 'completed');
+      await executeNextStep(currentStepIndex, 'Generating database migrations...');
 
       // Step 4: API routes
       currentStepIndex = 3;
-      updateStep(currentStepIndex, 'in-progress', 'Building API routes...');
-      await new Promise(r => setTimeout(r, 1000));
-      updateStep(currentStepIndex, 'completed');
+      await executeNextStep(currentStepIndex, 'Building API routes...');
 
       // Step 5: React components
       currentStepIndex = 4;
-      updateStep(currentStepIndex, 'in-progress', 'Creating React components...');
-      await new Promise(r => setTimeout(r, 1200));
-      updateStep(currentStepIndex, 'completed');
+      await executeNextStep(currentStepIndex, 'Creating React components...');
 
       // Step 6: Authentication
       currentStepIndex = 5;
-      updateStep(currentStepIndex, 'in-progress', 'Setting up authentication...');
-      await new Promise(r => setTimeout(r, 500));
-      updateStep(currentStepIndex, 'completed');
+      await executeNextStep(currentStepIndex, 'Setting up authentication...');
 
       // Step 7: Environment config
       currentStepIndex = 6;
-      updateStep(currentStepIndex, 'in-progress', 'Configuring environment...');
-      await new Promise(r => setTimeout(r, 400));
-      updateStep(currentStepIndex, 'completed');
+      await executeNextStep(currentStepIndex, 'Configuring environment...');
 
       // Step 8: GitHub push - requires authentication
       currentStepIndex = 7;

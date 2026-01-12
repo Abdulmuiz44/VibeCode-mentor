@@ -84,18 +84,25 @@ export async function GET(request: NextRequest) {
       userInfo.id
     );
 
+    // Get project ID if we were in a build flow
+    const projectId = request.cookies.get('github_project_id')?.value;
+
     // Redirect to success page
+    let redirectUrl = `/projects?github_connected=true&github_username=${encodeURIComponent(
+      userInfo.login
+    )}`;
+
+    if (projectId) {
+      redirectUrl = `/projects/${projectId}?github_connected=true`;
+    }
+
     const response = NextResponse.redirect(
-      new URL(
-        `/projects?github_connected=true&github_username=${encodeURIComponent(
-          userInfo.login
-        )}`,
-        request.url
-      )
+      new URL(redirectUrl, request.url)
     );
 
-    // Clear the state cookie
+    // Clear the state and project ID cookies
     response.cookies.delete('github_oauth_state');
+    response.cookies.delete('github_project_id');
 
     return response;
   } catch (error) {
