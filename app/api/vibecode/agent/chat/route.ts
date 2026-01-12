@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import { ProjectDatabase } from '@/lib/db/projects';
 import { PlannerAgent } from '@/lib/agents/planner';
 import { ExecutionAgent } from '@/lib/agents/execution';
+import { ModificationAgent } from '@/lib/agents/modification';
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,6 +15,25 @@ export async function POST(req: NextRequest) {
 
         const { projectId, message } = await req.json();
         const msg = message.toLowerCase();
+
+        // Check project status
+        const project = await ProjectDatabase.getProject(projectId);
+
+        // MODIFICATION MODE: If project is completed and user asks for changes
+        if (project.status === 'completed' && project.github_url) {
+            // Simple keyword heuristic for now, can be upgraded to LLM classifier
+            const isChangeRequest = msg.includes('add') || msg.includes('change') || msg.includes('fix') || msg.includes('update') || msg.includes('remove') || msg.includes('make');
+            
+            if (isChangeRequest) {
+                try {
+                    const reply = await ModificationAgent.processRequest(projectId, session.user.id, message);
+                    return NextResponse.json({ reply });
+                } catch (error: any) {
+                    console.error("Modification failed:", error);
+                    return NextResponse.json({ reply: `I tried to update your code, but hit a snag: ${error.message}` });
+                }
+            }
+        }
 
         // Check if this is an approval for a step
         const isApproval = msg.includes('go ahead') || msg.includes('approve') || msg.includes('yes') || msg.includes('next');

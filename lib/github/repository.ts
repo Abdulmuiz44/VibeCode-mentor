@@ -152,6 +152,118 @@ export class GitHubRepository {
   }
 
   /**
+   * Create a Pull Request
+   */
+  async createPullRequest(
+    owner: string,
+    repo: string,
+    head: string,
+    base: string,
+    title: string,
+    body: string
+  ): Promise<{ html_url: string; number: number }> {
+    const { data } = await this.octokit.pulls.create({
+      owner,
+      repo,
+      head,
+      base,
+      title,
+      body,
+    });
+
+    return {
+      html_url: data.html_url,
+      number: data.number,
+    };
+  }
+
+  /**
+   * Get file content
+   */
+  async getFileContent(
+    owner: string,
+    repo: string,
+    path: string,
+    ref?: string
+  ): Promise<string | null> {
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner,
+        repo,
+        path,
+        ref,
+      });
+
+      if ('content' in data && data.content) {
+        return Buffer.from(data.content, 'base64').toString('utf-8');
+      }
+      return null;
+    } catch (error) {
+      console.warn(`File not found: ${path}`);
+      return null;
+    }
+  }
+
+  /**
+   * Commit specific files to a branch (for PRs)
+   */
+  async commitFilesToBranch(
+    owner: string,
+    repo: string,
+    branch: string,
+    files: GeneratedFile[],
+    message: string
+  ): Promise<void> {
+    // 1. Get the latest commit SHA of the branch
+    const { data: refData } = await this.octokit.git.getRef({
+      owner,
+      repo,
+      ref: `heads/${branch}`,
+    });
+    const latestCommitSha = refData.object.sha;
+
+    // 2. Get the tree base
+    const { data: commitData } = await this.octokit.git.getCommit({
+      owner,
+      repo,
+      commit_sha: latestCommitSha,
+    });
+    const baseTreeSha = commitData.tree.sha;
+
+    // 3. Create a new tree with the updated files
+    const treeItems = files.map(file => ({
+      path: file.path,
+      mode: '100644' as const,
+      type: 'blob' as const,
+      content: file.content,
+    }));
+
+    const { data: newTree } = await this.octokit.git.createTree({
+      owner,
+      repo,
+      base_tree: baseTreeSha,
+      tree: treeItems,
+    });
+
+    // 4. Create a new commit
+    const { data: newCommit } = await this.octokit.git.createCommit({
+      owner,
+      repo,
+      message,
+      tree: newTree.sha,
+      parents: [latestCommitSha],
+    });
+
+    // 5. Update the branch reference
+    await this.octokit.git.updateRef({
+      owner,
+      repo,
+      ref: `heads/${branch}`,
+      sha: newCommit.sha,
+    });
+  }
+
+  /**
    * Add GitHub Pages configuration
    */
   async addGitHubPages(owner: string, repo: string): Promise<void> {
