@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
-import TechStackSelector from '@/components/TechStackSelector';
+import TechStackSelector, { TechStack } from '@/components/TechStackSelector';
 
 export default function HomeClient() {
   const { data: session, status } = useSession();
@@ -20,8 +20,8 @@ export default function HomeClient() {
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [techStack, setTechStack] = useState({
-    appType: 'web' as const,
+  const [techStack, setTechStack] = useState<TechStack>({
+    appType: 'web',
     framework: 'nextjs',
     database: 'supabase',
     uiLibrary: 'tailwind',

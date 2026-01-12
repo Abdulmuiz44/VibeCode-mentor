@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-interface TechStack {
+export interface TechStack {
   appType: 'web' | 'mobile' | 'cli' | 'chrome-extension' | 'api';
   framework: string;
   database: string;
