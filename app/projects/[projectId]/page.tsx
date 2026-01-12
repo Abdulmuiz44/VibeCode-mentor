@@ -390,6 +390,23 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                 ) : (
                     <div className="flex-1 overflow-y-auto p-8">
                         <div className="max-w-4xl mx-auto space-y-8">
+                            {/* Mobile Deployment Section */}
+                            <div className="md:hidden space-y-4 mb-8 p-4 bg-gray-900 border border-gray-800 rounded-lg">
+                                <h2 className="text-xl font-bold text-white">Deployment</h2>
+                                {project?.github_url && (
+                                    <>
+                                        <a
+                                            href={project.github_url}
+                                            target="_blank"
+                                            className="flex items-center justify-center gap-2 w-full py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold border border-gray-700 transition-all"
+                                        >
+                                            View Repository
+                                        </a>
+                                        <DeployButton githubUrl={project.github_url} />
+                                    </>
+                                )}
+                            </div>
+
                             <div>
                                 <h2 className="text-2xl font-bold text-white mb-4">Project Documentation</h2>
                                 <ProjectDocumentation content={readmeContent} />
