@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
 import ChatBubble from '@/components/ChatBubble';
 import { useProUpgradeModal } from '@/components/ProUpgradeModal';
+import TechStackSelector from '@/components/TechStackSelector';
 
 export default function HomeClient() {
   const { data: session, status } = useSession();
@@ -19,6 +20,12 @@ export default function HomeClient() {
   const [blueprint, setBlueprint] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [techStack, setTechStack] = useState({
+    appType: 'web' as const,
+    framework: 'nextjs',
+    database: 'supabase',
+    uiLibrary: 'tailwind',
+  });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -69,6 +76,7 @@ export default function HomeClient() {
         body: JSON.stringify({
           projectIdea,
           userId: user?.id || null,
+          techStack,
         }),
       });
 
@@ -128,6 +136,8 @@ export default function HomeClient() {
 
         <div className="mb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <TechStackSelector value={techStack} onChange={setTechStack} />
+            
             <div>
               <label htmlFor="projectIdea" className="block text-sm font-medium text-gray-300 mb-2">
                 Describe your project idea

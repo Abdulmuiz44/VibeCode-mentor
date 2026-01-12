@@ -4,7 +4,7 @@ import { getProStatusFromCloud, saveBlueprintToHistory } from '@/lib/supabase.se
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectIdea, userId } = await request.json();
+    const { projectIdea, userId, techStack } = await request.json();
 
     if (!projectIdea) {
       return NextResponse.json(
@@ -47,9 +47,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Format tech stack requirements
+    let techStackPrompt = '';
+    if (techStack) {
+      techStackPrompt = `
+STRICT TECH STACK REQUIREMENTS:
+- App Type: ${techStack.appType}
+- Framework: ${techStack.framework}
+- Database: ${techStack.database}
+- UI Library: ${techStack.uiLibrary}
+
+You MUST build the architecture using ONLY these specific technologies. Do not suggest alternatives.
+`;
+    }
+
     const prompt = `You are VibeCode Mentor, an expert software architect and developer. Generate a complete, production-ready project blueprint for the following idea:
 
 "${projectIdea}"
+${techStackPrompt}
 
 Your response MUST follow this exact structure in Markdown format:
 
