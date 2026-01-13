@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Queue the build job (for now, run async without waiting)
     // In production, use Bull/Inngest for proper queuing
-    startBuildAsync(build.id, blueprint as BlueprintV2, userId);
+    startBuildAsync(build.id, blueprint as BlueprintV2, userId, blueprintId);
 
     return NextResponse.json({
       buildId: build.id,
@@ -51,16 +51,17 @@ export async function POST(request: NextRequest) {
 }
 
 // Async build execution (without waiting)
-function startBuildAsync(buildId: string, blueprint: BlueprintV2, userId: string) {
+function startBuildAsync(buildId: string, blueprint: BlueprintV2, userId: string, blueprintId: string) {
   (async () => {
     try {
-      const engine = new BuildEngine(buildId, blueprint, userId);
+      // Pass blueprintId as projectId for sandbox tracking
+      const engine = new BuildEngine(buildId, blueprint, userId, blueprintId);
       const result = await engine.execute();
 
       if (!result.success) {
         console.error(`Build failed: ${result.error}`);
       } else {
-        console.log(`Build successful: ${result.githubUrl}`);
+        console.log(`Build successful: ${result.previewUrl || result.githubUrl}`);
       }
     } catch (error) {
       console.error('Build execution error:', error);

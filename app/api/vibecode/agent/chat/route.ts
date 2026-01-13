@@ -19,12 +19,16 @@ export async function POST(req: NextRequest) {
         // Check project status
         const project = await ProjectDatabase.getProject(projectId);
 
-        // MODIFICATION MODE: If project is completed and user asks for changes
-        if (project.status === 'completed' && project.github_url) {
+        // MODIFICATION MODE: If project has generated files (even if not 'completed' or deployed)
+        // We allow users to modify the code iteratively
+        if (project.generated_files) {
             // Simple keyword heuristic for now, can be upgraded to LLM classifier
-            const isChangeRequest = msg.includes('add') || msg.includes('change') || msg.includes('fix') || msg.includes('update') || msg.includes('remove') || msg.includes('make');
-            
-            if (isChangeRequest) {
+            const isChangeRequest = msg.includes('add') || msg.includes('change') || msg.includes('fix') || msg.includes('update') || msg.includes('remove') || msg.includes('make') || msg.includes('modify') || msg.includes('tweak');
+
+            // If it's a change request AND not an approval for the next step (which takes precedence during generation)
+            const isApproval = msg.includes('go ahead') || msg.includes('approve') || msg.includes('yes') || msg.includes('next');
+
+            if (isChangeRequest && !isApproval) {
                 try {
                     const reply = await ModificationAgent.processRequest(projectId, session.user.id, message);
                     return NextResponse.json({ reply });

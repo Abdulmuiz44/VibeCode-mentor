@@ -68,13 +68,14 @@ export class BuildDatabase {
   static async updateBuildStatus(
     buildId: string,
     status: BuildExecution['status'],
-    updates?: { error_message?: string; github_url?: string; completion_time_ms?: number }
+    updates?: { error_message?: string; github_url?: string; completion_time_ms?: number; preview_url?: string }
   ): Promise<void> {
     const update: any = { status, updated_at: new Date().toISOString() };
 
     if (updates?.error_message) update.error_message = updates.error_message;
     if (updates?.github_url) update.github_url = updates.github_url;
     if (updates?.completion_time_ms) update.execution_time_ms = updates.completion_time_ms;
+    if (updates?.preview_url) update.preview_url = updates.preview_url;
     if (status === 'completed' || status === 'failed') {
       update.completed_at = new Date().toISOString();
     }

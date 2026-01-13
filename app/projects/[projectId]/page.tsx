@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProjectRecord, ProjectGenerationStep } from '@/lib/db/projects';
 import ReactMarkdown from 'react-markdown';
+import { LivePreview } from '@/components/LivePreview';
 
 // New Component for Readme
 function ProjectDocumentation({ content }: { content: string }) {
     if (!content) return <div className="text-gray-500 italic">No documentation available.</div>;
-    
+
     return (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 overflow-auto max-h-[600px]">
             <div className="prose prose-invert prose-sm max-w-none">
@@ -56,26 +57,79 @@ function EnvVarHelper({ content }: { content: string }) {
     );
 }
 
-// New Component for Vercel Deploy
-function DeployButton({ githubUrl }: { githubUrl: string | null }) {
-    if (!githubUrl) return null;
+// New Component for Vercel Deploy & GitHub Sync
+function DeployButton({ projectId, githubUrl }: { projectId: string, githubUrl: string | null }) {
+    const [isDeploying, setIsDeploying] = useState(false);
+    const [currentUrl, setCurrentUrl] = useState<string | null>(githubUrl);
+    const router = useRouter();
 
-    // Convert github url to Vercel deploy link
-    // e.g. https://github.com/user/repo -> https://vercel.com/new/clone?repository-url=https://github.com/user/repo
-    const deployUrl = `https://vercel.com/new/clone?repository-url=${encodeURIComponent(githubUrl)}`;
+    const handleDeploy = async () => {
+        setIsDeploying(true);
+        try {
+            // 1. Sync Code to GitHub
+            const res = await fetch('/api/vibecode/deploy/sync-github', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ projectId })
+            });
+
+            if (res.status === 401) {
+                // Not connected to GitHub
+                // Redirect to auth flow
+                const width = 600;
+                const height = 700;
+                const left = window.screen.width / 2 - width / 2;
+                const top = window.screen.height / 2 - height / 2;
+                window.open('/api/auth/github', 'Connect GitHub', `width=${width},height=${height},left=${left},top=${top}`);
+
+                // Poll for connection? Or just reload logic?
+                // For MVP, ask user to reload or we reload page after some time
+                alert("Please connect your GitHub account in the popup, then click Deploy again.");
+                setIsDeploying(false);
+                return;
+            }
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Sync failed');
+            }
+
+            const data = await res.json();
+            const syncedUrl = data.github_url;
+            setCurrentUrl(syncedUrl);
+
+            // 2. Open Vercel Import with the synced Repo URL
+            const deployUrl = `https://vercel.com/new/clone?repository-url=${encodeURIComponent(syncedUrl)}`;
+            window.open(deployUrl, '_blank');
+
+        } catch (error) {
+            console.error("Deploy failed:", error);
+            alert("Deployment failed: " + (error instanceof Error ? error.message : "Unknown Error"));
+        } finally {
+            setIsDeploying(false);
+        }
+    };
 
     return (
-        <a
-            href={deployUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2 bg-black hover:bg-gray-900 text-white rounded-lg text-sm font-semibold border border-gray-700 transition-all mt-3"
+        <button
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="flex items-center justify-center gap-2 w-full py-2 bg-black hover:bg-gray-900 text-white rounded-lg text-sm font-semibold border border-gray-700 transition-all mt-3 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-            <svg className="w-4 h-4" viewBox="0 0 1155 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M577.344 0L1154.69 1000H0L577.344 0Z" fill="white" />
-            </svg>
-            Deploy to Vercel
-        </a>
+            {isDeploying ? (
+                <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Syncing...
+                </>
+            ) : (
+                <>
+                    <svg className="w-4 h-4 group-hover:text-white transition-colors" viewBox="0 0 1155 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M577.344 0L1154.69 1000H0L577.344 0Z" fill="white" />
+                    </svg>
+                    Deploy to Vercel
+                </>
+            )}
+        </button>
     );
 }
 
@@ -95,7 +149,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
     const [isAutoExecuting, setIsAutoExecuting] = useState(true); // Default to true for "background" feel
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const [activeTab, setActiveTab] = useState<'chat' | 'docs'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs'>('chat');
     const [readmeContent, setReadmeContent] = useState('');
     const [envContent, setEnvContent] = useState('');
 
@@ -125,12 +179,12 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                 if (data.steps) {
                     setSteps(data.steps);
                 }
-                
+
                 // Extract files
                 const files = data.generated_files?.files || [];
                 const readme = files.find((f: any) => f.path === 'README.md')?.content || '';
                 const env = files.find((f: any) => f.path === '.env.example')?.content || '';
-                
+
                 setReadmeContent(readme);
                 setEnvContent(env);
             }
@@ -290,7 +344,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" /></svg>
                                 View Repository
                             </a>
-                            <DeployButton githubUrl={project.github_url} />
+                            <DeployButton projectId={projectId} githubUrl={project.github_url} />
                         </div>
                     )}
                 </div>
@@ -305,6 +359,12 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                         className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'chat' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
                     >
                         Architect Chat
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('preview')}
+                        className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'preview' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    >
+                        Live Preview
                     </button>
                     <button
                         onClick={() => setActiveTab('docs')}
@@ -387,6 +447,10 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                             </div>
                         </div>
                     </>
+                ) : activeTab === 'preview' ? (
+                    <div className="flex-1 bg-black p-4">
+                        <LivePreview projectId={projectId} className="h-full border-gray-800" />
+                    </div>
                 ) : (
                     <div className="flex-1 overflow-y-auto p-8">
                         <div className="max-w-4xl mx-auto space-y-8">
@@ -402,21 +466,33 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                                         >
                                             View Repository
                                         </a>
-                                        <DeployButton githubUrl={project.github_url} />
+                                        <DeployButton projectId={projectId} githubUrl={project.github_url} />
                                     </>
                                 )}
+                                {/* Also show Deploy Button even if no github_url yet, to trigger sync logic? 
+                                    Actually, if no github_url, maybe we show "Connect & Deploy"? 
+                                    The new DeployButton handles no url -> Sync -> Create. 
+                                    So we should show it unconditionally? 
+                                    But specific UI says "Deployment" section.
+                                    Let's allow it to appear even if no github_url is set? 
+                                    The previous logic wrapped it in {project?.github_url && ...}.
+                                    Let's keep it safe for now, as Sync API requires "code generated". 
+                                    If code is generated, project.github_url might be null. 
+                                    Ideally we show it if status is not 'generating' or 'failed'.
+                                    But let's stick to replacing existing usage.
+                                */}
                             </div>
 
                             <div>
                                 <h2 className="text-2xl font-bold text-white mb-4">Project Documentation</h2>
                                 <ProjectDocumentation content={readmeContent} />
                             </div>
-                            
+
                             <EnvVarHelper content={envContent} />
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

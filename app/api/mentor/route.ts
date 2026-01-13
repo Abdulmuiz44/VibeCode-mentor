@@ -56,6 +56,8 @@ STRICT TECH STACK REQUIREMENTS:
 - Framework: ${techStack.framework}
 - Database: ${techStack.database}
 - UI Library: ${techStack.uiLibrary}
+${techStack.hosting ? `- Hosting: ${techStack.hosting}` : ''}
+${techStack.auth ? `- Authentication: ${techStack.auth}` : ''}
 
 You MUST build the architecture using ONLY these specific technologies. Do not suggest alternatives.
 `;

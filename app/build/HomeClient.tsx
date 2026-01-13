@@ -25,6 +25,8 @@ export default function HomeClient() {
     framework: 'nextjs',
     database: 'supabase',
     uiLibrary: 'tailwind',
+    hosting: 'vercel',
+    auth: 'nextauth',
   });
 
   useEffect(() => {
@@ -137,7 +139,7 @@ export default function HomeClient() {
         <div className="mb-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <TechStackSelector value={techStack} onChange={setTechStack} />
-            
+
             <div>
               <label htmlFor="projectIdea" className="block text-sm font-medium text-gray-300 mb-2">
                 Describe your project idea
