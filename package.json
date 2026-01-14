@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@e2b/code-interpreter": "^2.3.3",
     "@google/generative-ai": "^0.24.1",
     "@octokit/rest": "^22.0.1",
     "@react-email/components": "^1.0.1",
@@ -22,10 +23,12 @@
     "@vercel/kv": "^3.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.0",
     "dockerode": "^4.0.9",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jszip": "^3.10.1",
+    "lucide-react": "^0.400.0",
     "nanoid": "^5.1.6",
     "next": "^15.0.0",
     "next-auth": "^4.24.13",
@@ -37,10 +40,8 @@
     "remark-gfm": "^4.0.0",
     "resend": "^6.4.2",
     "simple-git": "^3.30.0",
-    "uuid": "^13.0.0",
-    "lucide-react": "^0.400.0",
-    "clsx": "^2.1.0",
-    "tailwind-merge": "^2.2.0"
+    "tailwind-merge": "^2.2.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

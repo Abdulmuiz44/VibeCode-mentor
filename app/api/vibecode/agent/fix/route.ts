@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
         // Apply fix to Active Sandbox (if any)
         const activeSandbox = await SandboxDatabase.getActiveForProject(projectId);
-        if (activeSandbox && activeSandbox.status === 'running') {
+        if (activeSandbox && activeSandbox.status === 'running' && activeSandbox.sandbox_id) {
             try {
                 const sandboxManager = new SandboxManager();
                 await sandboxManager.writeFiles(activeSandbox.sandbox_id, [fixedFile]);

@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react';
 import { ProjectRecord, ProjectGenerationStep } from '@/lib/db/projects';
 import ReactMarkdown from 'react-markdown';
 import { LivePreview } from '@/components/LivePreview';
+import { Deployment } from '@/lib/db/deployments';
+import { CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react';
 
 // New Component for Readme
 function ProjectDocumentation({ content }: { content: string }) {
@@ -149,9 +151,10 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
     const [isAutoExecuting, setIsAutoExecuting] = useState(true); // Default to true for "background" feel
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs' | 'deployments'>('chat');
     const [readmeContent, setReadmeContent] = useState('');
     const [envContent, setEnvContent] = useState('');
+    const [deployments, setDeployments] = useState<Deployment[]>([]);
 
     useEffect(() => {
         if (session?.user?.id) {
@@ -162,6 +165,9 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
 
     useEffect(() => {
         scrollToBottom();
+        if (activeTab === 'deployments') {
+            fetchDeployments();
+        }
     }, [messages, activeTab]);
 
     const scrollToBottom = () => {
@@ -190,6 +196,18 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
             }
         } catch (error) {
             console.error('Failed to fetch project:', error);
+        }
+    };
+
+    const fetchDeployments = async () => {
+        try {
+            const res = await fetch(`/api/vibecode/projects/${projectId}/deployments`);
+            if (res.ok) {
+                const data = await res.json();
+                setDeployments(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch deployments:', error);
         }
     };
 
@@ -372,6 +390,12 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                     >
                         Project Docs
                     </button>
+                    <button
+                        onClick={() => setActiveTab('deployments')}
+                        className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'deployments' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    >
+                        Deployments
+                    </button>
                 </div>
 
                 {/* Generation Progress Overlay */}
@@ -450,6 +474,60 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                 ) : activeTab === 'preview' ? (
                     <div className="flex-1 bg-black p-4">
                         <LivePreview projectId={projectId} className="h-full border-gray-800" />
+                    </div>
+                ) : activeTab === 'deployments' ? (
+                    <div className="flex-1 overflow-y-auto p-8">
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            <h2 className="text-2xl font-bold text-white mb-6">Deployment History</h2>
+
+                            {/* Mobile Deployment Section Duplicated Here? No, maybe kept generic */}
+                            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
+                                <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    {project?.github_url && (
+                                        <DeployButton projectId={projectId} githubUrl={project.github_url} />
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {deployments.length === 0 ? (
+                                    <div className="text-gray-500 text-center py-8 bg-gray-900/50 rounded-lg border border-gray-800">
+                                        No deployments found. Sync to GitHub to see history.
+                                    </div>
+                                ) : (
+                                    deployments.map((deploy) => (
+                                        <div key={deploy.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between group hover:border-purple-500/50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                {deploy.status === 'success' ? (
+                                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                                ) : deploy.status === 'failed' ? (
+                                                    <XCircle className="w-5 h-5 text-red-500" />
+                                                ) : (
+                                                    <Clock className="w-5 h-5 text-yellow-500" />
+                                                )}
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium text-white capitalize">{deploy.provider} Sync</span>
+                                                        <span className="text-xs text-gray-500">• {new Date(deploy.deployed_at).toLocaleString()}</span>
+                                                    </div>
+                                                    <a href={deploy.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:underline flex items-center gap-1">
+                                                        {deploy.url} <ExternalLink className="w-3 h-3" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm">
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${deploy.status === 'success' ? 'bg-green-500/10 text-green-400' :
+                                                        deploy.status === 'failed' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'
+                                                    }`}>
+                                                    {deploy.status.toUpperCase()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex-1 overflow-y-auto p-8">

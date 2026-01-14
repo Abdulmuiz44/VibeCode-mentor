@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2, ExternalLink, RefreshCw, XCircle } from 'lucide-react';
 
 interface LivePreviewProps {
@@ -15,7 +15,7 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
     const [key, setKey] = useState(0); // For forcing iframe refresh
     const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    const fetchPreviewUrl = async () => {
+    const fetchPreviewUrl = useCallback(async () => {
         try {
             // Fetch active sandbox for this project
             const response = await fetch(`/api/vibecode/projects/${projectId}/sandbox`);
@@ -45,7 +45,7 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
             setStatus('error');
             return false;
         }
-    };
+    }, [projectId]);
 
     useEffect(() => {
         if (autoRefresh) {
@@ -55,15 +55,15 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
         return () => {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         };
-    }, [projectId, autoRefresh]);
+    }, [projectId, autoRefresh, fetchPreviewUrl]);
 
     return (
         <div className={`flex flex-col h-full w-full bg-background border border-gray-800 rounded-lg overflow-hidden ${className}`}>
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900/50">
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${status === 'ready' ? 'bg-green-500' :
-                            status === 'loading' ? 'bg-yellow-500' :
-                                'bg-red-500'
+                        status === 'loading' ? 'bg-yellow-500' :
+                            'bg-red-500'
                         }`} />
                     <span className="text-sm font-medium text-gray-200">
                         {status === 'ready' ? 'Live Preview' :

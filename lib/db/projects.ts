@@ -304,6 +304,39 @@ export class ProjectDatabase {
   }
 
   /**
+   * Update generated files (creates a new blueprint version)
+   */
+  static async updateGeneratedFiles(
+    projectId: string,
+    files: any[], // generatedFile[]
+    retries: number = 2
+  ): Promise<void> {
+    // 1. Get current project state
+    const project = await this.getProject(projectId);
+
+    // 2. Prepare updated data
+    const currentBlueprint = project.blueprint;
+    const currentGenerated = project.generated_files;
+
+    const newGeneratedProject = {
+      ...currentGenerated,
+      files: files,
+      summary: {
+        ...currentGenerated.summary,
+        totalFiles: files.length
+      }
+    };
+
+    // 3. Save as new version
+    await this.saveGeneratedBlueprint(
+      projectId,
+      currentBlueprint,
+      newGeneratedProject,
+      'Code Update'
+    );
+  }
+
+  /**
    * Create a generation step
    */
   static async createStep(

@@ -65,16 +65,16 @@ export class E2BClient implements SandboxClient {
 
             const { Sandbox } = e2bModule;
 
-            const sandbox = await Sandbox.create({
+            const sandbox = await Sandbox.create('base', {
                 apiKey: this.apiKey,
-                template: 'base', // Node.js template
-                timeout: 300000,  // 5 minute timeout
+                // template: 'base', // passed as arg
+                timeoutMs: 300000,  // 5 minute timeout
             });
 
-            activeSandboxes.set(sandbox.id, sandbox as unknown as E2BSandbox);
-            console.log(`[E2B] Sandbox created: ${sandbox.id}`);
+            activeSandboxes.set(sandbox.sandboxId, sandbox as unknown as E2BSandbox);
+            console.log(`[E2B] Sandbox created: ${sandbox.sandboxId}`);
 
-            return sandbox.id;
+            return sandbox.sandboxId;
         } catch (error) {
             console.error('[E2B] Failed to create sandbox:', error);
             throw new Error(`Failed to create E2B sandbox: ${error instanceof Error ? error.message : 'Unknown error'}`);

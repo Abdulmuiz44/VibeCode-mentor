@@ -90,6 +90,15 @@ export async function POST(req: NextRequest) {
         // I will use a direct supabase call here if ProjectDatabase doesn't support it to be safe.
         // But better to use the abstraction.
 
+        // Log Deployment
+        const { DeploymentDatabase } = await import('@/lib/db/deployments');
+        await DeploymentDatabase.createDeployment({
+            project_id: projectId,
+            provider: 'github',
+            url: repoUrl || '',
+            status: 'success'
+        });
+
         return NextResponse.json({
             success: true,
             github_url: repoUrl

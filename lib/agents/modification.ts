@@ -67,7 +67,7 @@ export class ModificationAgent {
 
     // 5. Update Sandbox (Live Update)
     const activeSandbox = await SandboxDatabase.getActiveForProject(projectId);
-    if (activeSandbox && activeSandbox.status === 'running') {
+    if (activeSandbox && activeSandbox.status === 'running' && activeSandbox.sandbox_id) {
       try {
         const sandboxManager = new SandboxManager();
         await sandboxManager.writeFiles(activeSandbox.sandbox_id, updatedFiles);
