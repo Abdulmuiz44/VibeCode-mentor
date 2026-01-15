@@ -498,4 +498,111 @@ export class ProjectDatabase {
       completed_at: project.updated_at
     };
   }
+  /**
+   * Get all version history for a project
+   */
+  static async getProjectVersions(projectId: string): Promise<BlueprintRecord[]> {
+    const { data, error } = await supabase
+      .from('blueprints')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('version', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Restore a specific version
+   * Creates a NEW version that is a copy of the target version
+   */
+  static async restoreVersion(projectId: string, versionId: string): Promise<void> {
+    // 1. Fetch the target version
+    const { data: targetVersion, error: fetchError } = await supabase
+      .from('blueprints')
+      .select('*')
+      .eq('id', versionId)
+      .single();
+
+    if (fetchError || !targetVersion) throw new Error("Version not found");
+
+    // 2. Parse the code
+    let files = [];
+    try {
+      const parsed = JSON.parse(targetVersion.code_json || '{}');
+      files = parsed.files || [];
+    } catch (e) {
+      throw new Error("Failed to parse version content");
+    }
+
+    // 3. Update generated files (this creates the new version)
+    await this.updateGeneratedFiles(projectId, files);
+  }
+
+  /**
+   * Get all public templates
+   */
+  static async getTemplates(limit: number = 20): Promise<ProjectRecord[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('is_template', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Clone a template to a new project
+   */
+  static async cloneTemplate(
+    templateId: string,
+    userId: string,
+    newName: string
+  ): Promise<ProjectRecord> {
+    // 1. Get the template project
+    const template = await this.getProject(templateId);
+
+    // 2. Create new project record
+    const { data: newProject, error: createError } = await supabase
+      .from('projects')
+      .insert({
+        user_id: userId,
+        owner_id: userId,
+        name: newName || `${template.name} (Copy)`,
+        slug: template.slug, // Keep slug or generate new? Keep slug for now basically
+        description: `Cloned from ${template.name}`,
+        vibe: template.description || 'Template Clone',
+        status: 'completed', // Templates are ready to go
+        total_files: template.total_files,
+        technologies: template.technologies,
+        // Don't set github_url/preview_url yet
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
+    // 3. Copy blueprint
+    if (template.blueprints && template.blueprints.length > 0) {
+      const sourceBlueprint = template.blueprints[0];
+      const { error: bpError } = await supabase
+        .from('blueprints')
+        .insert({
+          project_id: newProject.id,
+          user_id: userId,
+          version: 1,
+          title: 'Initial Clone',
+          description: `Cloned from template: ${template.name}`,
+          content: sourceBlueprint.content,
+          code_json: sourceBlueprint.code_json
+        });
+
+      if (bpError) console.error('Failed to clone blueprint:', bpError);
+    }
+
+    return newProject;
+  }
 }

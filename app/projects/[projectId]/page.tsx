@@ -7,7 +7,9 @@ import { ProjectRecord, ProjectGenerationStep } from '@/lib/db/projects';
 import ReactMarkdown from 'react-markdown';
 import { LivePreview } from '@/components/LivePreview';
 import { Deployment } from '@/lib/db/deployments';
-import { CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react';
+import { BlueprintRecord } from '@/lib/db/projects'; // Import BlueprintRecord
+import { CheckCircle, XCircle, Clock, ExternalLink, RotateCcw, FileCode, History, Terminal } from 'lucide-react'; // Added Terminal icon
+import { BuildLogRecord } from '@/lib/sandbox/database'; // Import Log type
 
 // New Component for Readme
 function ProjectDocumentation({ content }: { content: string }) {
@@ -151,10 +153,13 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
     const [isAutoExecuting, setIsAutoExecuting] = useState(true); // Default to true for "background" feel
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs' | 'deployments'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs' | 'deployments' | 'history' | 'logs'>('chat');
     const [readmeContent, setReadmeContent] = useState('');
     const [envContent, setEnvContent] = useState('');
     const [deployments, setDeployments] = useState<Deployment[]>([]);
+    const [versions, setVersions] = useState<BlueprintRecord[]>([]);
+    const [logs, setLogs] = useState<BuildLogRecord[]>([]); // Logs state
+    const [isRestoring, setIsRestoring] = useState<string | null>(null);
 
     useEffect(() => {
         if (session?.user?.id) {
@@ -167,12 +172,21 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         scrollToBottom();
         if (activeTab === 'deployments') {
             fetchDeployments();
+        } else if (activeTab === 'history') {
+            fetchVersions();
+        } else if (activeTab === 'logs') {
+            fetchLogs();
+            // Start polling logs
+            const interval = setInterval(fetchLogs, 2000);
+            return () => clearInterval(interval);
         }
     }, [messages, activeTab]);
 
     const scrollToBottom = () => {
         if (activeTab === 'chat') {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        } else if (activeTab === 'logs') {
+            // Optional: auto-scroll logs? contentRef.current...
         }
     };
 
@@ -208,6 +222,57 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
             }
         } catch (error) {
             console.error('Failed to fetch deployments:', error);
+        }
+    };
+
+    const fetchVersions = async () => {
+        try {
+            const res = await fetch(`/api/vibecode/projects/${projectId}/versions`);
+            if (res.ok) {
+                const data = await res.json();
+                setVersions(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch versions:', error);
+        }
+    };
+
+    const handleRestore = async (versionId: string) => {
+        if (!confirm('Are you sure you want to restore this version? This will create a new version on top of the current state.')) return;
+
+        setIsRestoring(versionId);
+        try {
+            const res = await fetch(`/api/vibecode/projects/${projectId}/versions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ versionId })
+            });
+
+            if (res.ok) {
+                alert('Version restored successfully!');
+                fetchProject(); // Reload project state
+                fetchVersions(); // Reload versions list (new one added)
+                setActiveTab('chat'); // Go back to chat
+            } else {
+                throw new Error('Failed to restore');
+            }
+        } catch (error) {
+            console.error('Restore failed:', error);
+            alert('Failed to restore version');
+        } finally {
+            setIsRestoring(null);
+        }
+    };
+
+    const fetchLogs = async () => {
+        try {
+            const res = await fetch(`/api/vibecode/projects/${projectId}/logs`);
+            if (res.ok) {
+                const data = await res.json();
+                setLogs(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch logs:', error);
         }
     };
 
@@ -396,6 +461,18 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                     >
                         Deployments
                     </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'history' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    >
+                        History
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('logs')}
+                        className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'logs' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    >
+                        Logs
+                    </button>
                 </div>
 
                 {/* Generation Progress Overlay */}
@@ -480,7 +557,6 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                         <div className="max-w-4xl mx-auto space-y-6">
                             <h2 className="text-2xl font-bold text-white mb-6">Deployment History</h2>
 
-                            {/* Mobile Deployment Section Duplicated Here? No, maybe kept generic */}
                             <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
                                 <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
                                 <div className="flex flex-col sm:flex-row gap-4">
@@ -518,7 +594,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                                             </div>
                                             <div className="text-sm">
                                                 <span className={`px-2 py-1 rounded text-xs font-semibold ${deploy.status === 'success' ? 'bg-green-500/10 text-green-400' :
-                                                        deploy.status === 'failed' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'
+                                                    deploy.status === 'failed' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'
                                                     }`}>
                                                     {deploy.status.toUpperCase()}
                                                 </span>
@@ -527,6 +603,77 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                                     ))
                                 )}
                             </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'history' ? (
+                    <div className="flex-1 overflow-y-auto p-8">
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            <h2 className="text-2xl font-bold text-white mb-6">Version History</h2>
+                            <div className="space-y-4">
+                                {versions.length === 0 ? (
+                                    <div className="text-gray-500 text-center py-8 bg-gray-900/50 rounded-lg border border-gray-800">
+                                        No history available.
+                                    </div>
+                                ) : (
+                                    versions.map((ver) => (
+                                        <div key={ver.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between group hover:border-purple-500/50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold border border-purple-500/20">
+                                                    v{ver.version}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-medium text-white">{ver.title || 'Update'}</span>
+                                                        <span className="text-xs text-gray-500">• {new Date(ver.created_at).toLocaleString()}</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-400">{ver.description || 'No description'}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleRestore(ver.id)}
+                                                disabled={isRestoring === ver.id}
+                                                className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded border border-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                            >
+                                                {isRestoring === ver.id ? (
+                                                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <RotateCcw className="w-3 h-3" />
+                                                )}
+                                                Restore
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'logs' ? (
+                    <div className="flex-1 overflow-hidden bg-black p-4 flex flex-col">
+                        <div className="flex items-center justify-between mb-2 px-2">
+                            <h2 className="text-sm font-mono text-gray-400">Terminal Output</h2>
+                            <span className="text-xs text-gray-600 flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                Live
+                            </span>
+                        </div>
+                        <div className="flex-1 bg-[#0f1319] border border-gray-800 rounded-lg p-4 font-mono text-xs overflow-y-auto">
+                            {logs.length === 0 ? (
+                                <div className="text-gray-600 italic">Waiting for logs...</div>
+                            ) : (
+                                logs.map((log) => (
+                                    <div key={log.id} className="mb-1 break-all">
+                                        <span className="text-gray-600 select-none mr-2">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                                        <span className={
+                                            log.level === 'error' ? 'text-red-400' :
+                                                log.level === 'warn' ? 'text-yellow-400' :
+                                                    log.message.includes('Completing') || log.message.includes('Success') ? 'text-green-400' :
+                                                        'text-gray-300'
+                                        }>
+                                            {log.step ? `[${log.step}] ` : ''}{log.message}
+                                        </span>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -547,18 +694,6 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                                         <DeployButton projectId={projectId} githubUrl={project.github_url} />
                                     </>
                                 )}
-                                {/* Also show Deploy Button even if no github_url yet, to trigger sync logic? 
-                                    Actually, if no github_url, maybe we show "Connect & Deploy"? 
-                                    The new DeployButton handles no url -> Sync -> Create. 
-                                    So we should show it unconditionally? 
-                                    But specific UI says "Deployment" section.
-                                    Let's allow it to appear even if no github_url is set? 
-                                    The previous logic wrapped it in {project?.github_url && ...}.
-                                    Let's keep it safe for now, as Sync API requires "code generated". 
-                                    If code is generated, project.github_url might be null. 
-                                    Ideally we show it if status is not 'generating' or 'failed'.
-                                    But let's stick to replacing existing usage.
-                                */}
                             </div>
 
                             <div>
@@ -574,3 +709,5 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         </div >
     );
 }
+
+

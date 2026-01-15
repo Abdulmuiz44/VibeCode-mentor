@@ -28,6 +28,7 @@ export default function HomeClient() {
     hosting: 'vercel',
     auth: 'nextauth',
   });
+  const [activeMode, setActiveMode] = useState<'scratch' | 'templates'>('scratch');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -136,98 +137,188 @@ export default function HomeClient() {
           </div>
         </div>
 
-        <div className="mb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <TechStackSelector value={techStack} onChange={setTechStack} />
 
-            <div>
-              <label htmlFor="projectIdea" className="block text-sm font-medium text-gray-300 mb-2">
-                Describe your project idea
-              </label>
-              <textarea
-                id="projectIdea"
-                value={projectIdea}
-                onChange={(e) => setProjectIdea(e.target.value)}
-                placeholder="E.g., Build a real-time chat app with React, WebSockets, and MongoDB..."
-                className="w-full h-40 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-white focus:border-white outline-none resize-none text-white placeholder-gray-500 transition"
-                disabled={loading}
-              />
-              {!projectIdea && !blueprint && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <p className="text-xs text-gray-500 w-full mb-1">Quick examples:</p>
-                  <button
-                    type="button"
-                    onClick={() => setProjectIdea('Build a REST API backend with authentication, database, and deployment guide')}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
-                  >
-                    🔧 REST API
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProjectIdea('Create a SaaS application with user authentication, subscription billing, and admin dashboard')}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
-                  >
-                    🚀 SaaS App
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProjectIdea('Build a Chrome extension with React, background workers, and content scripts')}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
-                  >
-                    🧩 Chrome Extension
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProjectIdea('Create a CLI tool with interactive prompts, file operations, and npm publishing')}
-                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
-                  >
-                    💻 CLI Tool
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generating Blueprint...
-                </span>
-              ) : (
-                'Generate Blueprint'
-              )}
-            </button>
-          </form>
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-200">
-              {error}
-            </div>
-          )}
+        <div className="flex justify-center mb-8 gap-4">
+          <button
+            onClick={() => setActiveMode('scratch')}
+            className={`px-6 py-2 rounded-full font-semibold transition-all ${activeMode === 'scratch'
+              ? 'bg-white text-black'
+              : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
+              }`}
+          >
+            Start from Scratch
+          </button>
+          <button
+            onClick={() => setActiveMode('templates')}
+            className={`px-6 py-2 rounded-full font-semibold transition-all ${activeMode === 'templates'
+              ? 'bg-white text-black'
+              : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
+              }`}
+          >
+            Browse Templates
+          </button>
         </div>
 
-        {blueprint && <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />}
+        {activeMode === 'scratch' ? (
+          <div className="mb-8">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <TechStackSelector value={techStack} onChange={setTechStack} />
 
-        {/* Start Building CTA - Show when no blueprint yet */}
-        {!blueprint && (
-          <div className="mt-12 p-8 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/50 rounded-lg text-center">
-            <h2 className="text-3xl font-bold text-white mb-3">Ready to Bring Your Idea to Life?</h2>
-            <p className="text-gray-300 mb-6">Start by generating a blueprint above, then upgrade to Pro to build a full production-ready application with GitHub integration.</p>
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all cursor-pointer">
-              <span>⚡ Generate Blueprint First</span>
-            </div>
+              <div>
+                <label htmlFor="projectIdea" className="block text-sm font-medium text-gray-300 mb-2">
+                  Describe your project idea
+                </label>
+                <textarea
+                  id="projectIdea"
+                  value={projectIdea}
+                  onChange={(e) => setProjectIdea(e.target.value)}
+                  placeholder="E.g., Build a real-time chat app with React, WebSockets, and MongoDB..."
+                  className="w-full h-40 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg focus:ring-2 focus:ring-white focus:border-white outline-none resize-none text-white placeholder-gray-500 transition"
+                  disabled={loading}
+                />
+                {!projectIdea && !blueprint && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <p className="text-xs text-gray-500 w-full mb-1">Quick examples:</p>
+                    <button
+                      type="button"
+                      onClick={() => setProjectIdea('Build a REST API backend with authentication, database, and deployment guide')}
+                      className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                    >
+                      🔧 REST API
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProjectIdea('Create a SaaS application with user authentication, subscription billing, and admin dashboard')}
+                      className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                    >
+                      🚀 SaaS App
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProjectIdea('Build a Chrome extension with React, background workers, and content scripts')}
+                      className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                    >
+                      🧩 Chrome Extension
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProjectIdea('Create a CLI tool with interactive prompts, file operations, and npm publishing')}
+                      className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md transition-colors"
+                    >
+                      💻 CLI Tool
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating Blueprint...
+                  </span>
+                ) : (
+                  'Generate Blueprint'
+                )}
+              </button>
+              {error && (
+                <div className="mt-4 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-200">
+                  {error}
+                </div>
+              )}
+            </form>
+
+            {blueprint && <BlueprintOutput blueprint={blueprint} projectIdea={projectIdea} />}
+
+            {!blueprint && (
+              <div className="mt-12 p-8 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/50 rounded-lg text-center">
+                <h2 className="text-3xl font-bold text-white mb-3">Ready to Bring Your Idea to Life?</h2>
+                <p className="text-gray-300 mb-6">Start by generating a blueprint above, then upgrade to Pro to build a full production-ready application with GitHub integration.</p>
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all cursor-pointer">
+                  <span>⚡ Generate Blueprint First</span>
+                </div>
+              </div>
+            )}
+            <ChatBubble blueprintContext={blueprint} />
+          </div>
+        ) : (
+          <div className="mb-8">
+            <TemplateGallery />
           </div>
         )}
-
-        <ChatBubble blueprintContext={blueprint} />
       </div>
     </main>
+  );
+}
+
+function TemplateGallery() {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch('/api/vibecode/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setTemplates(data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleClone = async (templateId: string, templateName: string) => {
+    if (!confirm(`Create a new project from ${templateName}?`)) return;
+
+    try {
+      const res = await fetch('/api/vibecode/projects/clone', {
+        method: 'POST',
+        body: JSON.stringify({ templateId, name: `${templateName} (Clone)` }),
+      });
+      if (res.ok) {
+        const project = await res.json();
+        router.push(`/projects/${project.id}`);
+      } else {
+        alert('Failed to clone template');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error cloning template');
+    }
+  };
+
+  if (loading) return <div className="text-center text-gray-500">Loading templates...</div>;
+
+  if (templates.length === 0) return (
+    <div className="bg-gray-900 border border-gray-800 rounded-lg p-12 text-center text-gray-500">
+      No templates available yet. Check back soon!
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {templates.map(t => (
+        <div key={t.id} className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-all flex flex-col">
+          <h3 className="text-xl font-bold text-white mb-2">{t.name}</h3>
+          <p className="text-gray-400 text-sm mb-4 flex-1">{t.description}</p>
+          <div className="flex gap-2 flex-wrap mb-4">
+            {t.technologies?.slice(0, 3).map((tech: string) => (
+              <span key={tech} className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded border border-gray-700">{tech}</span>
+            ))}
+          </div>
+          <button
+            onClick={() => handleClone(t.id, t.name)}
+            className="w-full py-2 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors"
+          >
+            Use Template
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
