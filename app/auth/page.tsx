@@ -89,11 +89,11 @@ function AuthPageClient() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-900/80 border border-gray-800 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
+    <main className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-black border border-white/20 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-4">
-            <p className="text-sm uppercase tracking-[0.3em] text-blue-400">VibeCode Mentor</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-white">VibeCode Mentor</p>
           </Link>
           <h1 className="text-3xl font-bold text-white mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
@@ -105,19 +105,19 @@ function AuthPageClient() {
           </p>
 
           {successMessage && (
-            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+            <div className="mt-4 p-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm">
               {successMessage}
             </div>
           )}
         </div>
 
         {!emailSent && (
-          <div className="flex gap-4 mb-6 p-1 bg-gray-800/50 rounded-lg">
+          <div className="flex gap-4 mb-6 p-1 bg-white/5 rounded-lg border border-white/10">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isLogin
-                ? 'bg-gray-700 text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-300'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               Sign In
@@ -125,8 +125,8 @@ function AuthPageClient() {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isLogin
-                ? 'bg-gray-700 text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-300'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               Sign Up
@@ -136,15 +136,15 @@ function AuthPageClient() {
 
         {emailSent && (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
               <div className="flex gap-3">
-                <svg className="h-6 w-6 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-6 w-6 text-white flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-blue-300">Check your email!</p>
-                  <p className="text-xs text-blue-200 mt-1">We sent a confirmation link to <strong>{email}</strong></p>
-                  <p className="text-xs text-blue-200 mt-2">Click the link in the email to verify your account. The link expires in 24 hours.</p>
+                  <p className="text-sm font-semibold text-white">Check your email!</p>
+                  <p className="text-xs text-gray-300 mt-1">We sent a confirmation link to <strong>{email}</strong></p>
+                  <p className="text-xs text-gray-400 mt-2">Click the link in the email to verify your account. The link expires in 24 hours.</p>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@ function AuthPageClient() {
                 setName('');
                 setIsLogin(true);
               }}
-              className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all"
+              className="w-full py-3 px-4 bg-white hover:bg-gray-200 text-black font-bold rounded-lg transition-all"
             >
               Back to Sign In
             </button>
@@ -174,7 +174,7 @@ function AuthPageClient() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+                className="w-full px-4 py-3 bg-black border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
                 placeholder="John Doe"
                 required={!isLogin}
               />
@@ -187,7 +187,7 @@ function AuthPageClient() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+              className="w-full px-4 py-3 bg-black border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
               placeholder="you@example.com"
               required
             />
@@ -197,7 +197,7 @@ function AuthPageClient() {
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-medium text-gray-400 uppercase">Password</label>
               {isLogin && (
-                <Link href="/auth/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                <Link href="/auth/forgot-password" className="text-xs text-gray-400 hover:text-white transition-colors">
                   Forgot?
                 </Link>
               )}
@@ -206,7 +206,7 @@ function AuthPageClient() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
+              className="w-full px-4 py-3 bg-black border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none text-white placeholder-gray-600 transition-all"
               placeholder="••••••••"
               required
               minLength={6}
@@ -214,7 +214,7 @@ function AuthPageClient() {
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+            <div className="p-3 bg-red-900/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
               {error}
             </div>
           )}
@@ -222,11 +222,11 @@ function AuthPageClient() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-white hover:bg-gray-100 text-black font-bold rounded-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -241,16 +241,16 @@ function AuthPageClient() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-800"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-500">Or continue with</span>
+              <span className="px-2 bg-black text-gray-500">Or continue with</span>
             </div>
           </div>
 
           <button
             onClick={() => signIn('google', { callbackUrl })}
-            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 bg-white hover:bg-gray-100 text-gray-900 font-medium rounded-lg transition-colors"
+            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 bg-black border border-white/20 hover:bg-white/5 text-white font-medium rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -275,7 +275,7 @@ function AuthPageClient() {
         </div>
 
         <div className="mt-8 text-center space-y-2 text-sm text-gray-400">
-          <Link href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+          <Link href="/" className="text-gray-400 hover:text-white transition-colors">
             Back to home
           </Link>
         </div>

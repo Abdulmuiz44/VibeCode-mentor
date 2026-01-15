@@ -12,6 +12,7 @@ import { useProUpgradeModal } from '@/components/ProUpgradeModal';
 
 const navLinks = [
     { label: 'Home', href: '/' },
+    { label: 'Projects', href: '/dashboard' },
     { label: 'Templates', href: '/templates' },
     { label: 'Prompts', href: '/prompts' },
     { label: 'Blueprints', href: '/blueprints' },
@@ -23,9 +24,10 @@ export default function MainHeader() {
     const pathname = usePathname();
     const { openUpgradeModal } = useProUpgradeModal();
 
+    const isHomePage = pathname === '/';
     const isAuthRoute = pathname?.startsWith('/auth');
     const isLandingRoute = pathname === '/landing';
-    const shouldHideHeader = status !== 'authenticated' || !session?.user || isLandingRoute || isAuthRoute;
+    const shouldHideHeader = isHomePage || isLandingRoute || isAuthRoute;
 
     if (shouldHideHeader) return null;
 

@@ -61,10 +61,26 @@ input, textarea, select {
 }
 
 @media (prefers-color-scheme: dark) {
-  input, textarea, select {
-    background-color: #1a1a1a;
-    border-color: #333333;
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
   }
+  
+  body {
+     background-color: #000000;
+  }
+  
+  input, textarea, select {
+    background-color: #000000;
+    border-color: #333333;
+    color: #ffffff;
+  }
+  
+  /* Force all grays to be darker or black */
+  .bg-gray-900 { background-color: #000000 !important; }
+  .bg-gray-800 { background-color: #0a0a0a !important; }
+  .bg-zinc-900 { background-color: #000000 !important; }
+  .bg-slate-900 { background-color: #000000 !important; }
 }
 
 input::placeholder, textarea::placeholder {
