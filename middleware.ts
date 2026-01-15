@@ -22,6 +22,7 @@ export const config = {
     "/projects/:path*",
     "/dashboard/:path*",
     "/profile/:path*",
+    "/admin/:path*",
     "/templates/:path*",
     "/prompts/:path*",
     "/blueprints/:path*",
