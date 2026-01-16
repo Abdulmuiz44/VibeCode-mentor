@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
 import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { upsertUserProfile } from '@/lib/supabase.server';
@@ -16,6 +17,10 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -27,8 +32,6 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Use Supabase Auth to verify credentials
-        // Use the anon key client since we are acting as the user
         const { createClient } = await import('@supabase/supabase-js');
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -52,8 +55,6 @@ export const authOptions: NextAuthOptions = {
 
         const user = data.user;
 
-        // Return user object compatible with NextAuth
-        // NOTE: The 'signIn' callback will handle syncing this user to public.users table as implemented previously
         return {
           id: user.id,
           email: user.email,
@@ -75,30 +76,18 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (user) {
         try {
-          // Handle both Google OAuth and credentials-based authentication
-          if (account?.provider === 'google') {
+          // Handle OAuth (Google, GitHub) and credentials-based authentication
+          if (account?.provider === 'google' || account?.provider === 'github' || account?.provider === 'credentials') {
             await upsertUserProfile({
               user_id: user.id,
               email: user.email || '',
               name: user.name || null,
               profile_image: user.image || null,
             });
-            // Initialize admin user if this is the admin email
-            await initializeAdminUser(user.email || '', user.id, user.name || null);
-          } else if (account?.provider === 'credentials') {
-            // Sync credentials-based users to Supabase
-            await upsertUserProfile({
-              user_id: user.id,
-              email: user.email || '',
-              name: user.name || null,
-              profile_image: user.image || null,
-            });
-            // Initialize admin user if this is the admin email
             await initializeAdminUser(user.email || '', user.id, user.name || null);
           }
         } catch (error) {
-          console.error('Error in signIn callback (syncing user) - allowing sign in to proceed:', error);
-          // Return true to allow sign in even if sync fails
+          console.error('Error in signIn callback:', error);
           return true;
         }
       }
