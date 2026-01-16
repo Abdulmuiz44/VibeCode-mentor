@@ -10,6 +10,8 @@ import { Deployment } from '@/lib/db/deployments';
 import { BlueprintRecord } from '@/lib/db/projects'; // Import BlueprintRecord
 import { CheckCircle, XCircle, Clock, ExternalLink, RotateCcw, FileCode, History, Terminal } from 'lucide-react'; // Added Terminal icon
 import { BuildLogRecord } from '@/lib/sandbox/database'; // Import Log type
+import { DatabaseTab } from './DatabaseTab';
+
 
 // New Component for Readme
 function ProjectDocumentation({ content }: { content: string }) {
@@ -153,7 +155,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
     const [isAutoExecuting, setIsAutoExecuting] = useState(true); // Default to true for "background" feel
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs' | 'deployments' | 'history' | 'logs'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'preview' | 'docs' | 'deployments' | 'history' | 'logs' | 'database'>('chat');
     const [readmeContent, setReadmeContent] = useState('');
     const [envContent, setEnvContent] = useState('');
     const [deployments, setDeployments] = useState<Deployment[]>([]);
@@ -473,6 +475,12 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                     >
                         Logs
                     </button>
+                    <button
+                        onClick={() => setActiveTab('database')}
+                        className={`h-full text-sm font-medium border-b-2 transition-colors ${activeTab === 'database' ? 'border-purple-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    >
+                        Database
+                    </button>
                 </div>
 
                 {/* Generation Progress Overlay */}
@@ -676,6 +684,8 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                             )}
                         </div>
                     </div>
+                ) : activeTab === 'database' ? (
+                    <DatabaseTab projectId={projectId} />
                 ) : (
                     <div className="flex-1 overflow-y-auto p-8">
                         <div className="max-w-4xl mx-auto space-y-8">
