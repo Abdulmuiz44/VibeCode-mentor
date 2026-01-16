@@ -59,6 +59,7 @@ function AuthPageClient() {
 
     try {
       if (isLogin) {
+        // Sign in with NextAuth credentials provider
         const result = await signIn('credentials', {
           redirect: false,
           email,
@@ -68,20 +69,29 @@ function AuthPageClient() {
         if (result?.error) {
           if (result.error.includes('Email not confirmed')) {
             setError('Please verify your email address before logging in.');
-          } else {
+          } else if (result.error === 'CredentialsSignin') {
             setError('Invalid email or password. Please try again.');
+          } else {
+            setError(result.error);
           }
-        } else {
-          // Success! Force page reload
+        } else if (result?.ok) {
+          // Success! Force page reload to update session
           window.location.href = callbackUrl;
+        } else {
+          setError('Login failed. Please try again.');
         }
       } else {
-        // Sign up with Supabase Auth
-        const { supabase } = await import('@/lib/supabase');
+        // Sign up with Supabase Auth directly
+        const { createClient } = await import('@supabase/supabase-js');
 
-        if (!supabase) {
-          throw new Error('Supabase client not initialized');
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Authentication service not configured. Please contact support.');
         }
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         const { error: signUpError, data } = await supabase.auth.signUp({
           email,
@@ -95,17 +105,22 @@ function AuthPageClient() {
         });
 
         if (signUpError) {
-          throw new Error(signUpError.message);
+          if (signUpError.message.includes('already registered')) {
+            setError('An account with this email already exists. Please sign in instead.');
+            setIsLogin(true);
+          } else {
+            throw new Error(signUpError.message);
+          }
+          return;
         }
 
-        // Check if email confirmation is required (Supabase returns null session if unconfirmed)
+        // Check if email confirmation is required
         if (data?.user && !data.session) {
           setEmailSent(true);
           setSuccessMessage(`Confirmation email sent to ${email}. Please check your inbox.`);
-        } else {
-          // Auto-confirmed or disabled email confirmation
-          setSuccessMessage('Account created successfully! Signing you in...');
-          // Auto login via NextAuth to establish session
+        } else if (data?.session) {
+          // Auto-confirmed - try to sign in with NextAuth
+          setSuccessMessage('Account created! Signing you in...');
           const result = await signIn('credentials', {
             redirect: false,
             email,
@@ -115,12 +130,19 @@ function AuthPageClient() {
           if (result?.ok) {
             window.location.href = callbackUrl;
           } else {
-            setIsLogin(true); // Fallback to login form
+            // Account created but NextAuth session failed
+            setSuccessMessage('Account created! Please sign in with your credentials.');
+            setIsLogin(true);
           }
+        } else {
+          // Fallback
+          setSuccessMessage('Account created! Please sign in.');
+          setIsLogin(true);
         }
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      console.error('Auth error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
