@@ -558,7 +558,15 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
                     </>
                 ) : activeTab === 'preview' ? (
                     <div className="flex-1 bg-black p-4">
-                        <LivePreview projectId={projectId} className="h-full border-gray-800" />
+                        <LivePreview
+                            projectId={projectId}
+                            className="h-full border-gray-800"
+                            onElementSelect={(payload: any) => {
+                                const prompt = `I want to modify the element "${payload.tagName}${payload.id ? '#' + payload.id : ''}${payload.className ? '.' + payload.className.split(' ').join('.') : ''}" which contains text "${payload.textContent}". \n\nChange it to: `;
+                                setInput(prompt);
+                                setActiveTab('chat');
+                            }}
+                        />
                     </div>
                 ) : activeTab === 'deployments' ? (
                     <div className="flex-1 overflow-y-auto p-8">

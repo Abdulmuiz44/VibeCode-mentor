@@ -160,6 +160,13 @@ export class CodeGenerator {
       language: 'tsx',
     });
 
+    // Vibe DevTools (Click-to-fix)
+    files.push({
+      path: 'components/VibeDevTools.tsx',
+      content: this.generateDevToolsComponent(),
+      language: 'tsx',
+    });
+
     // Dashboard page (if protected)
     if (this.features.hasAuth) {
       files.push({
@@ -171,15 +178,92 @@ export class CodeGenerator {
         ),
         language: 'tsx',
       });
-
-      files.push({
-        path: 'app/layout.tsx',
-        content: this.generateRootLayout(),
-        language: 'tsx',
-      });
     }
 
+    // Always generate root layout
+    files.push({
+      path: 'app/layout.tsx',
+      content: this.generateRootLayout(),
+      language: 'tsx',
+    });
+
     return files;
+  }
+
+  private generateDevToolsComponent(): string {
+    return \`'use client';
+
+import { useEffect, useState } from 'react';
+
+export function VibeDevTools() {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    // Listen for activation messages from VibeCode Mentor
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data === 'object' && event.data?.type === 'VIBE_TOGGLE_INSPECTOR') {
+        setActive(event.data.active);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    const handleClick = (e: MouseEvent) => {
+      if (!active) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const target = e.target as HTMLElement;
+      
+      // Calculate selector
+      const tag = target.tagName.toLowerCase();
+      const id = target.id ? \`#\${target.id}\` : '';
+      const classes = target.className && typeof target.className === 'string' 
+        ? '.' + target.className.split(' ').filter(Boolean).join('.') 
+        : '';
+        
+      // Send to parent
+      window.parent.postMessage({
+        type: 'VIBE_ELEMENT_CLICKED',
+        payload: {
+          tagName: tag,
+          id: target.id,
+          className: target.className,
+          // Simplify content for context
+          innerHTML: target.innerHTML.substring(0, 200),
+          textContent: (target.textContent || '').substring(0, 100),
+          selector: \`\${tag}\${id}\${classes}\`
+        }
+      }, '*');
+
+      // Visual feedback
+      const originalOutline = target.style.outline;
+      target.style.outline = '2px solid #a855f7'; // Purple
+      
+      setTimeout(() => {
+        target.style.outline = originalOutline;
+      }, 500);
+    };
+
+    if (active) {
+      document.addEventListener('click', handleClick, true); // Capture phase
+      document.body.style.cursor = 'crosshair';
+    } else {
+      document.removeEventListener('click', handleClick, true);
+      document.body.style.cursor = '';
+    }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      document.removeEventListener('click', handleClick, true);
+      document.body.style.cursor = '';
+    };
+  }, [active]);
+
+  return null;
+}
+\`;
   }
 
   private generateDocumentation(): GeneratedFile[] {
@@ -228,7 +312,7 @@ export class CodeGenerator {
   }
 
   private generateSupabaseClient(): string {
-    return `import { createClient } from '@supabase/supabase-js';
+    return \`import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -240,11 +324,11 @@ export const supabaseServer = createClient(
   supabaseUrl,
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
-`;
+\`;
   }
 
   private generateAuthConfig(): string {
-    return `import type { NextAuthOptions } from 'next-auth';
+    return \`import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { supabaseServer } from './supabase';
 
@@ -293,16 +377,17 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
 };
-`;
+\`;
   }
 
   private generateRootLayout(): string {
-    return `import type { Metadata } from 'next';
+    return \`import type { Metadata } from 'next';
+import { VibeDevTools } from '@/components/VibeDevTools';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '${this.blueprint.projectName}',
-  description: '${this.blueprint.description}',
+  title: '\${this.blueprint.projectName}',
+  description: '\${this.blueprint.description}',
 };
 
 export default function RootLayout({
@@ -313,22 +398,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <VibeDevTools />
         {children}
       </body>
     </html>
   );
 }
-`;
+\`;
   }
 
   private generateReadme(): string {
-    return `# ${this.blueprint.projectName}
+    return \`# \${this.blueprint.projectName}
 
-${this.blueprint.description}
+\${this.blueprint.description}
 
 ## Features
 
-${this.blueprint.features.map(f => `- ${f}`).join('\n')}
+\${this.blueprint.features.map(f => \`- \${f}\`).join('\\n')}
 
 ## Tech Stack
 
@@ -352,7 +438,7 @@ ${this.blueprint.features.map(f => `- ${f}`).join('\n')}
 1. Clone the repository:
 \`\`\`bash
 git clone <repository-url>
-cd ${this.projectSlug}
+cd \${this.projectSlug}
 \`\`\`
 
 2. Install dependencies:
@@ -393,7 +479,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Database Schema
 
-${this.generateSchemaDocumentation()}
+\${this.generateSchemaDocumentation()}
 
 ## API Endpoints
 
@@ -411,11 +497,11 @@ This project is configured for Vercel deployment.
 ## License
 
 MIT
-`;
+\`;
   }
 
   private generateSetupGuide(): string {
-    return `# Setup Guide
+    return \`# Setup Guide
 
 ## Prerequisites
 
@@ -427,7 +513,7 @@ MIT
 
 \`\`\`bash
 git clone <your-repo-url>
-cd ${this.projectSlug}
+cd \${this.projectSlug}
 \`\`\`
 
 ## Step 2: Install Dependencies
@@ -480,50 +566,50 @@ Check that:
 - Your Supabase URL is correct
 - Your anon key is valid
 - Your .env.local file has the right variables
-`;
+\`;
   }
 
   private generateApiDocs(): string {
-    let docs = `# API Documentation\n\n`;
-    docs += `## Base URL\n\n\`/api\`\n\n`;
+    let docs = \`# API Documentation\\n\\n\`;
+    docs += \`## Base URL\\n\\n\\\`/api\\\`\\n\\n\`;
 
-    docs += '## Endpoints\n\n';
+    docs += '## Endpoints\\n\\n';
 
     this.apiEndpoints.forEach(endpoint => {
-      docs += `### ${endpoint.method} ${endpoint.path}\n`;
-      docs += `${endpoint.description}\n\n`;
+      docs += \`### \${endpoint.method} \${endpoint.path}\\n\`;
+      docs += \`\${endpoint.description}\\n\\n\`;
       if (endpoint.requiresAuth) {
-        docs += '**Authentication**: Required\n\n';
+        docs += '**Authentication**: Required\\n\\n';
       }
-      docs += '---\n\n';
+      docs += '---\\n\\n';
     });
 
     return docs;
   }
 
   private generateSchemaDocumentation(): string {
-    let docs = '```\n';
+    let docs = '```\\n';
     this.dbEntities.forEach(entity => {
-      docs += `${entity.name}\n`;
+      docs += \`\${entity.name}\\n\`;
       entity.fields.forEach(field => {
-        docs += `  - ${field.name}: ${field.type}${field.required ? ' (required)' : ''}\n`;
+        docs += \`  - \${field.name}: \${field.type}\${field.required ? ' (required)' : ''}\\n\`;
       });
-      docs += '\n';
+      docs += '\\n';
     });
     docs += '```';
-    return docs;
-  }
+      return docs;
+    }
 
   private getTechnologies(): string[] {
-    const tech = [
-      'Next.js 14',
-      'React 18',
-      'TypeScript',
-      'Tailwind CSS',
-      'Supabase',
-    ];
+      const tech = [
+        'Next.js 14',
+        'React 18',
+        'TypeScript',
+        'Tailwind CSS',
+        'Supabase',
+      ];
 
-    if (this.features.hasAuth) tech.push('NextAuth.js');
+      if(this.features.hasAuth) tech.push('NextAuth.js');
     if (this.features.hasPayments) tech.push('Stripe');
     if (this.features.hasEmail) tech.push('Resend');
     if (this.features.hasFileUpload) tech.push('Cloudinary');

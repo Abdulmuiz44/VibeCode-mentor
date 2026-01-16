@@ -1,19 +1,31 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Loader2, ExternalLink, RefreshCw, XCircle } from 'lucide-react';
+import { Loader2, ExternalLink, RefreshCw, XCircle, MousePointer2 } from 'lucide-react';
+
+export interface InspectPayload {
+    tagName: string;
+    id: string;
+    className: string;
+    innerHTML: string;
+    textContent: string;
+    selector: string;
+}
 
 interface LivePreviewProps {
     projectId: string;
     className?: string;
     autoRefresh?: boolean;
+    onElementSelect?: (payload: InspectPayload) => void;
 }
 
-export function LivePreview({ projectId, className, autoRefresh = true }: LivePreviewProps) {
+export function LivePreview({ projectId, className, autoRefresh = true, onElementSelect }: LivePreviewProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'unavailable'>('loading');
     const [key, setKey] = useState(0); // For forcing iframe refresh
+    const [isInspecting, setIsInspecting] = useState(false);
     const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const fetchPreviewUrl = useCallback(async () => {
         try {
@@ -57,6 +69,32 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
         };
     }, [projectId, autoRefresh, fetchPreviewUrl]);
 
+    // Message listener for VibeDevTools
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'VIBE_ELEMENT_CLICKED' && onElementSelect) {
+                // Determine if this message came from our iframe
+                // Note: Security check could be stricter here
+                onElementSelect(event.data.payload);
+                setIsInspecting(false); // Turn off inspection after click? Or keep it on? Let's turn off for better UX
+                toggleInspector(false);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [onElementSelect]);
+
+    const toggleInspector = (active: boolean) => {
+        setIsInspecting(active);
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage({
+                type: 'VIBE_TOGGLE_INSPECTOR',
+                active: active
+            }, '*');
+        }
+    };
+
     return (
         <div className={`flex flex-col h-full w-full bg-background border border-gray-800 rounded-lg overflow-hidden ${className}`}>
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900/50">
@@ -74,8 +112,24 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
 
                 <div className="flex items-center gap-2">
                     <button
+                        className={`p-1.5 rounded-md transition-colors flex items-center gap-2 text-xs font-semibold ${isInspecting ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                            }`}
+                        onClick={() => toggleInspector(!isInspecting)}
+                        disabled={status !== 'ready'}
+                        title="Select element to fix"
+                    >
+                        <MousePointer2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Fix UI</span>
+                    </button>
+
+                    <div className="w-px h-4 bg-gray-700 mx-1" />
+
+                    <button
                         className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
-                        onClick={() => setKey(k => k + 1)}
+                        onClick={() => {
+                            setKey(k => k + 1);
+                            setIsInspecting(false); // Reset inspection on refresh
+                        }}
                         disabled={status !== 'ready'}
                         title="Refresh Preview"
                     >
@@ -131,6 +185,7 @@ export function LivePreview({ projectId, className, autoRefresh = true }: LivePr
 
                 {previewUrl && (
                     <iframe
+                        ref={iframeRef}
                         key={key}
                         src={previewUrl}
                         className="w-full h-full border-0 bg-white"
