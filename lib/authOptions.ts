@@ -74,19 +74,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (user) {
-        // Handle both Google OAuth and credentials-based authentication
-        if (account?.provider === 'google') {
-          await upsertUserProfile({
-            user_id: user.id,
-            email: user.email || '',
-            name: user.name || null,
-            profile_image: user.image || null,
-          });
-          // Initialize admin user if this is the admin email
-          await initializeAdminUser(user.email || '', user.id, user.name || null);
-        } else if (account?.provider === 'credentials') {
-          // Sync credentials-based users to Supabase
-          try {
+        try {
+          // Handle both Google OAuth and credentials-based authentication
+          if (account?.provider === 'google') {
             await upsertUserProfile({
               user_id: user.id,
               email: user.email || '',
@@ -95,10 +85,21 @@ export const authOptions: NextAuthOptions = {
             });
             // Initialize admin user if this is the admin email
             await initializeAdminUser(user.email || '', user.id, user.name || null);
-          } catch (error) {
-            console.error('Error syncing credentials user to Supabase:', error);
-            // Still allow sign-in to proceed even if Supabase sync fails
+          } else if (account?.provider === 'credentials') {
+            // Sync credentials-based users to Supabase
+            await upsertUserProfile({
+              user_id: user.id,
+              email: user.email || '',
+              name: user.name || null,
+              profile_image: user.image || null,
+            });
+            // Initialize admin user if this is the admin email
+            await initializeAdminUser(user.email || '', user.id, user.name || null);
           }
+        } catch (error) {
+          console.error('Error in signIn callback (syncing user) - allowing sign in to proceed:', error);
+          // Return true to allow sign in even if sync fails
+          return true;
         }
       }
       return true;
