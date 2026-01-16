@@ -1,10 +1,12 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, logGeneration } from '@/lib/kv';
 import { getProStatusFromCloud, saveBlueprintToHistory } from '@/lib/supabase.server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectIdea, userId, techStack } = await request.json();
+    const { projectIdea, userId, techStack, imageBase64 } = await request.json();
 
     if (!projectIdea) {
       return NextResponse.json(
@@ -38,11 +40,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.MISTRAL_API_KEY;
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'MISTRAL_API_KEY is not configured' },
+        { error: 'GOOGLE_AI_API_KEY is not configured' },
         { status: 500 }
       );
     }

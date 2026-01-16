@@ -29,6 +29,23 @@ export default function HomeClient() {
     auth: 'nextauth',
   });
   const [activeMode, setActiveMode] = useState<'scratch' | 'templates'>('scratch');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setSelectedImage(result);
+        // Extract base64 part (remove data:image/png;base64, prefix)
+        const base64 = result.split(',')[1];
+        setImageBase64(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -80,6 +97,7 @@ export default function HomeClient() {
           projectIdea,
           userId: user?.id || null,
           techStack,
+          imageBase64,
         }),
       });
 
@@ -209,6 +227,45 @@ export default function HomeClient() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-300">
+                  Reference Image (Optional)
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="relative cursor-pointer group">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:border-purple-500 hover:bg-gray-700 transition-all text-sm text-gray-300 group-hover:text-white">
+                      <span>📸 {selectedImage ? 'Change Image' : 'Upload Screenshot'}</span>
+                    </div>
+                  </label>
+                  {selectedImage && (
+                    <div className="relative group">
+                      <img
+                        src={selectedImage}
+                        alt="Reference"
+                        className="h-10 w-10 object-cover rounded border border-gray-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedImage(null); setImageBase64(null); }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 w-4 h-4 flex items-center justify-center text-[10px] hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <span className="text-xs text-gray-500">
+                    Upload a UI design or screenshot to guide the style.
+                  </span>
+                </div>
               </div>
 
               <button
