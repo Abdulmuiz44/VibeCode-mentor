@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectIdea, userId, techStack, imageBase64 } = await request.json();
+    const { projectIdea, userId, techStack } = await request.json();
 
     if (!projectIdea) {
       return NextResponse.json(
@@ -40,15 +40,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'GOOGLE_AI_API_KEY is not configured' },
-        { status: 500 }
-      );
-    }
-
     // Format tech stack requirements
     let techStackPrompt = '';
     if (techStack) {
@@ -65,116 +56,150 @@ You MUST build the architecture using ONLY these specific technologies. Do not s
 `;
     }
 
-    const prompt = `You are VibeCode Mentor, an expert software architect and developer. Generate a complete, production-ready project blueprint for the following idea:
+    let blueprint = '';
 
-"${projectIdea}"
+    // --- PRO USERS: GEMINI 1.5 PRO ---
+    if (isPro) {
+        const googleApiKey = process.env.GOOGLE_AI_API_KEY;
+        if (!googleApiKey) {
+            console.error("GOOGLE_AI_API_KEY is missing");
+             return NextResponse.json({ error: 'AI Service Configuration Error' }, { status: 500 });
+        }
+
+        const genAI = new GoogleGenerativeAI(googleApiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+        const prompt = `You are VibeCode Mentor, an expert software architect.
+Generate a comprehensive, production-ready project blueprint for: "${projectIdea}"
 ${techStackPrompt}
 
-Your response MUST follow this exact structure in Markdown format:
+**STRUCTURE & FORMAT:**
+Return strict Markdown.
 
-# 🚀 Project Blueprint
+# 🚀 Project Blueprint: [Project Name]
+
+## 🧠 Architectural Reasoning (Why this stack?)
+- Explain *why* the chosen technologies are the best fit for this specific idea.
+- Discuss trade-offs (e.g., "Why Supabase over Firebase", "Why Next.js App Router").
+- **Goal:** Build trust with the developer by showing deep technical understanding.
 
 ## 📦 Tech Stack
-- List all technologies, frameworks, and libraries
-- Include versions where relevant
-- Mention database, hosting, and deployment platforms
+- Frontend: [Framework, UI Library, State Management]
+- Backend: [Framework, Database, API Style]
+- DevOps: [Hosting, CI/CD, Auth]
 
 ## 📁 File Structure
 \`\`\`
 project-root/
 ├── src/
 │   ├── components/
-│   ├── pages/
+│   ├── app/ (if Next.js)
 │   └── ...
-├── package.json
-└── ...
 \`\`\`
 
 ## 🤖 AI Prompts
+Provide 3 highly specific prompts the user can copy-paste into an AI coding assistant (like Cursor or VibeCode's own builder) to implement key features.
 
-### Prompt 1: [Feature Name]
+### Prompt 1: [Core Feature A]
 \`\`\`
-[Detailed prompt for AI coding assistant]
-\`\`\`
-
-### Prompt 2: [Feature Name]
-\`\`\`
-[Detailed prompt for AI coding assistant]
+[Context-rich prompt...]
 \`\`\`
 
-### Prompt 3: [Feature Name]
+### Prompt 2: [Core Feature B]
 \`\`\`
-[Detailed prompt for AI coding assistant]
-\`\`\`
-
-## 💻 Terminal Commands
-\`\`\`bash
-# Setup
-npm install
-# or
-yarn install
-
-# Development
-npm run dev
-
-# Build
-npm run build
-
-# Deploy
-npm run deploy
+[Context-rich prompt...]
 \`\`\`
 
-## 🌐 Vercel Deployment Steps
+### Prompt 3: [Core Feature C]
+\`\`\`
+[Context-rich prompt...]
+\`\`\`
 
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) and sign in
-3. Click "New Project" and import your GitHub repository
-4. Configure environment variables:
-   - Add all necessary API keys and secrets
-5. Click "Deploy"
-6. Your app will be live at: \`https://your-project.vercel.app\`
+## 💻 Implementation Guide
+- **Step 1: Setup:** \`npm install ...\`
+- **Step 2: Database:** Schema setup...
+- **Step 3: Deployment:** Vercel/Netlify steps...
 
 ---
-
 **You shipped TradiaAI—ship this.**
+`;
+        
+        const result = await model.generateContent(prompt);
+        blueprint = result.response.text();
 
-Make the blueprint actionable, specific, and production-ready. Include best practices and modern development patterns.`;
+    } 
+    // --- FREE USERS: MISTRAL ---
+    else {
+        const mistralApiKey = process.env.MISTRAL_API_KEY;
+        if (!mistralApiKey) {
+             console.error("MISTRAL_API_KEY is missing");
+             return NextResponse.json({ error: 'AI Service Configuration Error' }, { status: 500 });
+        }
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are VibeCode Mentor, an expert software architect who creates detailed, production-ready project blueprints.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        model: 'mistral-large-latest',
-        stream: false,
-        temperature: 0.7,
-        max_tokens: 4000,
-      }),
-    });
+        const prompt = `You are VibeCode Mentor, an expert software architect. Generate a project blueprint for: "${projectIdea}"
+${techStackPrompt}
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Mistral API Error:', errorText);
-      return NextResponse.json(
-        { error: `Mistral API error: ${response.status}` },
-        { status: response.status }
-      );
+Return strict Markdown.
+
+# 🚀 Project Blueprint
+
+## 📦 Tech Stack
+- List main technologies.
+
+## 📁 File Structure
+- Brief tree structure.
+
+## 🤖 AI Prompts
+Provide 3 prompts to help build this.
+
+### Prompt 1
+\`\`\`
+[Prompt text]
+\`\`\`
+
+### Prompt 2
+\`\`\`
+[Prompt text]
+\`\`\`
+
+### Prompt 3
+\`\`\`
+[Prompt text]
+\`\`\`
+
+## 💻 Commands
+Basic setup commands.
+
+---
+**You shipped TradiaAI—ship this.**
+`;
+
+        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${mistralApiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'mistral-small-latest', 
+                messages: [
+                    { role: 'system', content: 'You are VibeCode Mentor.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 2000,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Mistral API Error:', errorText);
+            throw new Error(`Mistral API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        blueprint = data.choices[0]?.message?.content || '';
     }
-
-    const data = await response.json();
-    const blueprint = data.choices[0]?.message?.content || '';
 
     // Log analytics
     await logGeneration(userId || null, projectIdea, isPro);
@@ -189,6 +214,7 @@ Make the blueprint actionable, specific, and production-ready. Include best prac
     }
 
     return NextResponse.json({ blueprint, blueprintId });
+
   } catch (error) {
     console.error('Error in mentor API:', error);
     return NextResponse.json(

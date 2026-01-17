@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 
@@ -9,8 +9,9 @@ function AuthPageClient() {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const returnTo = searchParams.get('returnTo') ?? '/build';
-  const callbackUrl = useMemo(() => returnTo || '/build', [returnTo]);
+
+  // Support both returnTo and callbackUrl params
+  const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('returnTo') || '/build';
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -28,6 +29,18 @@ function AuthPageClient() {
       router.replace(callbackUrl);
     }
   }, [status, callbackUrl, router]);
+
+  // Show loading screen while checking auth or if already authenticated
+  if (status === 'loading' || status === 'authenticated') {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-400">{status === 'authenticated' ? 'Redirecting...' : 'Checking authentication...'}</p>
+        </div>
+      </main>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -366,7 +379,14 @@ function AuthPageClient() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+    <Suspense fallback={
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </main>
+    }>
       <AuthPageClient />
     </Suspense>
   );

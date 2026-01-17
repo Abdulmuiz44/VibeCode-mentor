@@ -30,6 +30,7 @@ export default function PromptsPage() {
   const [topVibes, setTopVibes] = useState<Vibe[]>([]);
   const [customPrompts, setCustomPrompts] = useState<CustomPrompt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newPromptTitle, setNewPromptTitle] = useState('');
   const [newPromptText, setNewPromptText] = useState('');
@@ -37,13 +38,33 @@ export default function PromptsPage() {
 
   const fetchTopVibes = async () => {
     try {
-      const response = await fetch('/api/prompts');
+      setError(null);
+
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch('/api/prompts', {
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         setTopVibes(data.vibes || []);
+      } else {
+        setError('Unable to load popular vibes. Please try again.');
+        setTopVibes([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch top vibes:', error);
+      if (error.name === 'AbortError') {
+        setError('Request timed out. Please check your connection and try again.');
+      } else {
+        setError('Failed to load popular vibes. You can still browse and use custom prompts.');
+      }
+      setTopVibes([]);
     } finally {
       setLoading(false);
     }
@@ -125,17 +146,6 @@ export default function PromptsPage() {
       console.error('Failed to delete prompt:', error);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-600 mx-auto"></div>
-          <p className="text-gray-400 mt-4">Loading prompts...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black p-4 md:p-8">
@@ -220,7 +230,33 @@ export default function PromptsPage() {
             </span>
           </h2>
 
-          {topVibes.length > 0 ? (
+          {loading ? (
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-700 p-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-600 mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading popular vibes...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-red-500/30 p-12 text-center">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-red-400 text-lg mb-2">{error}</p>
+                <p className="text-gray-400 text-sm mb-6">
+                  Don't worry - you can still create custom prompts and generate blueprints!
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setLoading(true);
+                  fetchTopVibes();
+                }}
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-all"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : topVibes.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {topVibes.map((vibe, index) => (
                 <div
@@ -249,8 +285,11 @@ export default function PromptsPage() {
             </div>
           ) : (
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-700 p-12 text-center">
-              <p className="text-gray-400 text-lg">
+              <p className="text-gray-400 text-lg mb-2">
                 No popular vibes yet. Be the first to generate blueprints!
+              </p>
+              <p className="text-gray-500 text-sm">
+                Start by creating your own custom prompt or explore our templates
               </p>
             </div>
           )}
