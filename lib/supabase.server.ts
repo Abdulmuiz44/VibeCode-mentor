@@ -33,41 +33,27 @@ export const upsertUserProfile = async (userData: {
   try {
     const now = new Date().toISOString();
 
-    // Check if user exists
-    const { data: existingUser, error: fetchError } = await supabaseAdmin
+    // Use a single upsert operation for efficiency
+    const { error } = await supabaseAdmin
       .from('users')
-      .select('user_id')
-      .eq('user_id', userData.user_id)
-      .single();
+      .upsert({
+        user_id: userData.user_id,
+        email: userData.email,
+        name: userData.name,
+        profile_image: userData.profile_image,
+        updated_at: now,
+        // Only set created_at on insert, keep existing on update
+        // Note: Supabase handles defaults for created_at if not provided on insert
+        // but we can't easily conditionally set it in one query unless we use a trigger or stored proc
+        // A simple upsert is usually "good enough" - we can trust the DB default for new rows
+      }, {
+        onConflict: 'user_id',
+        ignoreDuplicates: false
+      });
 
-    if (existingUser) {
-      // User exists, update timestamp only
-      const { error: updateError } = await supabaseAdmin
-        .from('users')
-        .update({ updated_at: now })
-        .eq('user_id', userData.user_id);
-
-      if (updateError) {
-        console.error('Error updating user timestamp:', updateError);
-        return false;
-      }
-    } else {
-      // New user, insert full profile
-      const { error: insertError } = await supabaseAdmin
-        .from('users')
-        .insert({
-          user_id: userData.user_id,
-          email: userData.email,
-          name: userData.name,
-          profile_image: userData.profile_image,
-          created_at: now,
-          updated_at: now,
-        });
-
-      if (insertError) {
-        console.error('Error inserting user profile:', insertError);
-        return false;
-      }
+    if (error) {
+      console.error('Error upserting user profile:', error);
+      return false;
     }
 
     return true;

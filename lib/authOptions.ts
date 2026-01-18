@@ -78,16 +78,26 @@ export const authOptions: NextAuthOptions = {
         try {
           // Handle OAuth (Google, GitHub) and credentials-based authentication
           if (account?.provider === 'google' || account?.provider === 'github' || account?.provider === 'credentials') {
-            await upsertUserProfile({
-              user_id: user.id,
-              email: user.email || '',
-              name: user.name || null,
-              profile_image: user.image || null,
-            });
-            await initializeAdminUser(user.email || '', user.id, user.name || null);
+            // Run DB operations with a timeout to prevent Vercel 504 errors
+            // If DB is slow, we still want to log the user in
+            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 4000)); // 4s timeout (Vercel limit is 10s)
+
+            const dbOperations = Promise.all([
+              upsertUserProfile({
+                user_id: user.id,
+                email: user.email || '',
+                name: user.name || null,
+                profile_image: user.image || null,
+              }),
+              initializeAdminUser(user.email || '', user.id, user.name || null)
+            ]);
+
+            // Race against timeout
+            await Promise.race([dbOperations, timeoutPromise]);
           }
         } catch (error) {
           console.error('Error in signIn callback:', error);
+          // Don't block sign in on error
           return true;
         }
       }

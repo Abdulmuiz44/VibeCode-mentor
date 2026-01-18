@@ -51,22 +51,40 @@ function AuthPageClient() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    setError('');
+
     try {
-      await signIn('google', { callbackUrl });
+      // Don't await - signIn triggers a redirect and won't resolve
+      signIn('google', { callbackUrl });
+
+      // Fallback: if still on page after 10 seconds, something went wrong
+      setTimeout(() => {
+        setGoogleLoading(false);
+        setError('Google sign-in is taking too long. Please try again or check your popup blocker.');
+      }, 10000);
     } catch (err) {
       console.error("Google Signin Error:", err);
-      setError("Failed to initialize Google Sign In");
+      setError("Failed to initialize Google Sign In. Please try again.");
       setGoogleLoading(false);
     }
   };
 
   const handleGitHubSignIn = async () => {
     setGithubLoading(true);
+    setError('');
+
     try {
-      await signIn('github', { callbackUrl });
+      // Don't await - signIn triggers a redirect and won't resolve
+      signIn('github', { callbackUrl });
+
+      // Fallback: if still on page after 10 seconds, something went wrong
+      setTimeout(() => {
+        setGithubLoading(false);
+        setError('GitHub sign-in is taking too long. Please try again or check your popup blocker.');
+      }, 10000);
     } catch (err) {
       console.error("GitHub Signin Error:", err);
-      setError("Failed to initialize GitHub Sign In");
+      setError("Failed to initialize GitHub Sign In. Please try again.");
       setGithubLoading(false);
     }
   };
