@@ -23,6 +23,13 @@ function AuthPageClient() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    // Force show form after 3 seconds if session loading hangs
+    const timer = setTimeout(() => setShowForm(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -30,8 +37,8 @@ function AuthPageClient() {
     }
   }, [status, callbackUrl, router]);
 
-  // Show loading screen while checking auth or if already authenticated
-  if (status === 'loading' || status === 'authenticated') {
+  // Show loading screen while checking auth (unless timed out) or if already authenticated
+  if ((status === 'loading' && !showForm) || status === 'authenticated') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
