@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getLandingStats } from '@/lib/stats';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const stats = await getLandingStats();

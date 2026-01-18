@@ -29,7 +29,15 @@ export interface LandingStats {
 
 export async function getLandingStats(): Promise<LandingStats> {
     if (!supabaseAdmin) {
-        throw new Error('Supabase admin client not configured. Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.');
+        console.error('Stats Error: Supabase admin client not initialized.', {
+            urlConfigured: !!supabaseUrl,
+            keyConfigured: !!supabaseServiceKey
+        });
+        return {
+            blueprintsCount: 0,
+            usersCount: 0,
+            rating: 4.8,
+        };
     }
 
     try {
