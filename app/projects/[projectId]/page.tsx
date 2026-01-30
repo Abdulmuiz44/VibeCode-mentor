@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProjectRecord, ProjectGenerationStep } from '@/lib/db/projects';
@@ -163,36 +163,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
     const [logs, setLogs] = useState<BuildLogRecord[]>([]); // Logs state
     const [isRestoring, setIsRestoring] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (session?.user?.id) {
-            fetchProject();
-            fetchMessages();
-        }
-    }, [session, projectId]);
-
-    useEffect(() => {
-        scrollToBottom();
-        if (activeTab === 'deployments') {
-            fetchDeployments();
-        } else if (activeTab === 'history') {
-            fetchVersions();
-        } else if (activeTab === 'logs') {
-            fetchLogs();
-            // Start polling logs
-            const interval = setInterval(fetchLogs, 2000);
-            return () => clearInterval(interval);
-        }
-    }, [messages, activeTab]);
-
-    const scrollToBottom = () => {
-        if (activeTab === 'chat') {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        } else if (activeTab === 'logs') {
-            // Optional: auto-scroll logs? contentRef.current...
-        }
-    };
-
-    const fetchProject = async () => {
+    const fetchProject = useCallback(async () => {
         try {
             const res = await fetch(`/api/vibecode/projects/${projectId}`);
             if (res.ok) {
@@ -213,9 +184,17 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         } catch (error) {
             console.error('Failed to fetch project:', error);
         }
-    };
+    }, [projectId]);
 
-    const fetchDeployments = async () => {
+    const fetchMessages = useCallback(async () => {
+        // Placeholder: Implement dedicated message fetch endpoint
+        // For now, initialized with a welcome message
+        setMessages([
+            { role: 'assistant', content: 'Hello! I am your VibeCode Architect. What feature would you like to build or modify today?' }
+        ]);
+    }, []);
+
+    const fetchDeployments = useCallback(async () => {
         try {
             const res = await fetch(`/api/vibecode/projects/${projectId}/deployments`);
             if (res.ok) {
@@ -225,9 +204,9 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         } catch (error) {
             console.error('Failed to fetch deployments:', error);
         }
-    };
+    }, [projectId]);
 
-    const fetchVersions = async () => {
+    const fetchVersions = useCallback(async () => {
         try {
             const res = await fetch(`/api/vibecode/projects/${projectId}/versions`);
             if (res.ok) {
@@ -237,7 +216,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         } catch (error) {
             console.error('Failed to fetch versions:', error);
         }
-    };
+    }, [projectId]);
 
     const handleRestore = async (versionId: string) => {
         if (!confirm('Are you sure you want to restore this version? This will create a new version on top of the current state.')) return;
@@ -266,7 +245,7 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         }
     };
 
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         try {
             const res = await fetch(`/api/vibecode/projects/${projectId}/logs`);
             if (res.ok) {
@@ -276,57 +255,36 @@ export default function ProjectChatPage({ params }: { params: Promise<{ projectI
         } catch (error) {
             console.error('Failed to fetch logs:', error);
         }
-    };
+    }, [projectId]);
 
-    // Autonomous Background Execution Logic (Silent)
-    useEffect(() => {
-        let pollTimer: NodeJS.Timeout;
-
-        const runBackgroundExecution = async () => {
-            if (!isAutoExecuting || isExecuting || isLoading || project?.status !== 'generating') return;
-
-            const nextPending = steps.find(s => s.status === 'pending');
-            if (nextPending) {
-                setIsExecuting(true);
-                try {
-                    const res = await fetch('/api/vibecode/agent/execute-next', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ projectId })
-                    });
-
-                    if (res.ok) {
-                        // Success, the step status will update in DB
-                        fetchProject(); // Refresh UI
-                    }
-                } catch (err) {
-                    console.error("Background execution error:", err);
-                } finally {
-                    setIsExecuting(false);
-                }
-            } else if (steps.length > 0 && steps.every(s => s.status === 'completed')) {
-                // Done - refresh to show completion
-                fetchProject();
-            }
-        };
-
-        if (isAutoExecuting && project?.status === 'generating') {
-            // Check frequently during generation
-            pollTimer = setInterval(runBackgroundExecution, 3000);
+    const scrollToBottom = useCallback(() => {
+        if (activeTab === 'chat') {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        } else if (activeTab === 'logs') {
+            // Optional: auto-scroll logs? contentRef.current...
         }
+    }, [activeTab]);
 
-        return () => {
-            if (pollTimer) clearInterval(pollTimer);
-        };
-    }, [isAutoExecuting, isExecuting, isLoading, project?.status, steps, projectId]);
+    useEffect(() => {
+        if (session?.user?.id) {
+            fetchProject();
+            fetchMessages();
+        }
+    }, [session, projectId, fetchProject, fetchMessages]);
 
-    const fetchMessages = async () => {
-        // Placeholder: Implement dedicated message fetch endpoint
-        // For now, initialized with a welcome message
-        setMessages([
-            { role: 'assistant', content: 'Hello! I am your VibeCode Architect. What feature would you like to build or modify today?' }
-        ]);
-    };
+    useEffect(() => {
+        scrollToBottom();
+        if (activeTab === 'deployments') {
+            fetchDeployments();
+        } else if (activeTab === 'history') {
+            fetchVersions();
+        } else if (activeTab === 'logs') {
+            fetchLogs();
+            // Start polling logs
+            const interval = setInterval(fetchLogs, 2000);
+            return () => clearInterval(interval);
+        }
+    }, [messages, activeTab, scrollToBottom, fetchDeployments, fetchVersions, fetchLogs]);
 
     const sendMessage = async (overrideMessage?: string) => {
         const messageToSend = overrideMessage || input;

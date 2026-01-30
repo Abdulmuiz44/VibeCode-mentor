@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -11,11 +11,7 @@ export default function AdminClient() {
     const [projects, setProjects] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchStats();
-    }, []);
-
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
             const res = await fetch('/api/vibecode/admin/stats');
             if (res.ok) {
@@ -27,9 +23,13 @@ export default function AdminClient() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchUsers = async () => {
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/vibecode/admin/users');
@@ -39,9 +39,9 @@ export default function AdminClient() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchProjects = async () => {
+    const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/vibecode/admin/projects');
@@ -51,13 +51,13 @@ export default function AdminClient() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     // Load data when tab changes
     useEffect(() => {
         if (activeTab === 'users' && users.length === 0) fetchUsers();
         if (activeTab === 'projects' && projects.length === 0) fetchProjects();
-    }, [activeTab]);
+    }, [activeTab, users.length, projects.length, fetchUsers, fetchProjects]);
 
     return (
         <div className="min-h-screen bg-black text-white font-sans p-8">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BlueprintOutput from '@/components/BlueprintOutput';
@@ -248,10 +249,12 @@ export default function HomeClient() {
                   </label>
                   {selectedImage && (
                     <div className="relative group">
-                      <img
+                      <Image
                         src={selectedImage}
                         alt="Reference"
-                        className="h-10 w-10 object-cover rounded border border-gray-600"
+                        width={40}
+                        height={40}
+                        className="object-cover rounded border border-gray-600"
                       />
                       <button
                         type="button"

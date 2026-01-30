@@ -92,7 +92,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [session, router]);
+  }, [session, router, status]);
 
   if (loading) {
     return (

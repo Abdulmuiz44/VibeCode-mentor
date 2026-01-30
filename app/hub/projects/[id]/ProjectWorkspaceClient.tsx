@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -20,18 +20,25 @@ export default function ProjectWorkspaceClient({ projectId }: ProjectWorkspaceCl
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'team' | 'activity'>('overview');
 
-    useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.replace('/auth');
-            return;
-        }
+    const loadMembers = useCallback(async (id: string) => {
+        try {
+            const response = await fetch(`/api/hub/projects/${id}/members`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        if (status === 'authenticated') {
-            loadProject();
+            if (response.ok) {
+                const data = await response.json();
+                setMembers(data.members || []);
+            }
+        } catch (err) {
+            console.error('Failed to load members:', err);
         }
-    }, [status, router]);
+    }, []);
 
-    const loadProject = async () => {
+    const loadProject = useCallback(async () => {
         try {
             setLoading(true);
             setError('');
@@ -66,25 +73,18 @@ export default function ProjectWorkspaceClient({ projectId }: ProjectWorkspaceCl
         } finally {
             setLoading(false);
         }
-    };
+    }, [projectId, loadMembers]);
 
-    const loadMembers = async (id: string) => {
-        try {
-            const response = await fetch(`/api/hub/projects/${id}/members`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setMembers(data.members || []);
-            }
-        } catch (err) {
-            console.error('Failed to load members:', err);
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.replace('/auth');
+            return;
         }
-    };
+
+        if (status === 'authenticated') {
+            loadProject();
+        }
+    }, [status, router, loadProject]);
 
     if (loading) {
         return (
