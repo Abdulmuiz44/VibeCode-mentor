@@ -10,25 +10,49 @@ export default function SocialButtons() {
   
   const [googleLoading, setGoogleLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
+    setError('');
     setGoogleLoading(true);
-    try {
-      await signIn('google', { callbackUrl });
-    } catch (err) {
-      console.error("Google Signin Error:", err);
+    console.log("Initiating Google Sign In...");
+    
+    // Don't await signIn because it redirects
+    signIn('google', { callbackUrl })
+      .then(() => {
+        // Usually doesn't resolve if redirecting
+        console.log("Google Sign In initiated");
+      })
+      .catch((err) => {
+        console.error("Google Signin Error:", err);
+        setGoogleLoading(false);
+        setError("Failed to start Google sign in");
+      });
+
+    // Safety timeout in case redirect fails or is blocked
+    setTimeout(() => {
       setGoogleLoading(false);
-    }
+    }, 10000);
   };
 
-  const handleGitHubSignIn = async () => {
+  const handleGitHubSignIn = () => {
+    setError('');
     setGithubLoading(true);
-    try {
-      await signIn('github', { callbackUrl });
-    } catch (err) {
-      console.error("GitHub Signin Error:", err);
+    console.log("Initiating GitHub Sign In...");
+
+    signIn('github', { callbackUrl })
+      .then(() => {
+        console.log("GitHub Sign In initiated");
+      })
+      .catch((err) => {
+        console.error("GitHub Signin Error:", err);
+        setGithubLoading(false);
+        setError("Failed to start GitHub sign in");
+      });
+
+    setTimeout(() => {
       setGithubLoading(false);
-    }
+    }, 10000);
   };
 
   return (
@@ -41,6 +65,12 @@ export default function SocialButtons() {
           <span className="px-4 bg-[#0a0a0a] text-gray-500 font-medium">Or continue with</span>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 p-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded text-center">
+          {error}
+        </div>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         <button
