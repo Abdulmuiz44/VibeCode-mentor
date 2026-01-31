@@ -12,47 +12,64 @@ export default function SocialButtons() {
   const [githubLoading, setGithubLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setError('');
     setGoogleLoading(true);
     console.log("Initiating Google Sign In...");
     
-    // Don't await signIn because it redirects
-    signIn('google', { callbackUrl })
-      .then(() => {
-        // Usually doesn't resolve if redirecting
-        console.log("Google Sign In initiated");
-      })
-      .catch((err) => {
-        console.error("Google Signin Error:", err);
-        setGoogleLoading(false);
-        setError("Failed to start Google sign in");
+    try {
+      const result = await signIn('google', { 
+        callbackUrl,
+        redirect: false 
       });
+      
+      console.log("Google Sign In Result:", result);
 
-    // Safety timeout in case redirect fails or is blocked
-    setTimeout(() => {
+      if (result?.error) {
+        setError(result.error);
+        setGoogleLoading(false);
+      } else if (result?.url) {
+        console.log("Redirecting to:", result.url);
+        window.location.href = result.url;
+      } else {
+        setError("No redirect URL received");
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      console.error("Google Signin Exception:", err);
       setGoogleLoading(false);
-    }, 10000);
+      setError("Failed to start Google sign in");
+    }
   };
 
-  const handleGitHubSignIn = () => {
+  const handleGitHubSignIn = async () => {
     setError('');
     setGithubLoading(true);
     console.log("Initiating GitHub Sign In...");
 
-    signIn('github', { callbackUrl })
-      .then(() => {
-        console.log("GitHub Sign In initiated");
-      })
-      .catch((err) => {
-        console.error("GitHub Signin Error:", err);
-        setGithubLoading(false);
-        setError("Failed to start GitHub sign in");
+    try {
+      const result = await signIn('github', { 
+        callbackUrl, 
+        redirect: false 
       });
 
-    setTimeout(() => {
+      console.log("GitHub Sign In Result:", result);
+
+      if (result?.error) {
+        setError(result.error);
+        setGithubLoading(false);
+      } else if (result?.url) {
+        console.log("Redirecting to:", result.url);
+        window.location.href = result.url;
+      } else {
+        setError("No redirect URL received");
+        setGithubLoading(false);
+      }
+    } catch (err) {
+      console.error("GitHub Signin Exception:", err);
       setGithubLoading(false);
-    }, 10000);
+      setError("Failed to start GitHub sign in");
+    }
   };
 
   return (
