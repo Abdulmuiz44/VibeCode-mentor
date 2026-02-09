@@ -4,7 +4,7 @@ Turn Your Ideas Into Production Ready APPs. An AI-powered co-founder that plans,
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with Mistral AI
+- 🤖 **AI-Powered Blueprints**: Generate comprehensive project blueprints with AI
 - 📋 **19 Blueprint Templates**: Developer-focused templates for APIs, CLIs, extensions & more
 - 🔧 **Dev Tools Category**: 9 specialized templates for developers
 - ⌨️ **Keyboard Shortcuts**: Power user features for efficient workflow

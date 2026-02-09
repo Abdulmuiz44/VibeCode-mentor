@@ -63,10 +63,10 @@ export class BlueprintGenerator {
     prompt: string,
     requirements?: BlueprintRequirements
   ): Promise<GeneratedBlueprint> {
-    // TODO: Implement Mistral AI integration
+    // TODO: Implement AI integration
     // This should:
     // 1. Parse the prompt with context from requirements
-    // 2. Call Mistral API to generate detailed blueprint
+    // 2. Call AI API to generate detailed blueprint
     // 3. Structure response into GeneratedBlueprint format
     // 4. Validate blueprint completeness
 

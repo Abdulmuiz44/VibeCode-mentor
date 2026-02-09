@@ -54,7 +54,7 @@ Keep responses concise, actionable, and friendly.`;
     });
 
     if (!response.ok) {
-      console.error(`Mistral API error: ${response.status}`);
+      console.error(`AI API error: ${response.status}`);
       return Response.json(
         { error: 'AI service error' },
         { status: response.status }

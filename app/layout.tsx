@@ -13,8 +13,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
     title: "VibeCode Mentor - AI Project Blueprint Generator & Vibecoding Tool",
-    description: "The ultimate Vibecoding platform. Generate complete project blueprints with AI guidance from Mistral AI. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
-    keywords: ["Vibecoding", "Vibe Coding", "AI", "project blueprint", "code generator", "Mistral AI", "development tools", "software planning"],
+    description: "The ultimate Vibecoding platform. Generate complete project blueprints with AI guidance. Get detailed technical specifications, tech stacks, and step-by-step implementation plans.",
+    keywords: ["Vibecoding", "Vibe Coding", "AI", "project blueprint", "code generator", "development tools", "software planning"],
     authors: [{ name: "VibeCode Mentor Team" }],
     creator: "VibeCode Mentor",
     publisher: "Abdulmuiz Adeyemo",
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
         locale: "en_US",
         url: "https://vibecodementor.app",
         title: "VibeCode Mentor - AI Project Blueprint Generator",
-        description: "Generate complete project blueprints with AI guidance from Mistral AI",
+        description: "Generate complete project blueprints with AI guidance",
         siteName: "VibeCode Mentor",
     },
     twitter: {
         card: "summary_large_image",
         title: "VibeCode Mentor - AI Project Blueprint Generator",
-        description: "Generate complete project blueprints with AI guidance from Mistral AI",
+        description: "Generate complete project blueprints with AI guidance",
         creator: "@AbdMuizAdeyemo",
     },
     robots: {

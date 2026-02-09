@@ -94,7 +94,7 @@ export default function LandingPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
             </span>
-            <span className="text-sm text-white font-medium">Powered by Mistral AI</span>
+            <span className="text-sm text-white font-medium">Powered by AI</span>
           </div>
 
           {/* Main Headline */}
@@ -191,7 +191,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-3">How do I generate a production-ready blueprint?</h3>
               <p className="text-gray-400 mb-3">
-                Describe your project idea and VibeCode Mentor instantly generates a comprehensive blueprint with system architecture, database schema, API specifications, tech stack recommendations, and a 30-minute implementation roadmap—all powered by Mistral AI.
+                Describe your project idea and VibeCode Mentor instantly generates a comprehensive blueprint with system architecture, database schema, API specifications, tech stack recommendations, and a 30-minute implementation roadmap—all powered by AI.
               </p>
               <a href="#" className="text-blue-400 hover:text-blue-300 text-sm font-semibold">Learn about blueprint generation →</a>
             </div>
@@ -290,7 +290,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">AI Generates Blueprint</h3>
               <p className="text-gray-400">
-                Mistral AI creates a comprehensive plan with architecture, tech stack, database schema, API design, and implementation steps.
+                AI creates a comprehensive plan with architecture, tech stack, database schema, API design, and implementation steps.
               </p>
             </div>
 

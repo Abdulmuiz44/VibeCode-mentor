@@ -128,10 +128,10 @@ Provide 3 highly specific prompts the user can copy-paste into an AI coding assi
         blueprint = result.response.text();
 
     } 
-    // --- FREE USERS: MISTRAL ---
+    // --- FREE USERS: AI ---
     else {
-        const mistralApiKey = process.env.MISTRAL_API_KEY;
-        if (!mistralApiKey) {
+        const aiApiKey = process.env.MISTRAL_API_KEY;
+        if (!aiApiKey) {
              console.error("MISTRAL_API_KEY is missing");
              return NextResponse.json({ error: 'AI Service Configuration Error' }, { status: 500 });
         }
@@ -178,7 +178,7 @@ Basic setup commands.
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${mistralApiKey}`,
+                'Authorization': `Bearer ${aiApiKey}`,
             },
             body: JSON.stringify({
                 model: 'mistral-small-latest', 
@@ -193,8 +193,8 @@ Basic setup commands.
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Mistral API Error:', errorText);
-            throw new Error(`Mistral API error: ${response.status}`);
+            console.error('AI API Error:', errorText);
+            throw new Error(`AI API error: ${response.status}`);
         }
 
         const data = await response.json();

@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'About VibeCode Mentor | The Future of AI-Powered Software Development',
-  description: 'VibeCode Mentor is the premiere platform for vibecoding. We empower developers to turn ideas into production-ready architecture using Mistral AI and Gemini.',
+  description: 'VibeCode Mentor is the premiere platform for vibecoding. We empower developers to turn ideas into production-ready architecture using AI and Gemini.',
   openGraph: {
     title: 'About VibeCode Mentor - AI Blueprint Generator',
     description: 'Transforming software development with AI. From idea to production-ready blueprint in minutes.',
@@ -117,7 +117,7 @@ export default async function AboutPage() {
               The Vision
             </h2>
             <p className="text-gray-300 leading-relaxed">
-              We envision a world where a solo founder can build a scalable SaaS in a weekend. By combining <strong>Mistral AI's reasoning</strong> with our verified architectural patterns, we are turning that vision into reality today.
+              We envision a world where a solo founder can build a scalable SaaS in a weekend. By combining <strong>AI reasoning</strong> with our verified architectural patterns, we are turning that vision into reality today.
             </p>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default async function AboutPage() {
               </span>
             </summary>
             <div className="px-6 pb-6 text-gray-300 leading-relaxed border-t border-gray-800/50 pt-4">
-              Our blueprints are powered by Mistral AI, optimized specifically for system architecture. They are designed to be 99% production-ready, covering database schemas, API routes, and modern tech stacks like Next.js and Supabase.
+              Our blueprints are powered by AI, optimized specifically for system architecture. They are designed to be 99% production-ready, covering database schemas, API routes, and modern tech stacks like Next.js and Supabase.
             </div>
           </details>
         </div>

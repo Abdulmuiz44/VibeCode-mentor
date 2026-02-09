@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+const AI_API_KEY = process.env.MISTRAL_API_KEY;
 
 export interface TaskGraph {
     nodes: TaskNode[];
@@ -22,11 +22,11 @@ export interface TaskEdge {
 
 export class PlannerAgent {
     /**
-     * Generates a structured Task Graph from a user prompt using Mistral AI.
+     * Generates a structured Task Graph from a user prompt using AI.
      */
     static async generatePlan(prompt: string, context?: any): Promise<TaskGraph> {
-        if (!MISTRAL_API_KEY) {
-            throw new Error('MISTRAL_API_KEY is not configured');
+        if (!AI_API_KEY) {
+            throw new Error('AI_API_KEY is not configured');
         }
 
         const systemPrompt = `You are VibeCode Architect, an advanced software project planner.
@@ -60,7 +60,7 @@ Do not output markdown code blocks. Output ONLY raw JSON.`;
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+                'Authorization': `Bearer ${AI_API_KEY}`,
             },
             body: JSON.stringify({
                 messages: [
