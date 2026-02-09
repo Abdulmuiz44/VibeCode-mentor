@@ -148,8 +148,92 @@ PayPal payment integration has been **successfully replaced** with **Lemonsqueez
 🗑️ components/PayPalButton.tsx          [119 lines - Can delete after 30 days]
 🗑️ app/api/paypal/create-order/route.ts [99 lines - Can delete after 30 days]
 🗑️ app/api/paypal/capture-order/route.ts [120 lines - Can delete after 30 days]
-🗑️ app/api/webhooks/paypal/route.ts     [~100 lines - Can delete after 30 days]
+🗑️ app/api/webhooks/paypal/route.ts     [~100 lines - Current issue: Multiple migrations have already been applied to Supabase database, causing conflicts when trying to push new migrations.]
 ```
+
+---
+
+## Migration Status & Next Steps
+
+## Current Issue
+Multiple migrations have already been applied to Supabase database, causing conflicts when trying to push new migrations.
+
+## Already Applied Migrations (Skip These)
+- ✅ `20250111_agentic_builder_schema.sql` - Already applied
+- ✅ `20260103_build_system.sql` - Already applied  
+- ✅ `20260103_build_system_phase2.sql` - Already applied
+
+## Migrations Ready to Apply
+These migrations are properly formatted and ready to be applied:
+
+### High Priority
+- 🔄 `20260110_add_formal_fkey_blueprints.sql` - Add foreign key constraints
+- 🔄 `20260110_create_project_generation_steps.sql` - Project generation steps
+- 🔄 `20260110_disable_blueprints_rls.sql` - Disable RLS temporarily
+- 🔄 `20260110_expand_steps_meta.sql` - Expand step metadata
+- 🔄 `20260110_fix_blueprints_relationship.sql` - Fix blueprint relationships
+- 🔄 `20260110_fix_blueprints_rls_email_based.sql` - Email-based RLS
+- 🔄 `20260110_fix_blueprints_rls_final.sql` - Final RLS fixes
+- 🔄 `20260110_fix_blueprints_table_final.sql` - Table final fixes
+- 🔄 `20260110_fix_blueprints_user_id_mismatch.sql` - User ID type fixes
+- 🔄 `20260110_fix_remaining_user_id_types.sql` - User ID type consistency
+- 🔄 `20260110_fix_user_id_type.sql` - User ID type standardization
+- 🔄 `20260110_update_blueprints_vibe.sql` - Update vibe column
+- 🔄 `20260110_update_blueprints_vibe_safe.sql` - Safe vibe updates
+- 🔄 `20260110_update_projects_schema.sql` - Projects schema updates
+- 🔄 `20260113_create_sandboxes_table.sql` - Sandboxes table
+- 🔄 `20260115_add_is_template_to_projects.sql` - Template flag
+
+### Manual/Admin Migrations (Apply via Dashboard)
+- ⚠️ `GRANT_PRO_ACCESS.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `add_admin_fields.sql` - Apply manually in Supabase SQL Editor  
+- ⚠️ `add_is_pro_column.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `aggressive_fix_users_rls.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `disable_users_rls_temp.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `fix_blueprints_rls.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `fix_users_rls_recursion.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `generate_projects.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `grant_pro_to_user.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `hub_schema.sql` - Apply manually in Supabase SQL Editor
+- ⚠️ `verify_and_fix_users_rls.sql` - Apply manually in Supabase SQL Editor
+
+## Recommended Next Steps
+
+### Option 1: Apply via Supabase Dashboard (Recommended)
+1. Go to https://supabase.com/dashboard/project/wpqqhnmhpvgkrgyudvwb
+2. Navigate to SQL Editor
+3. Copy and paste the SQL from the migration files above
+4. Execute each migration individually
+5. Start with the high priority migrations first
+
+### Option 2: Use Supabase CLI (Alternative)
+```bash
+# Apply individual migrations
+npx supabase db push --include-all
+
+# Or apply specific migration
+npx supabase db push --include 20260110_add_formal_fkey_blueprints.sql
+```
+
+### Option 3: Reset and Reapply (Last Resort)
+⚠️ **WARNING**: This will reset your database schema!
+```bash
+npx supabase db reset
+npx supabase db push
+```
+
+## Migration Priority Order
+1. Schema changes (tables, columns, constraints)
+2. RLS policy updates  
+3. Data migrations
+4. Index creation
+5. Manual/admin scripts
+
+## Notes
+- The migration conflicts are due to schema_migrations table tracking
+- Some migrations were applied outside the normal migration flow
+- Consider using individual migration files for better control
+- Always test migrations in staging before production
 
 ---
 

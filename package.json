@@ -15,7 +15,6 @@
     "@octokit/rest": "^22.0.1",
     "@react-email/components": "^1.0.1",
     "@sentry/nextjs": "10",
-    "@supabase/supabase-js": "^2.81.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/dockerode": "^3.3.47",
     "@types/uuid": "^11.0.0",
@@ -44,6 +43,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.95.3",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

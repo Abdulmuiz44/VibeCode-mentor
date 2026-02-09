@@ -5,6 +5,7 @@ import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { upsertUserProfile } from '@/lib/supabase.server';
 import { initializeAdminUser } from '@/lib/admin/adminManager';
+import { signInWithRetry } from '@/lib/auth-with-timeout';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -32,35 +33,28 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        try {
+          console.log('Attempting Supabase auth for:', credentials.email);
+          
+          const data = await signInWithRetry(
+            credentials.email, 
+            credentials.password,
+            3 // max retries
+          );
 
-        if (!supabaseUrl || !supabaseAnonKey) {
-          console.error('Supabase credentials missing');
+          console.log('✅ Supabase auth successful for user:', data.user.id);
+
+          return {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
+            image: data.user.user_metadata?.avatar_url || null,
+          };
+
+        } catch (error: any) {
+          console.error('Authentication failed:', error.message);
           return null;
         }
-
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        });
-
-        if (error || !data.user) {
-          console.error('Supabase Auth verification failed:', error?.message);
-          return null;
-        }
-
-        const user = data.user;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || user.email?.split('@')[0],
-          image: user.user_metadata?.avatar_url || null,
-        };
       }
     }),
     ...(process.env.EMAIL_SERVER && process.env.EMAIL_FROM

@@ -5,7 +5,7 @@ import { ProjectDatabase } from '@/lib/db/projects';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ projectId: string }> }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -14,7 +14,7 @@ export async function GET(
         }
 
         const resolvedParams = await params;
-        const { projectId } = resolvedParams;
+        const { id: projectId } = resolvedParams;
 
         const project = await ProjectDatabase.getProject(projectId);
 
@@ -36,7 +36,7 @@ export async function GET(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: Promise<{ projectId: string }> }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -45,7 +45,7 @@ export async function DELETE(
         }
 
         const resolvedParams = await params;
-        const { projectId } = resolvedParams;
+        const { id: projectId } = resolvedParams;
 
         // Verify ownership before deleting
         const project = await ProjectDatabase.getProject(projectId);
