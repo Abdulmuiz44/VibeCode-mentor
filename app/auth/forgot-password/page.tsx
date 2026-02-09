@@ -16,14 +16,20 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
+      console.log(`[ForgotPassword] Attempting to send reset email to: ${email}`);
+      
       const result = await sendPasswordResetEmail(email);
+
+      console.log(`[ForgotPassword] Email result:`, result);
 
       if (!result.success) {
         throw new Error(result.error || result.message);
       }
 
       setEmailSent(true);
+      console.log(`[ForgotPassword] Email sent successfully to: ${email}`);
     } catch (err: any) {
+      console.error(`[ForgotPassword] Error:`, err);
       setError(err.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
@@ -41,6 +47,16 @@ export default function ForgotPasswordPage() {
             <h1 className="text-2xl font-bold text-white">Check Your Email</h1>
             <p className="text-gray-400">We've sent a password reset link to {email}. Click the link to reset your password.</p>
             <p className="text-xs text-gray-500">Link expires in 1 hour</p>
+            
+            <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
+              <p className="text-yellow-400 text-sm font-medium mb-2">🔍 Don't see the email?</p>
+              <ul className="text-yellow-300 text-xs space-y-1 text-left">
+                <li>• Check your spam/junk folder</li>
+                <li>• Make sure the email address is correct</li>
+                <li>• If you still don't receive it within 5 minutes, contact support</li>
+              </ul>
+            </div>
+            
             <Link
               href="/auth"
               className="inline-block w-full mt-4 py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-purple-500/20 transition-all text-center"
