@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { getProStatus } from '@/utils/pro';
-import { getBlueprintById } from '@/lib/blueprints';
+import { getBlueprintById, generateFilesFromBlueprint } from '@/lib/blueprints';
 import ChatInterface from '@/components/project-builder/ChatInterface';
 import CodeEditor from '@/components/project-builder/CodeEditor';
 import LivePreview from '@/components/project-builder/LivePreview';
@@ -16,7 +14,6 @@ import { Project, FileNode } from '@/types/project';
 export default function ProjectBuilderPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
   const { openUpgradeModal } = useProUpgradeModal();
   
   const [isPro, setIsPro] = useState(false);
@@ -27,12 +24,17 @@ export default function ProjectBuilderPage() {
   const [buildProgress, setBuildProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'files'>('editor');
+  const [user, setUser] = useState<any>(null);
 
   const projectId = params.id as string;
 
   useEffect(() => {
     const initializeProject = async () => {
       try {
+        // Mock user for now - in production, this would come from auth
+        const mockUser = { id: 'user-123', name: 'Demo User' };
+        setUser(mockUser);
+
         // Check Pro status
         const proStatus = getProStatus();
         setIsPro(proStatus.isPro);
@@ -50,7 +52,7 @@ export default function ProjectBuilderPage() {
           name: blueprint.title,
           description: blueprint.description,
           blueprintId: projectId,
-          files: generateInitialFiles(blueprint),
+          files: generateFilesFromBlueprint(blueprint),
           createdAt: new Date(),
           updatedAt: new Date(),
           status: 'draft',
@@ -69,138 +71,6 @@ export default function ProjectBuilderPage() {
 
     initializeProject();
   }, [projectId, router]);
-
-  const generateInitialFiles = (blueprint: any): FileNode[] => {
-    // Generate initial file structure based on blueprint
-    return [
-      {
-        id: '1',
-        name: 'package.json',
-        type: 'file',
-        content: generatePackageJson(blueprint),
-        path: '/package.json'
-      },
-      {
-        id: '2',
-        name: 'src',
-        type: 'folder',
-        children: [
-          {
-            id: '3',
-            name: 'App.js',
-            type: 'file',
-            content: generateAppJs(blueprint),
-            path: '/src/App.js'
-          },
-          {
-            id: '4',
-            name: 'index.js',
-            type: 'file',
-            content: generateIndexJs(blueprint),
-            path: '/src/index.js'
-          }
-        ],
-        path: '/src'
-      },
-      {
-        id: '5',
-        name: 'public',
-        type: 'folder',
-        children: [
-          {
-            id: '6',
-            name: 'index.html',
-            type: 'file',
-            content: generateIndexHtml(blueprint),
-            path: '/public/index.html'
-          }
-        ],
-        path: '/public'
-      }
-    ];
-  };
-
-  const generatePackageJson = (blueprint: any) => {
-    return JSON.stringify({
-      name: blueprint.title.toLowerCase().replace(/\s+/g, '-'),
-      version: '1.0.0',
-      description: blueprint.description,
-      main: 'src/index.js',
-      scripts: {
-        start: 'react-scripts start',
-        build: 'react-scripts build',
-        test: 'react-scripts test',
-        eject: 'react-scripts eject'
-      },
-      dependencies: {
-        react: '^18.2.0',
-        'react-dom': '^18.2.0',
-        'react-scripts': '5.0.1'
-      },
-      browserslist: {
-        production: [
-          '>0.2%',
-          'not dead',
-          'not op_mini all'
-        ],
-        development: [
-          'last 1 chrome version',
-          'last 1 firefox version',
-          'last 1 safari version'
-        ]
-      }
-    }, null, 2);
-  };
-
-  const generateAppJs = (blueprint: any) => {
-    return `import React from 'react';
-import './App.css';
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>${blueprint.title}</h1>
-        <p>${blueprint.description}</p>
-      </header>
-    </div>
-  );
-}
-
-export default App;`;
-  };
-
-  const generateIndexJs = (blueprint: any) => {
-    return `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);`;
-  };
-
-  const generateIndexHtml = (blueprint: any) => {
-    return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="${blueprint.description}" />
-    <title>${blueprint.title}</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
-</html>`;
-  };
 
   const handleFileUpdate = async (fileId: string, content: string) => {
     if (!project) return;
@@ -231,8 +101,6 @@ root.render(
       openUpgradeModal({ source: 'Project Builder' });
       return;
     }
-
-    const user = session?.user;
 
     setIsBuilding(true);
     setBuildProgress(0);
