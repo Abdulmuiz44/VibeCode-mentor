@@ -32,7 +32,7 @@ const steps: GenerationStep[] = [
 
 export default function ProjectGenerationPage() {
   const params = useParams();
-  const projectId = params.projectId as string;
+  const projectId = params.id as string;
   const [projectStatus, setProjectStatus] = useState<ProjectStatus>({
     id: projectId,
     status: 'generating',
