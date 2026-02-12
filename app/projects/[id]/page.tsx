@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getBlueprintById, generateFilesFromBlueprint } from '@/lib/blueprints';
+import { getProStatus } from '@/utils/pro';
 import ChatInterface from '@/components/project-builder/ChatInterface';
 import CodeEditor from '@/components/project-builder/CodeEditor';
 import LivePreview from '@/components/project-builder/LivePreview';
