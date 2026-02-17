@@ -15,7 +15,7 @@ export default async function BuildFullAppPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    redirect('/auth?callbackUrl=/build-full-app');
+    redirect('/auth');
   }
 
   const isPro = await getProStatusFromCloud(session.user.id);

@@ -101,7 +101,7 @@ export default function BlogPost() {
                     <h3 className="text-2xl font-bold text-white mb-4">Ready to catch the vibe?</h3>
                     <p className="text-gray-300 mb-6">Generate your first professional project blueprint with VibeCode Mentor and start building.</p>
                     <Link
-                        href="/auth?returnTo=/"
+                        href="/build"
                         className="inline-block px-8 py-4 bg-white text-purple-900 font-bold rounded-lg hover:scale-105 transition-transform shadow-lg"
                     >
                         Start Building Free

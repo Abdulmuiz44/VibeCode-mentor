@@ -150,7 +150,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white text-center">
             What is <span className="text-purple-400">Vibecoding</span>?
           </h2>
-          
+
           {/* Direct Answer Paragraph for AI Extraction (40-60 words) */}
           <div className="bg-gray-800 border-l-4 border-purple-500 p-6 mb-8 rounded max-w-2xl mx-auto">
             <p className="text-gray-200 font-medium italic">
@@ -572,7 +572,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
-                <li><Link href="/auth?returnTo=/" className="hover:text-white transition-colors">Generator</Link></li>
+                <li><Link href="/build" className="hover:text-white transition-colors">Generator</Link></li>
                 <li><Link href="/templates" className="hover:text-white transition-colors">Templates</Link></li>
                 <li><Link href="/prompts" className="hover:text-white transition-colors">Prompts</Link></li>
                 <li><Link href="/blueprints" className="hover:text-white transition-colors">Blueprints</Link></li>

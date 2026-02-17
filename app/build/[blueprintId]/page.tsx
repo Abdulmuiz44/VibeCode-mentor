@@ -13,7 +13,7 @@ export default function BlueprintPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
-  
+
   const blueprintId = params.blueprintId as string;
   const [blueprint, setBlueprint] = useState<SavedBlueprint | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function BlueprintPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace('/auth?returnTo=' + encodeURIComponent('/blueprints'));
+      router.replace('/auth');
       return;
     }
 
@@ -31,18 +31,15 @@ export default function BlueprintPage() {
       try {
         setLoading(true);
         setError('');
-        
-        // Fetch all blueprints for the user
+
         const blueprints = await getBlueprintsFromCloud(user.id);
-        
-        // Find the specific blueprint
         const found = blueprints.find(b => String(b.id) === blueprintId);
-        
+
         if (!found) {
           setError('Blueprint not found');
           return;
         }
-        
+
         setBlueprint(found);
       } catch (err) {
         console.error('Error loading blueprint:', err);
@@ -57,10 +54,10 @@ export default function BlueprintPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading blueprint...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading blueprint...</p>
         </div>
       </div>
     );
@@ -68,16 +65,16 @@ export default function BlueprintPage() {
 
   if (error || !blueprint) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">
             {error || 'Blueprint not found'}
           </h1>
           <button
-            onClick={() => router.push('/blueprints')}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+            onClick={() => router.push('/build')}
+            className="px-6 py-3 bg-white hover:bg-gray-200 text-black font-semibold rounded-lg transition-colors"
           >
-            Back to Blueprints
+            Back to Build
           </button>
         </div>
       </div>
@@ -85,23 +82,23 @@ export default function BlueprintPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+    <main className="min-h-screen bg-black">
       <div className="container mx-auto px-4 py-12">
         {/* Back button */}
         <button
-          onClick={() => router.push('/blueprints')}
-          className="mb-8 text-purple-400 hover:text-purple-300 flex items-center gap-2 transition-colors"
+          onClick={() => router.push('/build')}
+          className="mb-8 text-gray-400 hover:text-white flex items-center gap-2 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Blueprints
+          Back to Build
         </button>
 
         {/* Blueprint info header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">{blueprint.vibe}</h1>
-          <p className="text-gray-400">
+          <p className="text-gray-500">
             {new Date(blueprint.timestamp).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -113,8 +110,8 @@ export default function BlueprintPage() {
         </div>
 
         {/* Blueprint content */}
-        <BlueprintOutput 
-          blueprint={blueprint.blueprint} 
+        <BlueprintOutput
+          blueprint={blueprint.blueprint}
           projectIdea={blueprint.vibe}
           blueprintId={blueprintId}
         />

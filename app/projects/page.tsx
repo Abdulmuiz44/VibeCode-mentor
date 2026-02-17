@@ -4,9 +4,9 @@ import { authOptions } from '@/lib/authOptions';
 
 export default async function ProjectsPage() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
-    redirect('/auth?returnTo=/dashboard');
+    redirect('/auth');
   }
 
   redirect('/dashboard');

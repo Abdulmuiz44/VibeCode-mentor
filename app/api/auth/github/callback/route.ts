@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=Please log in first', request.url)
+        new URL('/auth', request.url)
       );
     }
 
