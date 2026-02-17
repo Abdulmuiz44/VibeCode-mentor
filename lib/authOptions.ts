@@ -1,11 +1,10 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-import EmailProvider from 'next-auth/providers/email';
-import CredentialsProvider from 'next-auth/providers/credentials';
+
 import { upsertUserProfile } from '@/lib/supabase.server';
 import { initializeAdminUser } from '@/lib/admin/adminManager';
-import { signInWithRetry } from '@/lib/auth-with-timeout';
+
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -22,56 +21,13 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GITHUB_CLIENT_ID || process.env.GITHUB_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_SECRET || '',
     }),
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          console.log('Attempting Supabase auth for:', credentials.email);
-          
-          const data = await signInWithRetry(
-            credentials.email, 
-            credentials.password,
-            3 // max retries
-          );
-
-          console.log('✅ Supabase auth successful for user:', data.user.id);
-
-          return {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
-            image: data.user.user_metadata?.avatar_url || null,
-          };
-
-        } catch (error: any) {
-          console.error('Authentication failed:', error.message);
-          return null;
-        }
-      }
-    }),
-    ...(process.env.EMAIL_SERVER && process.env.EMAIL_FROM
-      ? [
-        EmailProvider({
-          server: process.env.EMAIL_SERVER,
-          from: process.env.EMAIL_FROM,
-        }),
-      ]
-      : []),
   ],
   callbacks: {
     async signIn({ user, account }) {
       if (user) {
         try {
           // Handle OAuth (Google, GitHub) and credentials-based authentication
-          if (account?.provider === 'google' || account?.provider === 'github' || account?.provider === 'credentials') {
+          if (account?.provider === 'google' || account?.provider === 'github') {
             // Run DB operations with a timeout to prevent Vercel 504 errors
             // If DB is slow, we still want to log the user in
             const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 4000)); // 4s timeout (Vercel limit is 10s)

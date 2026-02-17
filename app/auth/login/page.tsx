@@ -3,15 +3,14 @@
 import { Suspense } from 'react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import SocialButtons from '@/components/auth/SocialButtons';
-import LoginForm from '@/components/auth/LoginForm';
+
 
 function LoginContent() {
   return (
-    <AuthLayout 
-      title="Welcome Back" 
+    <AuthLayout
+      title="Welcome Back"
       subtitle="Enter your details to access your account"
     >
-      <LoginForm />
       <SocialButtons />
     </AuthLayout>
   );
