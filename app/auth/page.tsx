@@ -20,22 +20,11 @@ function AuthContent() {
         setGoogleLoading(true);
 
         try {
-            const result = await signIn('google', {
+            await signIn('google', {
                 callbackUrl,
-                redirect: false,
             });
-
-            if (result?.error) {
-                setError('Could not connect to Google. Please try again.');
-                setGoogleLoading(false);
-            } else if (result?.url) {
-                window.location.href = result.url;
-            } else {
-                setError('Something went wrong. Please try again.');
-                setGoogleLoading(false);
-            }
         } catch {
-            setError('Failed to connect. Please check your connection.');
+            setError('Failed to connect to Google. Please try again.');
             setGoogleLoading(false);
         }
     };
@@ -46,22 +35,11 @@ function AuthContent() {
         setGithubLoading(true);
 
         try {
-            const result = await signIn('github', {
+            await signIn('github', {
                 callbackUrl,
-                redirect: false,
             });
-
-            if (result?.error) {
-                setError('Could not connect to GitHub. Please try again.');
-                setGithubLoading(false);
-            } else if (result?.url) {
-                window.location.href = result.url;
-            } else {
-                setError('Something went wrong. Please try again.');
-                setGithubLoading(false);
-            }
         } catch {
-            setError('Failed to connect. Please check your connection.');
+            setError('Failed to connect to GitHub. Please try again.');
             setGithubLoading(false);
         }
     };
