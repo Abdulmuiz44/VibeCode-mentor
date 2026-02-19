@@ -1,0 +1,48 @@
+# VibeCode Mentor: The Ultimate Vibecoding & AI Blueprint Platform
+
+> **VibeCode Mentor** is an AI-powered co-founder and software technical architect designed to transform vague ideas into production-ready blueprints in minutes. It is the ultimate platform for **Vibecoding**, enabling developers and founders to ship full-stack applications with extreme speed using AI guidance.
+
+## 🚀 Core Features & Capabilities
+
+- **AI-Powered Blueprints:** Generates 14+ section project blueprints including database schemas (SQL), API specifications, tech stack dependency lists, and complete file structures.
+- **Architectural Reasoning:** Built-in expert logic explaining *why* specific technologies (Next.js, Supabase, Tailwind) are chosen for your specific use case.
+- **Step-by-Step Implementation Guides:** Detailed 7-phase build plans with exact terminal commands, code snippets, and verification checkpoints.
+- **LLM-Context-Rich Prompts:** Provides 5 copy-paste-ready prompts for AI coding assistants (like Cursor, Claude, or ChatGPT) to implement core project features instantly.
+- **Developer-Focused Templates:** 19+ specialized templates for APIs, CLIs, Chrome Extensions, and SaaS boilerplate.
+- **AI Chat Assistant:** Context-aware assistant to help you refine blueprints and answer technical questions (Powered by Gemini 1.5 Pro).
+- **Vibecoding Optimization:** Specifically designed for the "Vibecoding" workflow where ideas are drafted and iterated upon using high-level natural language.
+
+## 🛠️ Technology Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (Modern, Minimalistic B&W Theme)
+- **Database & Auth:** Supabase (PostgreSQL) + NextAuth.js
+- **AI Models:** 
+  - **Pro:** Google Gemini 1.5 Pro (High-precision reasoning)
+  - **Free:** Mistral AI (Fast, efficient generation)
+- **Monitoring & Scale:** Vercel Analytics, KV, and Speed Insights
+- **Payments:** Lemon Squeezy (SaaS Subscription Management)
+
+## 🎯 Target Audience
+
+- **Developers:** Building tools, APIs, and complex extensions.
+- **Solo Founders:** Rapidly prototyping and launching SaaS products.
+- **Creators:** Turning creative ideas into working web applications.
+- **Builders:** Shipping consistent, high-quality code with AI assistance.
+
+## 🌍 SEO Meta Info
+
+- **Keywords:** Vibecoding, Vibe Coding, AI Project Blueprint, Software Architect AI, Code Generator, SaaS Boilerplate, Next.js Starter, Supabase Auth.
+- **Mission:** Empowering anyone to transition "From Vibe to Live" with production-grade software planning.
+
+## 📦 Export & Integration
+
+- **Github Integration:** Create repositories directly from blueprints (Pro).
+- **Formats:** Export blueprints as Markdown or PDF documentation.
+- **PWA:** Fully installable as a mobile or desktop application.
+
+---
+
+**VibeCode Mentor: You shipped TradiaAI—ship this.**
+https://vibecodementor.app
